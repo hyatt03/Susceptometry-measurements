@@ -3,70 +3,50 @@ QCodes driver for Agilent Analog Discovery 2 Mixed signal oscilloscope
 """
 
 from qcodes import Instrument
+import time
 import numpy as np
-from ctypes import *
-import sys, time
+import dwf
 
+import matplotlib.pyplot as plt
 
 class AnalogDiscovery2(Instrument):
     def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)
 
-        # Connect to the library (dwf)
-        if sys.platform.startswith("win"):
-            dwf = cdll.dwf
-        elif sys.platform.startswith("darwin"):
-            dwf = cdll.LoadLibrary("/Library/Frameworks/dwf.framework/dwf")
-        else:
-            dwf = cdll.LoadLibrary("libdwf.so")
+        # Open first device
+        self.dwf_ai = dwf.DwfAnalogIn()
 
-        self.dwf = dwf
+        # Prepare to read sample
+        self.dwf_ai.frequencySet(20e4)
+        self.dwf_ai.bufferSizeSet(4096)
+        self.dwf_ai.channelEnableSet(0, True)
+        self.dwf_ai.channelRangeSet(0, 1.0)
 
-        # Device reference
-        self.hdwf = c_int()
+        # Setup trigger
+        self.dwf_ai.triggerAutoTimeoutSet()
+        self.dwf_ai.triggerSourceSet(self.dwf_ai.TRIGSRC.DETECTOR_ANALOG_IN)
+        self.dwf_ai.triggerTypeSet(self.dwf_ai.TRIGTYPE.EDGE)
+        self.dwf_ai.triggerChannelSet(0)
+        self.dwf_ai.triggerLevelSet(0.)
+        self.dwf_ai.triggerConditionSet(self.dwf_ai.TRIGCOND.RISING_POSITIVE)
 
-        # Status signal
-        self.status = c_byte()
-
-        # Sample space
-        self.voltage = c_double()
-
-        # Input amplitude peak to peak (value of 5 will set range to -2.5V to 2.5V)
-        self.ampAcq = c_double(5)
-
-        # offset voltage
-        self.offset_voltage = c_int(0)
-
-        # Open the device
-        self.dwf.FDwfDeviceOpen(c_int(-1), byref(self.hdwf))
-
-        # Handle errors
-        if self.hdwf.value == 0:
-            szerr = create_string_buffer(512)
-            dwf.FDwfGetLastErrorMsg(szerr)
-            raise IOError(f'Failed to open device: {str(szerr.value)}')
-
-        # Setup parameters for acquisition
-        # Enable channel 0
-        self.dwf.FDwfAnalogInChannelEnableSet(self.hdwf, c_int(0), c_bool(True))
-
-        # Set 0V offset
-        self.dwf.FDwfAnalogInChannelOffsetSet(self.hdwf, c_int(0), self.offset_voltage)
-
-        # Set the range
-        self.dwf.FDwfAnalogInChannelRangeSet(self.hdwf, c_int(0), self.ampAcq)
-
-        # Open channel
-        self.dwf.FDwfAnalogInConfigure(self.hdwf, c_int(0), c_bool(False))
-
-        # wait at least 2 seconds for the offset to stabilize
+        # wait at least 2 seconds with Analog Discovery for the offset to stabilize,
+        # before the first reading after device open or offset/range change
         time.sleep(2)
 
-    def get_data(self):
-        # Get analog input info from the device
-        self.dwf.FDwfAnalogInStatus(self.hdwf, c_int(1), byref(self.status))
+    def get_rms(self):
+        # Begin acquisition
+        self.dwf_ai.configure(False, True)
 
-        # Read voltage on the first channel
-        self.dwf.FDwfAnalogInStatusSample(self.hdwf, c_int(0), byref(self.voltage))
+        # Wait for acquisition to finish
+        while True:
+            if self.dwf_ai.status(True) == self.dwf_ai.STATE.DONE:
+                break
+            time.sleep(0.001)
 
+        # Grab the data
+        rgdSamples = np.array(self.dwf_ai.statusData(0, 4096))
+
+        # Compute rms voltage from the sample and return it
+        return np.sqrt(np.mean(rgdSamples**2.))
 

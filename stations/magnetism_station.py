@@ -19,7 +19,7 @@ from qcodes import Station
 # Import instruments
 from qcodes.tests.instrument_mocks import DummyInstrument
 from qcodes.instrument_drivers.stanford_research.SR830 import SR830
-from instrument_drivers import Keysight_N9310A
+from instrument_drivers import Keysight_N9310A, Agilent_AnalogDiscovery2
 
 
 # Setup all the instruments for this station
@@ -34,7 +34,8 @@ def setup_instruments():
         sr830 = DummyInstrument('lockin_mock', gates=sr830_gates)
 
         # Configure the signal generator
-        n9310a = DummyInstrument('signal_gen_mock', gates=['LFOutputState', 'LFOutputFrequency', 'LFOutputAmplitude'])
+        n9310a_gates = ['LFOutputState', 'LFOutputFrequency', 'LFOutputAmplitude']
+        n9310a = DummyInstrument('signal_gen_mock', gates=n9310a_gates)
 
         # Configure the oscilloscope as a voltmeter
         discovery2 = DummyInstrument('dvm_mock', gates=['v1', 'v2'])
@@ -49,11 +50,11 @@ def setup_instruments():
         sr830 = SR830('lockin', 'GPIB0::10::INSTR')
 
         # Next we have the signal generator
-        n9310a = Keysight_N9310A.N9310A('signal_gen', 'USB0::2391::8216::0115000001::0::INSTR')
+        n9310a = Keysight_N9310A.N9310A('signal_gen', 'USB0::0x0957::0x2018::01151879::INSTR')
 
         # And finally the voltmeter
-        discovery2 = DummyInstrument('dvm', gates=['v1', 'v2'])
-
+        discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm')
+        
         # Append the instruments to the list of instruments
         instruments.append(sr830)
         instruments.append(n9310a)
