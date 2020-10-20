@@ -81,7 +81,11 @@ class MagnetismStationTest(unittest.TestCase):
 
     def test_dvm(self):
         dvm = self.station.components['dvm']
-        dvm.get_rms()
+        
+        
+        
+        print(dvm.get_rms(0))
+        print(dvm.get_rms(1))
 
 
 if __name__ == '__main__':
