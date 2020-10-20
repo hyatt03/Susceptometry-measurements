@@ -25,6 +25,7 @@ def count_rising(trace):
     return n
 
 
+# Class containing tests for the magnetism station
 class MagnetismStationTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):

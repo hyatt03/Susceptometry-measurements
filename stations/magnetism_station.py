@@ -10,14 +10,10 @@ Talks to the following instruments:
  * The cryogenics station (to set the DC magnetic field and the temperature)
 """
 
-# Import os to get environment variable
-import os
-
 # Import the station from q-codes
 from qcodes import Station
 
 # Import instruments
-from qcodes.tests.instrument_mocks import DummyInstrument
 from qcodes.instrument_drivers.stanford_research.SR830 import SR830
 from instrument_drivers import Keysight_N9310A, Agilent_AnalogDiscovery2
 
