@@ -1,5 +1,7 @@
 """
 QCodes driver for Agilent Analog Discovery 2 Mixed signal oscilloscope
+The parameters cannot be set (problem with underlying library)
+The getters work just fine, get_trace and get_rms work too.
 """
 
 from qcodes import Instrument
@@ -8,7 +10,16 @@ import time
 import numpy as np
 import dwf
 
-import matplotlib.pyplot as plt
+default_config_values = {
+    "freq": 20e4,
+    "buffer": 4096,
+    "enable0": True,
+    "enable1": True,
+    "range0": 1.0,
+    "range1": 1.0,
+    "triggerchannel": 0,
+    "triggerlevel": 0.0
+}
 
 class AnalogDiscovery2(Instrument):
     def __init__(self, name, **kwargs):
@@ -23,7 +34,7 @@ class AnalogDiscovery2(Instrument):
                            set_cmd=self.dwf_ai.frequencySet,
                            get_cmd=self.dwf_ai.frequencyGet,
                            get_parser=float,
-                           initial_value=20e4,
+                           initial_value=default_config_values["freq"],
                            unit='Hz')
 
         # Parameter for buffer size
@@ -32,7 +43,7 @@ class AnalogDiscovery2(Instrument):
                            get_cmd=self.dwf_ai.bufferSizeGet,
                            get_parser=int,
                            vals=Ints(),
-                           initial_value=4096)
+                           initial_value=default_config_values["buffer"])
 
         # Parameters for channel enable
         self.add_parameter('AIChannel0Enable',
@@ -40,27 +51,27 @@ class AnalogDiscovery2(Instrument):
                            get_cmd=lambda : self.dwf_ai.channelEnableGet(0),
                            get_parser=bool,
                            vals=Bool(),
-                           initial_value=True)
+                           initial_value=default_config_values["enable0"])
 
         self.add_parameter('AIChannel1Enable',
                            set_cmd=lambda x: self.dwf_ai.channelEnableSet(1, x),
                            get_cmd=lambda : self.dwf_ai.channelEnableGet(1),
                            get_parser=bool,
                            vals=Bool(),
-                           initial_value=False)
+                           initial_value=default_config_values["enable1"])
 
         # Parameters for channel ranges
         self.add_parameter('AIChannel0Range',
                            set_cmd=lambda x: self.dwf_ai.channelRangeSet(0, x),
                            get_cmd=lambda : self.dwf_ai.channelRangeGet(0),
                            get_parser=float,
-                           initial_value=1.0)
+                           initial_value=default_config_values["range0"])
 
         self.add_parameter('AIChannel1Range',
                            set_cmd=lambda x: self.dwf_ai.channelRangeSet(1, x),
                            get_cmd=lambda : self.dwf_ai.channelRangeGet(1),
                            get_parser=float,
-                           initial_value=1.0)
+                           initial_value=default_config_values["range1"])
 
         # Trigger Parameters
         # Non config parameters (could be configurable)
@@ -75,19 +86,20 @@ class AnalogDiscovery2(Instrument):
                            get_cmd=self.dwf_ai.triggerChannelGet,
                            get_parser=int, # We can either select channel 0 or 1
                            vals=Ints(0, 1),
-                           initial_value=0)
+                           initial_value=default_config_values["triggerchannel"])
 
         # Trigger Level
         self.add_parameter('AITriggerLevel',
                            set_cmd=self.dwf_ai.triggerLevelSet,
                            get_cmd=self.dwf_ai.triggerLevelGet,
                            get_parser=float,
-                           initial_value=0.)
+                           initial_value=default_config_values["triggerlevel"])
 
         # wait at least 2 seconds with Analog Discovery for the offset to stabilize,
         # before the first reading after device open or offset/range change
         time.sleep(2)
 
+    # Get a trace (fills the buffer and returns it)
     def get_trace(self, channel):
         # Begin acquisition
         self.dwf_ai.configure(False, True)
@@ -101,7 +113,7 @@ class AnalogDiscovery2(Instrument):
         # Return the data
         return np.array(self.dwf_ai.statusData(channel, self.AIBufferSize.get()))
 
+    # Computes the rms value from a trace
     def get_rms(self, channel):
         # Compute rms voltage from the sample and return it
         return np.sqrt(np.mean(self.get_trace(channel)**2.))
-

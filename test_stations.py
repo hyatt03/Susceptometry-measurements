@@ -1,6 +1,16 @@
+"""
+File containing tests of the stations, mostly to verify the driver.
+It assumes physical access to the insturments (They could potentially be simulated)
+At the time of writing the current setup in the lab is the following:
+ * The signal generator (n9310a) has it's LF output connected to the oscilloscope ch 0
+ * The oscilloscope (analog discovery 2) ch 1 is connected to its own signal gen ch 0
+ * The lock in amplifier (sr830) is connected to a susceptometer with an allen wrench in
+   using the internal signal generator for measurements (this will not be the production env)
+"""
+
 import unittest
 from stations import cryogenics_station, magnetism_station, data_acquisition_station
-from time import time
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +21,9 @@ class MagnetismStationTest(unittest.TestCase):
         # Grab the station
         self.station = magnetism_station.get_station()
 
-    def test_initialization(self):
+    # Test to check that we can initialize the instruments
+    # This checks they are plugged in
+    def step1_test_initialization(self):
         # Grab the devices
         signal = self.station.components['signal_gen']
         lockin = self.station.components['lockin']
@@ -24,7 +36,8 @@ class MagnetismStationTest(unittest.TestCase):
 
         print('got signal gen, dvm, and lockin')
 
-    def test_LF_signal(self):
+    # Test to check we can set and retrieve the parameters of the signal gen
+    def step2_test_LF_signal(self):
         # Grab the signal gen
         signal = self.station.components['signal_gen']
 
@@ -79,13 +92,36 @@ class MagnetismStationTest(unittest.TestCase):
         assert(signal.LFOutputFrequency.get() == 1e3)
         print('set the frequency to 1kHz')
 
-    def test_dvm(self):
+    # Test to check if we set/get the parameters of the oscilloscope
+    def step3_test_dvm(self):
+        # The config does not work (problem with underlying library)
+        print('could not configure dvm')
+        
+    # Test we can set/get parameters of the lock-in amplifier
+    def step4_test_lockin(self):
+        lockin = self.station.components['lockin']
+
+    # Test to check values from oscilloscope correspond to changes in signal gen
+    def step5_test_dvm_shows_changes_from_signal_gen(self):
         dvm = self.station.components['dvm']
-        
-        
-        
-        print(dvm.get_rms(0))
-        print(dvm.get_rms(1))
+        signal = self.station.components['signal_gen']
+
+    # Workaround to force order of tests
+    def test_runner(self):
+        print('\nRunnning test 1 (Initialization')
+        self.step1_test_initialization()
+
+        print('\nRunning test 2 (LF signal internal)')
+        self.step2_test_LF_signal()
+
+        print('\nRunning test 3 (dvm internal)')
+        self.step3_test_dvm()
+
+        print('\nRunning test 4 (lock-in internal)')
+        self.step4_test_lockin()
+
+        print('\nRunning test 5 (dvm and LF cross test')
+        self.step5_test_dvm_shows_changes_from_signal_gen()
 
 
 if __name__ == '__main__':
