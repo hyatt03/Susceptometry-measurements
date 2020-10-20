@@ -11,7 +11,7 @@ import numpy as np
 import dwf
 
 default_config_values = {
-    "freq": 20e4,
+    "freq": 2e5,
     "buffer": 4096,
     "enable0": True,
     "enable1": True,

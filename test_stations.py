@@ -15,6 +15,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Helper function to test frequencies
+def count_rising(trace):
+    n = 0
+    for v_idx in range(1, len(trace)):
+        if trace[v_idx] >= 0. and trace[v_idx - 1] < 0.:
+            n += 1
+
+    return n
+
+
 class MagnetismStationTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -97,14 +107,31 @@ class MagnetismStationTest(unittest.TestCase):
         # The config does not work (problem with underlying library)
         print('could not configure dvm')
         
-    # Test we can set/get parameters of the lock-in amplifier
-    def step4_test_lockin(self):
-        lockin = self.station.components['lockin']
-
     # Test to check values from oscilloscope correspond to changes in signal gen
-    def step5_test_dvm_shows_changes_from_signal_gen(self):
+    def step4_test_dvm_shows_changes_from_signal_gen(self):
         dvm = self.station.components['dvm']
         signal = self.station.components['signal_gen']
+
+        # Enable the LF output and check a few amplitudes
+        signal.LFOutputState.set(1)
+        for target_v in [0.2, 0.4, 0.6, 0.8]:
+            signal.LFOutputAmplitude.set(target_v)
+            time.sleep(0.1)
+            assert(round(np.sqrt(2) * dvm.get_rms(0), 1) == target_v)
+
+        print('Setting output amplitudes works (to one digit at least)')
+
+        # Set the output to 0.5v for the rest of tests
+        signal.LFOutputAmplitude.set(0.5)
+
+        # Check the frequency
+        for freq, counts in [(0.5e3, 10), (1e3, 20), (1.5e3, 30), (2e3, 40)]:
+            signal.LFOutputFrequency.set(freq)
+            time.sleep(0.1)
+            n = count_rising(dvm.get_trace(0))
+            assert(np.abs(n - counts) <= 2)
+
+        print('Setting output frequency works')
 
     # Workaround to force order of tests
     def test_runner(self):
@@ -117,11 +144,8 @@ class MagnetismStationTest(unittest.TestCase):
         print('\nRunning test 3 (dvm internal)')
         self.step3_test_dvm()
 
-        print('\nRunning test 4 (lock-in internal)')
-        self.step4_test_lockin()
-
-        print('\nRunning test 5 (dvm and LF cross test')
-        self.step5_test_dvm_shows_changes_from_signal_gen()
+        print('\nRunning test 4 (dvm and LF cross test)')
+        self.step4_test_dvm_shows_changes_from_signal_gen()
 
 
 if __name__ == '__main__':
