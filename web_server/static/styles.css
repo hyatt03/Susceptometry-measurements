@@ -1,0 +1,12 @@
+.container-fluid {
+    margin-top: 40px;
+    height: calc(100vh - 40px);
+}
+
+.container-row {
+    min-height: 100%;
+}
+
+.nav {
+    margin-top: 20px;
+}

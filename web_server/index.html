@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Page title -->
+    <title>Susceptometry station</title>
+
+    <!-- Setup favicon -->
+    <link rel="icon" type="image/png" href="/static/favicon.ico">
+
+    <!-- Grab bootstrap styles -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+
+    <!-- Grab my own styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Grab bootstrap js -->
+    <script src="/static/jquery-3.4.1.slim.min.js"></script>
+    <script src="/static/popper.min.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
+
+    <!-- Grab socket.io library -->
+    <script src="/static/socket.io.slim.min.js"></script>
+
+    <!-- Grab my own JS to establish connections -->
+    <script src="/static/socket_connection.js"></script>
+</head>
+<body>
+<!-- Title bar -->
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">Susceptometry station</a>
+</nav>
+
+<div class="container-fluid">
+    <div class="row container-row">
+        <!-- Navbar -->
+        <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['status_page']()">Experiment status</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['experiment_config']()">Experiment configuration</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['info_page']()">About this site</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- main content -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 content-title"></h1>
+            </div>
+
+            <div class="content-container">
+
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

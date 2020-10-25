@@ -89,3 +89,6 @@ widgetsnbextension==3.5.1
 wrapt==1.12.1
 pyvisa-py==0.4.1
 flask==1.1.2
+uvicorn==0.12.2
+python-socketio==4.6.0
+aiohttp==3.7.1
