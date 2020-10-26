@@ -25,6 +25,12 @@
     <!-- Grab socket.io library -->
     <script src="/static/socket.io.slim.min.js"></script>
 
+    <!-- Grab cookie library -->
+    <script src="/static/cookie.min.js"></script>
+
+    <!-- Grab plotting library -->
+    <script src="/static/plotly-latest.min.js"></script>
+
     <!-- Grab my own JS to establish connections -->
     <script src="/static/socket_connection.js"></script>
 </head>
@@ -40,9 +46,15 @@
         <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
             <div class="sidebar-sticky">
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['status_page']()">Experiment status</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['experiment_config']()">Experiment configuration</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" onclick="pagehandlers['info_page']()">About this site</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#status" onclick="pagehandlers['status_page']()">
+                        Experiment status
+                    </a></li>
+                    <li class="nav-item"><a class="nav-link" href="#config" onclick="pagehandlers['experiment_config']()">
+                        Experiment configuration
+                    </a></li>
+                    <li class="nav-item"><a class="nav-link" href="#info" onclick="pagehandlers['info_page']()">
+                        About this site
+                    </a></li>
                 </ul>
             </div>
         </nav>
