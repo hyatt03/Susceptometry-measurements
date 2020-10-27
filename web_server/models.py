@@ -54,6 +54,10 @@ class ExperimentConfiguration(Model):
     # Analog Discovery 2 configuration
     oscope_resistor = FloatField()
 
+    # Data collection options
+    data_wait_before_measuring = FloatField()
+    data_points_per_measurement = IntegerField()
+
     def generate_steps(self):
         if self.n9310a_min_frequency == self.n9310a_max_frequency:
             frequencies = [self.n9310a_max_frequency]
@@ -86,7 +90,9 @@ class ExperimentConfiguration(Model):
                         'n9310a_frequency': frequency,
                         'n9310a_amplitude': amplitude,
                         'magnet_field': magnetic_field,
-                        'oscope_resistor': self.oscope_resistor
+                        'oscope_resistor': self.oscope_resistor,
+                        'data_wait_before_measuring': self.data_wait_before_measuring,
+                        'data_points_per_measurement': self.data_points_per_measurement
                     })
 
         # Save the steps (100 at a time)
@@ -119,3 +125,7 @@ class ExperimentStep(Model):
 
     # Analog Discovery 2 configuration
     oscope_resistor = FloatField()
+
+    # Data collection options
+    data_wait_before_measuring = FloatField()
+    data_points_per_measurement = IntegerField()

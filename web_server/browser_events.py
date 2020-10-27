@@ -1,5 +1,6 @@
-from models import db
+from models import db, ExperimentConfiguration, ExperimentStep
 from universal_events import UniversalEvents
+from default_experiment_config import get_default_experiment_configuration
 import numpy as np
 import time
 
@@ -78,3 +79,13 @@ class BrowserNamespace(UniversalEvents):
             }
 
             await self.emit('b_temperature_trace', temperatures, room=sid)
+
+    async def on_b_get_latest_experiment_config(self, sid):
+        experiment_config = get_default_experiment_configuration()
+
+        with db.connection_context():
+            if ExperimentConfiguration.select().count() < 1:
+                await self.emit('b_latest_experiment_config', experiment_config, room=sid)
+            else:
+                latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
+                print(latest_config)

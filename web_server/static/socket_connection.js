@@ -11,7 +11,23 @@ const state = {
     'ac_field': 0.0,
     'dc_field': 0.0,
     'n_points_taken': 0,
-    'n_points_total': 0
+    'n_points_total': 0,
+    'experiment_config': {
+        'sr830_sensitivity': 1e-6,
+        'sr830_frequency': 1000.0,
+        'sr830_buffersize': 256,
+        'n9310a_min_frequency': 1000.0,
+        'n9310a_max_frequency': 1000.0,
+        'n9310a_min_amplitude': 0.5,
+        'n9310a_max_amplitude': 0.5,
+        'n9310a_sweep_steps': 1,
+        'magnet_min_field': 5.0,
+        'magnet_max_field': 6.0,
+        'magnet_sweep_steps': 10,
+        'oscope_resistor': 1.0,
+        'data_wait_before_measuring': 1.0,
+        'data_points_per_measurement': 10,
+    }
 };
 
 function main_socket_connection() {
@@ -39,6 +55,7 @@ function main_socket_connection() {
     socket.on('b_rms', rms_updated);
     socket.on('b_magnet_trace', magnet_trace_updated);
     socket.on('b_temperature_trace', temperature_trace_updated);
+    socket.on('b_latest_experiment_config', experiment_config_updated);
 
     // Open status page by default
     open_status_page();
@@ -68,6 +85,7 @@ function update_status_state_tree() {
     update_dc_field();
     update_n_points_taken();
     update_n_points_total();
+    update_experiment_config();
 }
 
 function update_temperatures() {
@@ -108,6 +126,10 @@ function update_magnet_trace() {
 function update_temperature_trace() {
     // Request an update for the temperature trace
     window.my_socket.emit('b_get_temperature_trace');
+}
+
+function update_experiment_config() {
+    window.my_socket.emit('b_get_latest_experiment_config');
 }
 
 function temperatures_updated(temperatures) {
@@ -200,6 +222,10 @@ function temperature_trace_updated(temperature_trace) {
     });
 }
 
+function experiment_config_updated(config) {
+    state.experiment_config = config;
+}
+
 // Function to setup the DOM to contain the statuspage
 function open_status_page(should_update) {
     state['current_page'] = open_status_page;
@@ -221,7 +247,7 @@ function open_experiment_config_page(should_update) {
     }
 
     $('.content-title').text('Experiment configuration');
-    $('.content-container').html(get_config_page_template());
+    $('.content-container').html(get_config_page_template(state));
 }
 
 // Function to setup the DOM to contain the info page

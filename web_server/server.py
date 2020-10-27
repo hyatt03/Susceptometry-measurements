@@ -3,13 +3,14 @@ import socketio
 from models import ExperimentStep, ExperimentConfiguration, Session, db
 from browser_events import BrowserNamespace
 
-# Create app
+# Create app and setup websockets
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
 
-# Register browser namespace
+# Register browser namespace for websockets
 sio.register_namespace(BrowserNamespace('/browser'))
+
 
 # Create web-server for the initial request
 async def index(request):
@@ -17,7 +18,7 @@ async def index(request):
     with open('index.html') as f:
         return web.Response(text=f.read(), content_type='text/html')
 
-# Setup the routes
+# Setup the http routes
 app.router.add_static('/static', 'static')
 app.router.add_get('/', index)
 
