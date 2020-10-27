@@ -58,18 +58,19 @@ function get_config_page_template(state) {
     });
 
     return `
+<form id="experiment_config_form">
     <div class="instrument--container">
         <h1 class="h4">Data collection options</h1>
         <div class="instrument--config">
             <div class="config--parameter">
                 <label for="data_wait_before_measure">Select wait time before measuring: </label>
-                <input type="number" name="data_wait_before_measure" id="data_wait_before_measure" 
+                <input type="number" name="data_wait_before_measuring" id="data_wait_before_measure" 
                        placeholder="Wait time" value="${experiment_config['data_wait_before_measuring']}" />
             </div>
             
             <div class="config--parameter">
                 <label for="data_points_per_measure">Select number of points per measurement: </label>
-                <input type="number" name="data_points_per_measure" id="data_points_per_measure" 
+                <input type="number" name="data_points_per_measurement" id="data_points_per_measure" 
                        placeholder="Datapoints per measurement" 
                        value="${experiment_config['data_points_per_measurement']}" />
             </div>
@@ -86,7 +87,7 @@ function get_config_page_template(state) {
             
             <div class="config--parameter">
                 <label for="sr830_freq">Frequency [Hz]: </label>
-                <input type="number" placeholder="Frequency" name="sr830_freq" 
+                <input type="number" placeholder="Frequency" name="sr830_frequency" 
                        id="sr830_freq" value="${experiment_config['sr830_frequency']}" />
             </div>
             
@@ -103,13 +104,13 @@ function get_config_page_template(state) {
         <div class="instrument--config">
             <div class="config--parameter">
                 <label for="n9310a_freq_min">Select minimum frequency [Hz]: </label>
-                <input type="number" placeholder="Minimum frequency" name="n9310a_freq_min" 
+                <input type="number" placeholder="Minimum frequency" name="n9310a_min_frequency" 
                        id="n9310a_freq_min" value="${experiment_config['n9310a_min_frequency']}" />
             </div>
             
             <div class="config--parameter">
                 <label for="n9310a_freq_max">Select maximum frequency [Hz]: </label>
-                <input type="number" placeholder="Maximum frequency" name="n9310a_freq_max" 
+                <input type="number" placeholder="Maximum frequency" name="n9310a_max_frequency" 
                        id="n9310a_freq_max" value="${experiment_config['n9310a_max_frequency']}" />
             </div>
             
@@ -127,7 +128,7 @@ function get_config_page_template(state) {
             
             <div class="config--parameter">
                 <label for="n9310a_n_sweep_points">Select number of sweep points: </label>
-                <input type="number" placeholder="Sweep points" name="n9310a_n_sweep_points" 
+                <input type="number" placeholder="Sweep points" name="n9310a_sweep_steps" 
                        id="n9310a_n_sweep_points" value="${experiment_config['n9310a_sweep_steps']}" />
             </div>
         </div>
@@ -138,19 +139,19 @@ function get_config_page_template(state) {
         <div class="instrument--config">
             <div class="config--parameter">
                 <label for="dc_field_strength_min">Select minimum fieldstrength [T]: </label>
-                <input type="number" name="dc_field_strength_min" id="dc_field_strength_min" 
+                <input type="number" name="magnet_min_field" id="dc_field_strength_min" 
                        placeholder="B-Field" value="${experiment_config['magnet_min_field']}" />
             </div>
             
             <div class="config--parameter">
                 <label for="dc_field_strength_max">Select maximum fieldstrength [T]: </label>
-                <input type="number" name="dc_field_strength_max" id="dc_field_strength_max" 
+                <input type="number" name="magnet_max_field" id="dc_field_strength_max" 
                        placeholder="B-Field" value="${experiment_config['magnet_max_field']}" />
             </div>
             
             <div class="config--parameter">
                 <label for="dc_field_n_sweep_points">Select number of sweep points: </label>
-                <input type="number" placeholder="Sweep points" name="dc_field_n_sweep_points" 
+                <input type="number" placeholder="Sweep points" name="magnet_sweep_steps" 
                        id="dc_field_n_sweep_points" value="${experiment_config['magnet_sweep_steps']}" />
             </div>
         </div>
@@ -171,10 +172,26 @@ function get_config_page_template(state) {
         <h1 class="h4">Dilution fridge (MCK50-100) configuration</h1>
         <div class="instrument--config">
             <div class="config--parameter">
-                <input type="button" value="Begin automatic cooldown" name="df_auto_cool">
+                <input type="button" value="Begin automatic cooldown" 
+                       name="df_auto_cool" onclick="begin_cooldown_procedure()">
             </div>
         </div>
     </div>
+    
+    <div class="instrument--container">
+        <h1 class="h4">Save experiment configuration</h1>
+        <div class="instrument--config">
+            <div class="config--parameter">
+                Warning: Pressing this buttion will stop any current run, 
+                overwrite the experiment configuration, and start a new run.
+            </div>
+            <div class="config--parameter">
+                <input type="button" value="Save experiment configuration" 
+                       name="save_experiment" onclick="save_experiment_configuration()">
+            </div>
+        </div>
+    </div>
+</form>
     `
 }
 

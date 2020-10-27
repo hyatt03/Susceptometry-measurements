@@ -1,4 +1,4 @@
-from models import db, ExperimentConfiguration, ExperimentStep
+from models import db, ExperimentConfiguration, ExperimentStep, Session
 from universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 import numpy as np
@@ -80,12 +80,62 @@ class BrowserNamespace(UniversalEvents):
 
             await self.emit('b_temperature_trace', temperatures, room=sid)
 
+    # Gets the latest experiment configuration
+    # If no experiments exist, we fall back to a default configuration
     async def on_b_get_latest_experiment_config(self, sid):
         experiment_config = get_default_experiment_configuration()
 
         with db.connection_context():
-            if ExperimentConfiguration.select().count() < 1:
-                await self.emit('b_latest_experiment_config', experiment_config, room=sid)
-            else:
+            if ExperimentConfiguration.select().count() > 0:
+                # Use the config from the database
                 latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
-                print(latest_config)
+                experiment_config['sr830_sensitivity'] = float(latest_config.sr830_sensitivity)
+                experiment_config['sr830_frequency'] = float(latest_config.sr830_frequency)
+                experiment_config['sr830_buffersize'] = int(latest_config.sr830_buffersize)
+                experiment_config['n9310a_sweep_steps'] = int(latest_config.n9310a_sweep_steps)
+                experiment_config['n9310a_min_frequency'] = float(latest_config.n9310a_min_frequency)
+                experiment_config['n9310a_max_frequency'] = float(latest_config.n9310a_max_frequency)
+                experiment_config['n9310a_min_amplitude'] = float(latest_config.n9310a_min_amplitude)
+                experiment_config['n9310a_max_amplitude'] = float(latest_config.n9310a_max_amplitude)
+                experiment_config['magnet_min_field'] = float(latest_config.magnet_min_field)
+                experiment_config['magnet_max_field'] = float(latest_config.magnet_max_field)
+                experiment_config['magnet_sweep_steps'] = int(latest_config.magnet_sweep_steps)
+                experiment_config['oscope_resistor'] = float(latest_config.oscope_resistor)
+                experiment_config['data_wait_before_measuring'] = float(latest_config.data_wait_before_measuring)
+                experiment_config['data_points_per_measurement'] = int(latest_config.data_points_per_measurement)
+
+        await self.emit('b_latest_experiment_config', experiment_config, room=sid)
+
+    # Takes a form sent by the client and creates a new experiment
+    async def on_b_set_experiment_config(self, sid, data):
+        with db.connection_context():
+            # First we get the session of the current user
+            user = Session.get(Session.sid == sid)
+
+            # Parse out the numbers from the client
+            data['sr830_sensitivity'] = float(data['sr830_sensitivity'])
+            data['sr830_frequency'] = float(data['sr830_frequency'])
+            data['sr830_buffersize'] = int(data['sr830_buffersize'])
+            data['n9310a_sweep_steps'] = int(data['n9310a_sweep_steps'])
+            data['n9310a_min_frequency'] = float(data['n9310a_min_frequency'])
+            data['n9310a_max_frequency'] = float(data['n9310a_max_frequency'])
+            data['n9310a_min_amplitude'] = float(data['n9310a_min_amplitude'])
+            data['n9310a_max_amplitude'] = float(data['n9310a_max_amplitude'])
+            data['magnet_min_field'] = float(data['magnet_min_field'])
+            data['magnet_max_field'] = float(data['magnet_max_field'])
+            data['magnet_sweep_steps'] = int(data['magnet_sweep_steps'])
+            data['oscope_resistor'] = float(data['oscope_resistor'])
+            data['data_wait_before_measuring'] = float(data['data_wait_before_measuring'])
+            data['data_points_per_measurement'] = int(data['data_points_per_measurement'])
+
+            # Save the new configuration
+            ec = ExperimentConfiguration.create(**data, created_by_id=user)
+            ec.save()
+
+            # Set all previous steps to be done
+            ExperimentStep.update(step_done=True).where(ExperimentStep.step_done==False).execute()
+
+            # Generate a new set of steps
+            ec.generate_steps()
+
+            await self.emit('b_experiment_configuration_saved')

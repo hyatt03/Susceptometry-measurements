@@ -226,6 +226,21 @@ function experiment_config_updated(config) {
     state.experiment_config = config;
 }
 
+function save_experiment_configuration() {
+    // Get the experiment config from the form
+    experiment_config = {};
+    $('#experiment_config_form').serializeArray().forEach(element => {
+        experiment_config[element['name']] = element['value'];
+    })
+
+    // Send it to the server
+    window.my_socket.emit('b_set_experiment_config', experiment_config);
+}
+
+function begin_cooldown_procedure() {
+    window.my_socket.emit('b_begin_cooldown');
+}
+
 // Function to setup the DOM to contain the statuspage
 function open_status_page(should_update) {
     state['current_page'] = open_status_page;

@@ -129,3 +129,15 @@ class ExperimentStep(Model):
     # Data collection options
     data_wait_before_measuring = FloatField()
     data_points_per_measurement = IntegerField()
+
+
+class StationStatus(Model):
+    class Meta:
+        database = db
+
+    # Are we currently running a measurement
+    is_running = BooleanField(default=False)
+
+    # Are the instruments connected
+    cryo_connection_established = BooleanField(default=False)
+    magnet_connection_established = BooleanField(default=False)
