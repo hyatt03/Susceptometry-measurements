@@ -138,4 +138,6 @@ class BrowserNamespace(UniversalEvents):
             # Generate a new set of steps
             ec.generate_steps()
 
-            await self.emit('b_experiment_configuration_saved')
+            # Push new configuration to all users
+            await self.emit('b_latest_experiment_config', data)
+            await self.emit('b_experiment_configuration_saved', room=sid)
