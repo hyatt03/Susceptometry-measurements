@@ -16,7 +16,7 @@ const state = {
 
 function main_socket_connection() {
     // Open a socket connection
-    var socket = io();
+    var socket = io('/browser');
 
     // Set it to the window, so we can access it easily during debugging
     window.my_socket = socket;
