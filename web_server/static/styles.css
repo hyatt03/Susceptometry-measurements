@@ -10,3 +10,11 @@
 .nav {
     margin-top: 20px;
 }
+
+.status_contents {
+    height: 400px;
+}
+
+.temperature--container, .magnet-field-value--container {
+    padding-top: 67px;
+}

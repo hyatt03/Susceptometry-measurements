@@ -37,6 +37,8 @@ function main_socket_connection() {
     socket.on('b_n_points_taken', n_points_taken_updated);
     socket.on('b_n_points_total', n_points_total_updated);
     socket.on('b_rms', rms_updated);
+    socket.on('b_magnet_trace', magnet_trace_updated);
+    socket.on('b_temperature_trace', temperature_trace_updated);
 
     // Open status page by default
     open_status_page();
@@ -60,7 +62,7 @@ function idn_requested() {
     socket.emit('idn', idn);
 }
 
-function update_state_tree() {
+function update_status_state_tree() {
     update_temperatures();
     update_ac_field();
     update_dc_field();
@@ -96,6 +98,16 @@ function update_n_points_total() {
 function update_rms() {
     // Request an update for the rms
     window.my_socket.emit('b_get_rms');
+}
+
+function update_magnet_trace() {
+    // Request an update for the magnet trace
+    window.my_socket.emit('b_get_magnet_trace');
+}
+
+function update_temperature_trace() {
+    // Request an update for the temperature trace
+    window.my_socket.emit('b_get_temperature_trace');
 }
 
 function temperatures_updated(temperatures) {
@@ -135,65 +147,89 @@ function rms_updated(b_rms) {
     state['current_page'](false);
 }
 
+function magnet_trace_updated(magnet_trace) {
+    Plotly.newPlot('magnet-plot', [{
+        x: magnet_trace['times'],
+        y: magnet_trace['magnet_trace'],
+        mode: 'lines+markers',
+        name: 'Total magnetic field strength'
+    }], {
+        title: 'Magnetic field strength over time',
+        xaxis: {
+            title: 'Time [Seconds]',
+            showgrid: false,
+            zeroline: true
+        },
+        yaxis: {
+            title: 'Field strength [Tesla]',
+            showline: false,
+            zeroline: true
+        }
+    });
+}
+
+function temperature_trace_updated(temperature_trace) {
+    var data = [{
+        x: temperature_trace['times'],
+        y: temperature_trace['t_still'],
+        mode: 'lines+markers',
+        name: 'Temperature in still'
+    }];
+
+    for (i=1; i<7; i++) {
+        data.push({
+            x: temperature_trace['times'],
+            y: temperature_trace['t_' + i],
+            mode: 'lines+markers',
+            name: 'Temperature in probe ' + i
+        })
+    }
+
+    Plotly.newPlot('temperature-plot', data, {
+        title: 'Temperature over time',
+        xaxis: {
+            title: 'Time [Hours]',
+            showgrid: false,
+            zeroline: true
+        },
+        yaxis: {
+            title: 'Temperature [Kelvin]',
+            showline: false,
+            zeroline: true
+        }
+    });
+}
+
 // Function to setup the DOM to contain the statuspage
 function open_status_page(should_update) {
     state['current_page'] = open_status_page;
-    if (typeof(should_update) === 'undefined') {
-        update_state_tree();
+    if (typeof (should_update) === 'undefined') {
+        update_status_state_tree();
+        update_magnet_trace();
+        update_temperature_trace();
     }
 
-    $('.content-title').text('Experiment status').attr('id', 'status');
-    $('.content-container').html(`
-<div class="cryogenics_status status_container">
-    <h1 class="h4">Cryogenics status</h1>
-    <div>t_still = ${state['t_still']}K</div>
-    <div>t_1 = ${state['t_1']}K</div>
-    <div>t_2 = ${state['t_2']}K</div>
-    <div>t_3 = ${state['t_3']}K</div>
-    <div>t_4 = ${state['t_4']}K</div>
-    <div>t_5 = ${state['t_5']}K</div>
-    <div>t_6 = ${state['t_6']}K</div>
-</div>
-
-<div class="magnets_status status_container">
-    <h1 class="h4">Magnet status</h1>
-    <div>B_large = ${state['dc_field']}T</div>
-    <div>B_small = ${state['ac_field']}T</div>
-</div>
-
-<div class="datapoints_status status_container">
-    <h1 class="h4">Data status</h1>
-    <div>Number of datapoints taken = ${state['n_points_taken']}</div>
-    <div>Number of datapoints remaining = ${state['n_points_total'] - state['n_points_taken']}</div>
-    <div>Number of datapoints total = ${state['n_points_total']}</div>
-</div>
-    `);
+    $('.content-title').text('Experiment status');
+    $('.content-container').html(get_status_template(state));
 }
 
 // Function to setup the DOM to contain the experiment config page
 function open_experiment_config_page(should_update) {
     state['current_page'] = open_experiment_config_page;
-    if (typeof(should_update) === 'undefined') {
-        update_state_tree();
+    if (typeof (should_update) === 'undefined') {
+        update_status_state_tree();
     }
 
-    $('.content-title').text('Experiment configuration').attr('id', 'config');
-    $('.content-container').html(`
-    Configure the experiment here!
-    `);
+    $('.content-title').text('Experiment configuration');
+    $('.content-container').html(get_config_page_template());
 }
 
 // Function to setup the DOM to contain the info page
-function open_info_page(should_update) {
+function open_info_page() {
     state['current_page'] = open_info_page;
-    if (typeof(should_update) === 'undefined') {
-        update_state_tree();
-    }
 
-    $('.content-title').text('About this page').attr('id', 'about');
-    $('.content-container').html(`
-    This page was made for a thesis
-    `);
+    $('.content-title').text('About this page');
+    $('.content-container').html(get_info_page_html());
 }
 
 // Entrypoint, is called on document ready event
