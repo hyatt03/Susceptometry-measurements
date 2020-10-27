@@ -9,7 +9,6 @@ from models import ExperimentStep, ExperimentConfiguration, Session, db
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
-sessions = {}
 
 
 async def index(request):

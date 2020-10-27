@@ -150,4 +150,5 @@ cython_debug/
 # Database
 dashboard.db
 dashboard.db-journal
-
+dashboard.db-wal
+dashboard.db-shm
