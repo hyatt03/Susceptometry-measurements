@@ -6,25 +6,46 @@ from baseclient import BaseClientNamespace, BaseQueueClass, main
 
 
 class CryoQueue(BaseQueueClass):
-    def __init__(self, cryo_client):
-        super().__init__(cryo_client)
+    def __init__(self, socket_client):
+        super().__init__(socket_client)
 
-        # Set the queue name
-        self.queue_name = 'CryoQueue'
+        # Register queue processors
+        self.register_queue_processor('test_queue', self.test_queue)
+        self.register_queue_processor('configure_avs47b', self.configure_avs47b)
+        self.register_queue_processor('get_temperatures', self.get_temperatures)
+        self.register_queue_processor('start_cooling', self.start_cooling)
+        self.register_queue_processor('get_mck_state', self.get_mck_state)
 
-    async def worker(self, name, queue):
-        while True:
-            # Get an objective
-            task = await queue.get()
+    @property
+    def queue_name(self):
+        return 'CryoQueue'
 
-            # Alert the main thread
-            print('worker', name, 'got task', task)
+    async def configure_avs47b(self, queue, name, task):
+        config = task['config']
+        await asyncio.sleep(1)
+        print('configuring avs47b with config:', config)
 
-            # Execute the task
-            await asyncio.sleep(1)
+    async def get_temperatures(self, queue, name, task):
+        await asyncio.sleep(1)
+        print('getting temperatures')
 
-            # Notify the queue that the "work item" has been processed.
-            queue.task_done()
+    async def get_mck_state(self, queue, name, task):
+        await asyncio.sleep(1)
+        print('getting the mck state')
+
+    async def start_cooling(self, queue, name, task):
+        await asyncio.sleep(1)
+        print('going to start cooling')
+
+    async def test_queue(self, queue, name, task):
+        # Alert that we received a test signal
+        print('got test signal')
+        await asyncio.sleep(1)
+
+        # Print out task info
+        print('queue:', queue)
+        print('name:', name)
+        print('task:', task)
 
 
 # Create the class containing the namespace for this client
@@ -37,9 +58,19 @@ class CryoClientNamespace(BaseClientNamespace):
         self.client_type = 'cryo'
 
     async def on_test_queue(self):
-        print('got event test queue')
-        await self.append_to_queue(1234)
+        await self.append_to_queue({'function_name': 'test_queue'})
 
+    async def on_c_config_start_cooling(self):
+        await self.append_to_queue({'function_name': 'start_cooling'})
+
+    async def on_c_config_avs47b(self, config):
+        await self.append_to_queue({'function_name': 'configure_avs47b', 'config': config})
+
+    async def on_c_get_temperatures(self):
+        await self.append_to_queue({'function_name': 'get_temperatures'})
+
+    async def on_c_get_mck_state(self):
+        await self.append_to_queue({'function_name': 'get_mck_state'})
 
 
 if __name__ == '__main__':

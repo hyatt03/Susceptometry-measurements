@@ -16,12 +16,28 @@ class BaseQueueClass():
         self.queue = None
         self.worker_instance = None
 
-        # Set the queue name
-        self.queue_name = 'AbstractQueue'
+        # Initialize queue processors
+        self.queue_functions = {}
+
+    @property
+    def queue_name(self):
+        return 'AbstractQueue'
 
     # Define the interface for the worker
     async def worker(self, name, queue):
-        raise NotImplemented()
+        while True:
+            # Get an objective
+            task = await queue.get()
+
+            # Execute the task
+            await self.queue_functions[task['function_name']](queue, name, task)
+
+            # Notify the queue that the "work item" has been processed.
+            queue.task_done()
+
+    # Register functions that can process things from the queue
+    def register_queue_processor(self, name, function):
+        self.queue_functions[name] = function
 
     # Create a queue, has to be
     def create_queue(self):
