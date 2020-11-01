@@ -7,6 +7,14 @@ import time
 
 # All the methods related to the browser connection
 class BrowserNamespace(UniversalEvents):
+    async def on_test_cryo_queue(self, sid):
+        print('got test cryo queue')
+        await self.cryo_namespace.emit('test_queue')
+
+    async def on_test_magnetism_queue(self, sid):
+        print('got test magnetism queue')
+        await self.magnetism_namespace.emit('test_queue')
+
     # Get the temperatures
     async def on_b_get_temperatures(self, sid):
         with db.connection_context():
