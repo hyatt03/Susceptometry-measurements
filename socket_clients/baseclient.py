@@ -68,12 +68,23 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
         self.my_queue = QueueClass(self)
         self.my_queue.create_queue()
 
+    async def background_job(self):
+        pass
+
+    # Helper function to append to the queue
     async def append_to_queue(self, data):
         await self.my_queue.queue.put(data)
 
+    # Event received when size of queue is required
+    # Returns the size immediately
+    async def on_get_queue_size(self):
+        await self.emit('current_queue_size', self.my_queue.queue.qsize())
+
+    # Event received when this client connects to the server
     async def on_connect(self):
         print('connected to:', self.server_address)
 
+    # Event received when the connection to the server is lost
     async def on_disconnect(self):
         print('Lost connection, trying to reconnect')
 
@@ -99,6 +110,9 @@ async def main(NamespaceClass, namespace_address):
 
     # add the SID to the namespace
     namespace.sid = sio.sid
+
+    # Run the background job
+    sio.start_background_task(namespace.background_job)
 
     # Run the event loop
     await sio.wait()

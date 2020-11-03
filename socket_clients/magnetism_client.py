@@ -1,8 +1,18 @@
 # Import asyncio to get event loop
 import asyncio
 
+# Import numpy
+import numpy as np
+import time
+
 # Import the base namespace, contains shared methods and information
 from baseclient import BaseClientNamespace, BaseQueueClass, main
+
+magnetism_state = {
+    'magnet_trace': [],
+    'magnet_trace_times': [],
+    'startup_time': time.time()
+}
 
 
 # A queue to process magnetism related tasks
@@ -19,6 +29,7 @@ class MagnetismQueue(BaseQueueClass):
         self.register_queue_processor('get_oscilloscope_config', self.get_oscilloscope_config)
         self.register_queue_processor('get_magnet_config', self.get_magnet_config)
         self.register_queue_processor('get_magnet_state', self.get_magnet_state)
+        self.register_queue_processor('get_magnet_trace', self.get_magnet_trace)
         self.register_queue_processor('get_latest_datapoint', self.get_latest_datapoint)
 
         self.register_queue_processor('process_next_step', self.process_next_step)
@@ -66,6 +77,17 @@ class MagnetismQueue(BaseQueueClass):
         await asyncio.sleep(1)
         print('getting the latest datapoint')
 
+    # Gets a trace from the oscilloscope and creates a magnetism trace
+    async def get_magnet_trace(self, queue, name, task):
+        magnetism_state['magnet_trace_times'] = np.arange(0.0, 1, 0.01) / 100
+        magnetism_state['magnet_trace'] = np.random.normal(loc=0, scale=0.2, size=100) + \
+                                          np.sin(2 * np.pi * 1000 * magnetism_state['magnet_trace_times'])
+
+        await self.get_latest_magnet_trace(queue, name, task)
+
+    async def get_latest_magnet_trace(self, queue, name, task):
+        await self.socket_client.send_magnet_trace(magnetism_state['magnet_trace_times'], magnetism_state['magnet_trace'])
+
     async def process_next_step(self, queue, name, task):
         # We execute the step
         step = task['step']
@@ -109,6 +131,11 @@ class MagnetismClientNamespace(BaseClientNamespace):
         # Set the client type
         self.client_type = 'magnetism'
 
+    async def background_job(self):
+        while True:
+            await self.on_m_get_magnet_trace()
+            await asyncio.sleep(5)
+
     async def on_test_queue(self):
         await self.append_to_queue({'function_name': 'test_queue'})
 
@@ -131,6 +158,9 @@ class MagnetismClientNamespace(BaseClientNamespace):
     async def on_m_get_latest_datapoint(self):
         await self.append_to_queue({'function_name': 'get_latest_datapoint'})
 
+    async def on_m_get_magnet_trace(self):
+        await self.append_to_queue({'function_name': 'get_magnet_trace'})
+
     """#### SET methods ####"""
     async def on_m_set_next_step(self, step):
         await self.append_to_queue({'function_name': 'process_next_step', 'step': step})
@@ -147,6 +177,10 @@ class MagnetismClientNamespace(BaseClientNamespace):
 
     async def on_m_config_set_n9310a_config(self, config):
         await self.append_to_queue({'function_name': 'set_n9310a_config', 'config': config})
+
+    """ #### SEND METHODS ###"""
+    async def send_magnet_trace(self, times, trace):
+        await self.emit('m_got_magnet_trace', [list(times), list(trace)])
 
 
 if __name__ == '__main__':

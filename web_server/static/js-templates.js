@@ -1,3 +1,22 @@
+function get_temperature_list(state) {
+    return `
+        <div>Current temperatures: </div>
+        <div class="temperature--label">t_still = ${state['temperatures']['t_still']}K</div>
+        <div class="temperature--label">t_1 = ${state['temperatures']['t_1']}K</div>
+        <div class="temperature--label">t_2 = ${state['temperatures']['t_2']}K</div>
+        <div class="temperature--label">t_3 = ${state['temperatures']['t_3']}K</div>
+        <div class="temperature--label">t_4 = ${state['temperatures']['t_4']}K</div>
+        <div class="temperature--label">t_5 = ${state['temperatures']['t_5']}K</div>
+        <div class="temperature--label">t_6 = ${state['temperatures']['t_6']}K</div>`;
+}
+
+function get_magnet_field_list(state) {
+    return `
+        <div>Current field</div>
+        <div class="magnet-field-value--label">B_large = ${state['dc_field']}T</div>
+        <div class="magnet-field-value--label">B_small = ${state['ac_field']}T</div>`;
+}
+
 // Simple function to return status page html given the state
 function get_status_template(state) {
     return `
@@ -6,14 +25,7 @@ function get_status_template(state) {
     <div class="status_contents row">
         <div class="temperature-plot--container col-9" id="temperature-plot"></div>
         <div class="temperature--container col-3">
-            <div>Current temperatures: </div>
-            <div class="temperature--label">t_still = ${state['t_still']}K</div>
-            <div class="temperature--label">t_1 = ${state['t_1']}K</div>
-            <div class="temperature--label">t_2 = ${state['t_2']}K</div>
-            <div class="temperature--label">t_3 = ${state['t_3']}K</div>
-            <div class="temperature--label">t_4 = ${state['t_4']}K</div>
-            <div class="temperature--label">t_5 = ${state['t_5']}K</div>
-            <div class="temperature--label">t_6 = ${state['t_6']}K</div>
+            ${get_temperature_list(state)}
         </div>
     </div>
 </div>
@@ -23,9 +35,7 @@ function get_status_template(state) {
     <div class="status_contents row">
         <div class="magnet-plot--container col-9" id="magnet-plot"></div>
         <div class="magnet-field-value--container col-3">
-            <div>Current field</div>
-            <div class="magnet-field-value--label">B_large = ${state['dc_field']}T</div>
-            <div class="magnet-field-value--label">B_small = ${state['ac_field']}T</div>
+            ${get_magnet_field_list(state)}
         </div>
     </div>
 </div>
@@ -46,6 +56,7 @@ function get_status_template(state) {
 // Get the configuration page
 const sr830_sensitivities = [2e-9, 5e-9, 10e-9, 20e-9, 50e-9, 100e-9, 200e-9, 500e-9, 1e-6, 2e-6, 5e-6, 10e-6,
     20e-6, 50e-6, 100e-6, 200e-6, 500e-6, 1e-3, 2e-3, 5e-3, 10e-3, 20e-3, 50e-3, 100e-3, 200e-3, 500e-3, 1]
+
 function get_config_page_template(state) {
     const experiment_config = state['experiment_config'];
     const sr830_sensitivity_options = sr830_sensitivities.map(sens => {

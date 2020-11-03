@@ -43,3 +43,8 @@ class UniversalEvents(socketio.AsyncNamespace):
                 is_old = 'New'
 
         print(f'{is_old} client connected with idn: {data}, and sid: {sid}')
+
+    # Sends event to retrieve queue size
+    # No abstract handler, should be handled in the individual classes
+    async def get_queue_size(self):
+        await self.emit('get_queue_size')

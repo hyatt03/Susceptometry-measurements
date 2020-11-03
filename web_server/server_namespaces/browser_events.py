@@ -1,15 +1,14 @@
 from models import db, ExperimentConfiguration, ExperimentStep, Session
-from universal_events import UniversalEvents
+from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 import numpy as np
-import time
 
 
 # All the methods related to the browser connection
 class BrowserNamespace(UniversalEvents):
     async def on_test_cryo_queue(self, sid):
         print('got test cryo queue')
-        await self.cryo_namespace.emit('test_queue')
+        await self.cryo_namespace.test_queue()
 
     async def on_test_magnetism_queue(self, sid):
         print('got test magnetism queue')
@@ -17,20 +16,20 @@ class BrowserNamespace(UniversalEvents):
 
     # Get the temperatures
     async def on_b_get_temperatures(self, sid):
-        with db.connection_context():
-            # Send (mocked) temperatures
-            temperatures = {
-                't_still': round(float(np.abs(np.random.normal(2.2212))), 4),
-                't_1': round(float(np.abs(np.random.normal(3.3313))), 4),
-                't_2': round(float(np.abs(np.random.normal(4.4414))), 4),
-                't_3': round(float(np.abs(np.random.normal(5.5515))), 4),
-                't_4': round(float(np.abs(np.random.normal(6.6616))), 4),
-                't_5': round(float(np.abs(np.random.normal(7.7717))), 4),
-                't_6': round(float(np.abs(np.random.normal(8.8818))), 4),
-                'timestamp': time.time()
-            }
+        await self.cryo_namespace.get_temperatures()
 
-            await self.emit('b_temperatures', temperatures, room=sid)
+    async def send_temperatures(self, temperatures):
+        with db.connection_context():
+            await self.emit('b_temperatures', temperatures)
+
+    async def send_temperature_trace(self, temperature_trace):
+        with db.connection_context():
+            await self.emit('b_temperature_trace', temperature_trace)
+
+    async def got_magnet_trace(self, data):
+        with db.connection_context():
+            times, magnet_trace = data
+            await self.emit('b_magnet_trace', {'magnet_trace': magnet_trace, 'times': times})
 
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
@@ -65,28 +64,12 @@ class BrowserNamespace(UniversalEvents):
     # Get a trace of the magnet field values
     async def on_b_get_magnet_trace(self, sid):
         with db.connection_context():
-            times = list(map(lambda y: float(y), np.arange(0.0, 10.5, 10.5 / 100)))
-            magnet_trace = list(
-                map(lambda y: float(y), np.random.normal(loc=8, scale=0.2, size=len(times)) + np.sin(times)))
-            await self.emit('b_magnet_trace', {'magnet_trace': magnet_trace, 'times': times}, room=sid)
+            await self.magnetism_namespace.get_magnet_trace()
 
     # Get a trace of the temperatures recorded
     async def on_b_get_temperature_trace(self, sid):
         with db.connection_context():
-            times = list(map(lambda y: float(y), np.arange(0.0, 10.5, 10.5 / 20)))
-            get_temps = lambda x: list(map(lambda y: float(y), np.abs(np.random.normal(x, size=len(times)))))
-            temperatures = {
-                't_still': get_temps(2.2212),
-                't_1': get_temps(3.3313),
-                't_2': get_temps(4.4414),
-                't_3': get_temps(5.5515),
-                't_4': get_temps(6.6616),
-                't_5': get_temps(7.7717),
-                't_6': get_temps(8.8818),
-                'times': times
-            }
-
-            await self.emit('b_temperature_trace', temperatures, room=sid)
+            await self.cryo_namespace.get_temperature_trace()
 
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration

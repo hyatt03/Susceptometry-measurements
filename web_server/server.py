@@ -6,9 +6,9 @@ import socketio
 from models import ExperimentStep, ExperimentConfiguration, Session, StationStatus, db
 
 # Import namespaces for the socket connections
-from browser_events import BrowserNamespace
-from cryo_events import CryoNamespace
-from magnetism_events import MagnetismNamespace
+from server_namespaces.browser_events import BrowserNamespace
+from server_namespaces.cryo_events import CryoNamespace
+from server_namespaces.magnetism_events import MagnetismNamespace
 
 # Create app and setup websockets
 sio = socketio.AsyncServer()
