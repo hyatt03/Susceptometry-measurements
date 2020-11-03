@@ -153,41 +153,41 @@ function temperatures_updated(temperatures) {
 
     // Update the temperatures if they exist
     const tc = $('.temperature--container');
-    if (tc.length > 0) {
-        tc.html(get_temperature_list(state));
 
-        // Next we append the new temperatures to the data
-        if (state['temperature_trace_plot_data'].length > 0 && state['temperature_plot_layout'] !== 0) {
-            if (typeof temperatures !== 'undefined') {
-                // Add new data
-                state['temperature_trace_plot_data'][0].x.push(temperatures['timestamp']);
-                state['temperature_trace_plot_data'][0].y.push(temperatures['t_still']);
+    // Next we append the new temperatures to the data
+    if (state['temperature_trace_plot_data'].length > 0 && state['temperature_plot_layout'] !== 0) {
+        if (typeof temperatures !== 'undefined') {
+            // Add new data
+            state['temperature_trace_plot_data'][0].x.push(temperatures['timestamp']);
+            state['temperature_trace_plot_data'][0].y.push(temperatures['t_still']);
 
-                for (let i = 1; i < 7; i++) {
-                    state['temperature_trace_plot_data'][i].x.push(temperatures['timestamp']);
-                    state['temperature_trace_plot_data'][i].y.push(temperatures['t_' + i]);
-                }
-
-                // Ensure length is at max 20 items
-                if (state['temperature_trace_plot_data'][0].x.length > 20) {
-                    for (let i = 0; i < 7; i++) {
-                        state['temperature_trace_plot_data'][i].x.shift();
-                        state['temperature_trace_plot_data'][i].y.shift();
-                    }
-                }
-
-                // Update data revision and range
-                state['temperature_plot_layout']['datarevision'] += 1;
-                state['temperature_plot_layout']['xaxis.range'] = [
-                    state['temperature_trace_plot_data'][0].x[0],
-                    state['temperature_trace_plot_data'][0].x[-1]
-                ];
+            for (let i = 1; i < 7; i++) {
+                state['temperature_trace_plot_data'][i].x.push(temperatures['timestamp']);
+                state['temperature_trace_plot_data'][i].y.push(temperatures['t_' + i]);
             }
 
+            // Ensure length is at max 20 items
+            if (state['temperature_trace_plot_data'][0].x.length > 20) {
+                for (let i = 0; i < 7; i++) {
+                    state['temperature_trace_plot_data'][i].x.shift();
+                    state['temperature_trace_plot_data'][i].y.shift();
+                }
+            }
+
+            // Update data revision and range
+            state['temperature_plot_layout']['datarevision'] += 1;
+            state['temperature_plot_layout']['xaxis.range'] = [
+                state['temperature_trace_plot_data'][0].x[0],
+                state['temperature_trace_plot_data'][0].x[-1]
+            ];
+        }
+
+        if (tc.length > 0) {
+            tc.html(get_temperature_list(state));
             Plotly.react('temperature-plot', state['temperature_trace_plot_data'], state['temperature_plot_layout']);
         }
     }
-    else {
+    else if (tc.length > 0) {
         // Otherwise we just update the whole page
         state['current_page'](false);
     }
@@ -219,22 +219,26 @@ function rms_updated(b_rms) {
 }
 
 function magnet_trace_updated(magnet_trace) {
+    const trace_node = $('#magnet-plot');
+
     // Update the plot
     if (state['magnet_trace_plot_data'].length > 0) {
         // Set a new data revision
-        state['magnet_trace_plot_layout']['datarevision'] += 1
+        state['magnet_trace_plot_layout']['datarevision'] += 1;
 
         // Change the data
-        state['magnet_trace_plot_data'][0].x = magnet_trace['times']
-        state['magnet_trace_plot_data'][0].y = magnet_trace['magnet_trace']
+        state['magnet_trace_plot_data'][0].x = magnet_trace['times'];
+        state['magnet_trace_plot_data'][0].y = magnet_trace['magnet_trace'];
 
         // Update the plot
-        Plotly.react('magnet-plot', state['magnet_trace_plot_data'], state['magnet_trace_plot_layout']);
+        if (trace_node.length > 0) {
+            Plotly.react('magnet-plot', state['magnet_trace_plot_data'], state['magnet_trace_plot_layout']);
+        }
     } else {
         // Plot for the first time
         // First create the layout
         state['magnet_trace_plot_layout'] = {
-            title: 'Magnetic field strength over time',
+            title: 'Magnetic field strength over time (small magnet)',
             datarevision: 0,
             xaxis: {
                 title: 'Time [Seconds]',
@@ -257,7 +261,9 @@ function magnet_trace_updated(magnet_trace) {
         }]
 
         // And finally we create a plot
-        Plotly.newPlot('magnet-plot', state['magnet_trace_plot_data'], state['magnet_trace_plot_layout']);
+        if (trace_node.length > 0) {
+            Plotly.newPlot('magnet-plot', state['magnet_trace_plot_data'], state['magnet_trace_plot_layout']);
+        }
     }
 }
 
