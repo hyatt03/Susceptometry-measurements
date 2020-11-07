@@ -9,7 +9,7 @@ from qcodes.instrument.group_parameter import GroupParameter, Group
 sep = bytes.fromhex('09')  # Command separator
 
 
-class LC_TCS(VisaInstrument):
+class LC_GHS(VisaInstrument):
     # Button addresses translated to labels on the front panel
     button_dict = {
         'dummy': [0],
