@@ -193,14 +193,21 @@ function temperatures_updated(temperatures) {
     }
 }
 
+function update_magnet_state() {
+    const rms_container = $('.magnet-field-value--container');
+    if (rms_container.length > 0) {
+        rms_container.html(get_magnet_field_list(state));
+    }
+}
+
 function dc_field_updated(fieldstrength) {
     state['dc_field'] = fieldstrength;
-    state['current_page'](false);
+    update_magnet_state();
 }
 
 function ac_field_updated(fieldstrength) {
     state['ac_field'] = fieldstrength;
-    state['current_page'](false);
+    update_magnet_state();
 }
 
 function n_points_taken_updated(n_points_taken) {
@@ -215,7 +222,7 @@ function n_points_total_updated(n_points_total) {
 
 function rms_updated(b_rms) {
     state['b_rms'] = b_rms;
-    state['current_page'](false);
+    update_magnet_state();
 }
 
 function magnet_trace_updated(magnet_trace) {

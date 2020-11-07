@@ -83,10 +83,14 @@ class MagnetismQueue(BaseQueueClass):
         magnetism_state['magnet_trace'] = np.random.normal(loc=0, scale=0.2, size=100) + \
                                           np.sin(2 * np.pi * 1000 * magnetism_state['magnet_trace_times'])
 
+        await self.get_latest_rms_of_magnet_trace(queue, name, task)
         await self.get_latest_magnet_trace(queue, name, task)
 
     async def get_latest_magnet_trace(self, queue, name, task):
         await self.socket_client.send_magnet_trace(magnetism_state['magnet_trace_times'], magnetism_state['magnet_trace'])
+
+    async def get_latest_rms_of_magnet_trace(self, queue, name, task):
+        await self.socket_client.send_magnet_rms(np.sqrt(np.mean(magnetism_state['magnet_trace']**2.)))
 
     async def process_next_step(self, queue, name, task):
         # We execute the step
@@ -181,6 +185,9 @@ class MagnetismClientNamespace(BaseClientNamespace):
     """ #### SEND METHODS ###"""
     async def send_magnet_trace(self, times, trace):
         await self.emit('m_got_magnet_trace', [list(times), list(trace)])
+
+    async def send_magnet_rms(self, rms):
+        await self.emit('m_got_magnet_rms', float(rms))
 
 
 if __name__ == '__main__':

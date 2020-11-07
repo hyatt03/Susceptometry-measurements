@@ -8,3 +8,6 @@ class MagnetismNamespace(UniversalEvents):
 
     async def get_magnet_trace(self):
         await self.emit('m_get_magnet_trace')
+
+    async def on_m_got_magnet_rms(self, sid, rms):
+        await self.browser_namespace.got_magnet_rms(rms)

@@ -31,6 +31,10 @@ class BrowserNamespace(UniversalEvents):
             times, magnet_trace = data
             await self.emit('b_magnet_trace', {'magnet_trace': magnet_trace, 'times': times})
 
+    async def got_magnet_rms(self, rms):
+        with db.connection_context():
+            await self.emit('b_ac_field', round(rms, 4))
+
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
         with db.connection_context():

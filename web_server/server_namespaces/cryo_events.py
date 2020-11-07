@@ -40,7 +40,6 @@ class CryoNamespace(UniversalEvents):
         await self.browser_namespace.send_temperatures(temperatures)
 
     async def on_c_got_temperature_trace(self, sid, temperature_trace):
-        print('got trace, sending')
         await self.browser_namespace.send_temperature_trace(temperature_trace)
 
     # Event received when mck state is updated
