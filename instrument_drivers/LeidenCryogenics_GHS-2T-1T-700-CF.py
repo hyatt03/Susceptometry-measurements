@@ -116,6 +116,10 @@ class LC_GHS(VisaInstrument):
         self.pressure_group = Group(pressure_group, get_parser=self.pressure_status_parser, get_cmd='ADC?')
 
         # Pressure settings
+        # P6 low - P6 value at which it stops condensing 4He
+        # P6 high - P6 value at which it stops recovering 4He
+        # P7 low - P7 value at which it stops condensing 3He
+        # P7 high - P7 value at which it stops recovering 3He
         self.add_parameter('set_p6_low', GroupParameter, label='Low pressure limit on P6', vals=vals.Ints(0, 999999))
         self.add_parameter('set_p6_high', GroupParameter, label='High pressure limit on P6', vals=vals.Ints(0, 999999))
         self.add_parameter('set_p7_low', GroupParameter, label='Low pressure limit on P7', vals=vals.Ints(0, 999999))
