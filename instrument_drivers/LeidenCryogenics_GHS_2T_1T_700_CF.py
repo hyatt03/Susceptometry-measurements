@@ -205,6 +205,9 @@ class LC_GHS(VisaInstrument):
 
     # Helper function to manually press a button and return the acknowledgement
     def press_button(self, button):
+        if button not in self.button_dict:
+            raise ValueError('Invalid button!')
+
         ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
         return self.acks[int(ack)]
 
