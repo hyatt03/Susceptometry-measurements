@@ -6,7 +6,7 @@ from qcodes import VisaInstrument, validators as vals
 import numpy as np
 
 
-class N9310A(VisaInstrument):
+class Avs_47b(VisaInstrument):
     def __init__(self, name, address, **kwargs):
         super().__init__(name, address, terminator='\r\n', **kwargs)
 
