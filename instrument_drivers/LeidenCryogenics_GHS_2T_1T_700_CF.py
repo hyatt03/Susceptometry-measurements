@@ -26,7 +26,16 @@ class LC_GHS(VisaInstrument):
         'reset': [10],
         'gate-valve-18': [6],
 
+        # S-numbers
+        # Controls the pumps
+        's1': [39],  # Turbo pump controller
+        's2': [33],
+        's3': [25],
+        's4': [58],  # The vacuum pump connected to M3 (the manual aux valve)
+        's5': [45],
+
         # A-numbers
+        # Yellow circuit, controls the external gas circuit
         'a0': [22],
         'a1': [52],
         'a2': [43],
@@ -39,14 +48,8 @@ class LC_GHS(VisaInstrument):
         'a9': [40],
         'a10': [46],
 
-        # S-numbers
-        's1': [39],
-        's2': [33],
-        's3': [25],
-        's4': [58],
-        's5': [45],
-
         # Numbered addresses
+        # Controls the green circuit containing the 3He-4He mixture
         '0': [37],
         '1': [31],
         '2': [36],
@@ -210,4 +213,3 @@ class LC_GHS(VisaInstrument):
 
         ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
         return self.acks[int(ack)]
-
