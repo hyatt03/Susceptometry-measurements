@@ -1,0 +1,55 @@
+# Simulated Keysight N9310A instrument
+spec: "1.1"
+devices:
+  device 1:
+    eom:
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "Keysight, N9310A, 1000, 1.0"
+
+    properties:
+      outputstate:
+        default: 1
+        getter:
+          q: "LFO:STAT?"
+          r: "{:1.0f}"
+        setter:
+          q: "LFO:STAT {:1.0f}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      frequency:
+        default: 1000.0
+        getter:
+          q: "LFO:FREQ?"
+          r: "{:.1f}"
+        setter:
+          q: "LFO:FREQ {:.1f} Hz"
+          r: OK
+        specs:
+          min: 1
+          max: 10000
+          type: float
+
+      amplitude:
+        default: 0.5
+        getter:
+          q: "LFO:AMPL?"
+          r: "{:.3f}"
+        setter:
+          q: "LFO:AMPL {:.3f} V"
+          r: OK
+        specs:
+          min: 0
+          max: 5
+          type: float
+
+resources:
+  "USB0::0x0957::0x2018::01151879::INSTR":
+    device: device 1

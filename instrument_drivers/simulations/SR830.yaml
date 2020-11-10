@@ -1,0 +1,389 @@
+# Simulated Stanford Research SR830 Lock-in amplifier
+spec: "1.1"
+devices:
+  device 1:
+    eom:
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "Stanford Research, SR830, abc123, 1.0"
+
+      - q: "OEXP? 1"
+        r: "0.0, 0"
+      - q: "OEXP? 2"
+        r: "0.0, 0"
+      - q: "OEXP? 3"
+        r: "0.0, 0"
+
+      - q: "OAUX? 1"
+        r: "0.0"
+      - q: "OAUX? 2"
+        r: "0.0"
+      - q: "OAUX? 3"
+        r: "0.0"
+      - q: "OAUX? 4"
+        r: "0.0"
+
+      - q: "OUTP? 1"
+        r: "1.0"
+      - q: "OUTP? 2"
+        r: "1.5"
+      - q: "OUTP? 3"
+        r: "1.8"
+      - q: "OUTP? 4"
+        r: "0.0"
+
+      - q: "SPTS ?"
+        r: "512"
+
+      - q: "AGAN"
+        r: OK
+      - q: "ARSV"
+        r: OK
+      - q: "APHS"
+        r: OK
+      - q: "AOFF 1"
+        r: OK
+      - q: "AOFF 2"
+        r: OK
+      - q: "AOFF 3"
+        r: OK
+
+      - q: "*RST"
+        r: OK
+
+      - q: "OVRM 0"
+        r: OK
+      - q: "OVRM 1"
+        r: OK
+
+      - q: "TRIG"
+        r: OK
+      - q: "STRT"
+        r: OK
+      - q: "PAUS"
+        r: OK
+      - q: "REST"
+        r: OK
+
+      - q: "TRCL ? 1, 0, 512"
+        r: "ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ"
+
+      - q: "TRCL ? 1, 0, 512"
+        r: "ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ"
+
+    properties:
+      ddef_1:
+        default: "0,0"
+        getter:
+          q: "DDEF ? 1"
+          r: "{}"
+        setter:
+          q: "DDEF 1, {}, {}"
+          r: OK
+
+      ddef_2:
+        default: "0,0"
+        getter:
+          q: "DDEF ? 2"
+          r: "{}"
+        setter:
+          q: "DDEF 2, {}, {}"
+          r: OK
+
+      phase:
+        default: 120
+        getter:
+          q: "PHAS?"
+          r: "{:.2f}"
+        setter:
+          q: "PHAS {:.2f}"
+          r: OK
+        specs:
+          min: -360
+          max: 729.99
+          type: float
+
+      reference_source:
+        default: 1
+        getter:
+          q: "FMOD?"
+          r: "{:d}"
+        setter:
+          q: "FMOD {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      frequency:
+        default: 1000
+        getter:
+          q: "FREQ?"
+          r: "{:.4f}"
+        setter:
+          q: "FREQ {:.4f}"
+          r: OK
+        specs:
+          min: 0.001
+          max: 102000
+          type: float
+
+      ext_trigger:
+        default: 0
+        getter:
+          q: "RSLP?"
+          r: "{:d}"
+        setter:
+          q: "RSLP {:d}"
+          r: OK
+        specs:
+          valid: [0, 1, 2]
+          type: int
+
+      harmonic:
+        default: 100
+        getter:
+          q: "HARM?"
+          r: "{:d}"
+        setter:
+          q: "HARM {:d}"
+          r: OK
+        specs:
+          min: 1
+          max: 19999
+          type: int
+
+      amplitude:
+        default: 0.5
+        getter:
+          q: "SLVL?"
+          r: "{:.3f}"
+        setter:
+          q: "SLVL {:.3f}"
+          r: OK
+        specs:
+          min: 0.004
+          max: 5.000
+          type: float
+
+      input_config:
+        default: 0
+        getter:
+          q: "ISRC?"
+          r: "{:d}"
+        setter:
+          q: "ISRC {:d}"
+          r: OK
+        specs:
+          valid: [0, 1, 2, 3]
+          type: int
+
+      input_shield:
+        default: 0
+        getter:
+          q: "IGND?"
+          r: "{:d}"
+        setter:
+          q: "IGND {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      input_coupling:
+        default: 0
+        getter:
+          q: "ICPL?"
+          r: "{:d}"
+        setter:
+          q: "ICPL {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      notch_filter:
+        default: 0
+        getter:
+          q: "ILIN?"
+          r: "{:d}"
+        setter:
+          q: "ILIN {:d}"
+          r: OK
+        specs:
+          valid: [0, 1, 2, 3]
+          type: int
+
+      sensitivity:
+        default: 10
+        getter:
+          q: "SENS?"
+          r: "{:d}"
+        setter:
+          q: "SENS {:d}"
+          r: OK
+        specs:
+          min: 0
+          max: 26
+          type: int
+
+      reserve:
+        default: 0
+        getter:
+          q: "RMOD?"
+          r: "{:d}"
+        setter:
+          q: "RMOD {:d}"
+          r: OK
+        specs:
+          valid: [0, 1, 2]
+          type: int
+
+      time_constant:
+        default: 0
+        getter:
+          q: "OFLT?"
+          r: "{:d}"
+        setter:
+          q: "OFLT {:d}"
+          r: OK
+        specs:
+          min: 0
+          max: 19
+          type: int
+
+      filter_slope:
+        default: 0
+        getter:
+          q: "OFSL?"
+          r: "{:d}"
+        setter:
+          q: "OFSL {:d}"
+          r: OK
+        specs:
+          valid: [0, 1, 2, 3]
+          type: int
+
+      sync_filter:
+        default: 0
+        getter:
+          q: "SYNC?"
+          r: "{:d}"
+        setter:
+          q: "SYNC {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      aux_out_1:
+        default: 0.0
+        getter:
+          q: "AUXV? 1"
+          r: "{:.1f}"
+        setter:
+          q: "AUXV 1, {:.1f}"
+          r: OK
+        specs:
+          min: 0.0
+          max: 5.0
+          type: float
+
+      aux_out_2:
+        default: 0.0
+        getter:
+          q: "AUXV? 2"
+          r: "{:.1f}"
+        setter:
+          q: "AUXV 2, {:.1f}"
+          r: OK
+        specs:
+          min: 0.0
+          max: 5.0
+          type: float
+
+      aux_out_3:
+        default: 0.0
+        getter:
+          q: "AUXV? 3"
+          r: "{:.1f}"
+        setter:
+          q: "AUXV 3, {:.1f}"
+          r: OK
+        specs:
+          min: 0.0
+          max: 5.0
+          type: float
+
+      aux_out_4:
+        default: 0.0
+        getter:
+          q: "AUXV? 4"
+          r: "{:.1f}"
+        setter:
+          q: "AUXV 4, {:.1f}"
+          r: OK
+        specs:
+          min: 0.0
+          max: 5.0
+          type: float
+
+      output_interface:
+        defaul: 1
+        getter:
+          q: "OUTX?"
+          r: "{:d}"
+        setter:
+          q: "OUTX {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      buffer_SR:
+        default: 13
+        getter:
+          q: "SRAT  ?"
+          r: "{:d}"
+        setter:
+          q: "SRAT {:d}"
+          r: OK
+        specs:
+          min: 0
+          max: 14
+          type: int
+
+      buffer_acq_mode:
+        default: 1
+        getter:
+          q: "SEND ?"
+          r: "{:d}"
+        setter:
+          q: "SEND {:d}"
+          r: OK
+        specs:
+          valid: [0, 1]
+          type: int
+
+      buffer_trig_mode:
+        default: 1
+          getter:
+            q: "TSTR ?"
+            r: "{:d}"
+          setter:
+            q: "TSTR {:d}"
+            r: OK
+          specs:
+            valid: [ 0, 1 ]
+            type: int
+
+
+
+
+resources:
+  "GPIB0::10::INSTR":
+    device: device 1

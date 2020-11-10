@@ -18,35 +18,46 @@ from qcodes import Station
 from qcodes.instrument_drivers.stanford_research.SR830 import SR830
 from instrument_drivers import Keysight_N9310A, Agilent_AnalogDiscovery2
 
+# Import sims for path
+import instrument_drivers.simulations as sims
+
 # VISA addresses for the instruments
 lock_in_amplifier_address = 'GPIB0::10::INSTR'
 signal_generator_address = 'USB0::0x0957::0x2018::01151879::INSTR'
 
 
 # Setup all the instruments for this station
-def setup_instruments():
+def setup_instruments(is_sim):
+    visalibs = {"sr830": None, "n9310a": None, "discovery2": None}
+    if is_sim:
+        visalibs["n9310a"] = sims.__file__.replace('__init__.py', 'Keysight_N9310A_sim.yaml@sim')
+        visalibs["sr830"] = sims.__file__.replace('__init__.py', 'SR830.yaml@sim')
+
     # Here we create actual instruments with connections to physical hardware
     # Start with the lock-in amplifier
-    sr830 = SR830('lockin', lock_in_amplifier_address)
+    sr830 = SR830('lockin', lock_in_amplifier_address, visalib=visalibs["sr830"])
 
     # Next we have the signal generator
-    n9310a = Keysight_N9310A.N9310A('signal_gen', signal_generator_address)
+    n9310a = Keysight_N9310A.N9310A('signal_gen', signal_generator_address, visalib=visalibs["n9310a"])
 
     # And finally the voltmeter (Implemented using an oscilloscope by computing the RMS)
-    discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm')
+    # discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm', visalib=visalibs["discovery2"])
 
     # Return the instruments as a list
-    return [sr830, n9310a, discovery2]
+    # return [sr830, n9310a, discovery2]
 
 
 # Setup the station
-def get_station():
+def get_station(is_sim=False):
     # Create a station
     magnetism_station = Station()
 
     # Get the associated instruments
-    for instrument in setup_instruments():
+    for instrument in setup_instruments(is_sim):
         magnetism_station.add_component(instrument)
 
     # Give the user the station
     return magnetism_station
+
+if __name__ == '__main__':
+    setup_instruments(True)
