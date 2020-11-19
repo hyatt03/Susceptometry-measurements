@@ -69,6 +69,9 @@ devices:
       - q: "REST"
         r: OK
 
+      - q: "ISRC?"
+        r: "0\n"
+
       - q: "TRCL ? 1, 0, 512"
         r: "ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ"
 
@@ -102,10 +105,6 @@ devices:
         setter:
           q: "PHAS {:.2f}"
           r: OK
-        specs:
-          min: -360
-          max: 729.99
-          type: float
 
       reference_source:
         default: 1
@@ -115,9 +114,6 @@ devices:
         setter:
           q: "FMOD {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       frequency:
         default: 1000
@@ -127,10 +123,6 @@ devices:
         setter:
           q: "FREQ {:.4f}"
           r: OK
-        specs:
-          min: 0.001
-          max: 102000
-          type: float
 
       ext_trigger:
         default: 0
@@ -140,9 +132,6 @@ devices:
         setter:
           q: "RSLP {:d}"
           r: OK
-        specs:
-          valid: [0, 1, 2]
-          type: int
 
       harmonic:
         default: 100
@@ -152,10 +141,6 @@ devices:
         setter:
           q: "HARM {:d}"
           r: OK
-        specs:
-          min: 1
-          max: 19999
-          type: int
 
       amplitude:
         default: 0.5
@@ -165,10 +150,6 @@ devices:
         setter:
           q: "SLVL {:.3f}"
           r: OK
-        specs:
-          min: 0.004
-          max: 5.000
-          type: float
 
       input_config:
         default: 0
@@ -178,9 +159,6 @@ devices:
         setter:
           q: "ISRC {:d}"
           r: OK
-        specs:
-          valid: [0, 1, 2, 3]
-          type: int
 
       input_shield:
         default: 0
@@ -190,9 +168,6 @@ devices:
         setter:
           q: "IGND {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       input_coupling:
         default: 0
@@ -202,9 +177,6 @@ devices:
         setter:
           q: "ICPL {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       notch_filter:
         default: 0
@@ -214,9 +186,6 @@ devices:
         setter:
           q: "ILIN {:d}"
           r: OK
-        specs:
-          valid: [0, 1, 2, 3]
-          type: int
 
       sensitivity:
         default: 10
@@ -226,10 +195,6 @@ devices:
         setter:
           q: "SENS {:d}"
           r: OK
-        specs:
-          min: 0
-          max: 26
-          type: int
 
       reserve:
         default: 0
@@ -239,9 +204,6 @@ devices:
         setter:
           q: "RMOD {:d}"
           r: OK
-        specs:
-          valid: [0, 1, 2]
-          type: int
 
       time_constant:
         default: 0
@@ -251,10 +213,6 @@ devices:
         setter:
           q: "OFLT {:d}"
           r: OK
-        specs:
-          min: 0
-          max: 19
-          type: int
 
       filter_slope:
         default: 0
@@ -264,9 +222,6 @@ devices:
         setter:
           q: "OFSL {:d}"
           r: OK
-        specs:
-          valid: [0, 1, 2, 3]
-          type: int
 
       sync_filter:
         default: 0
@@ -276,9 +231,6 @@ devices:
         setter:
           q: "SYNC {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       aux_out_1:
         default: 0.0
@@ -288,10 +240,6 @@ devices:
         setter:
           q: "AUXV 1, {:.1f}"
           r: OK
-        specs:
-          min: 0.0
-          max: 5.0
-          type: float
 
       aux_out_2:
         default: 0.0
@@ -301,10 +249,6 @@ devices:
         setter:
           q: "AUXV 2, {:.1f}"
           r: OK
-        specs:
-          min: 0.0
-          max: 5.0
-          type: float
 
       aux_out_3:
         default: 0.0
@@ -314,10 +258,6 @@ devices:
         setter:
           q: "AUXV 3, {:.1f}"
           r: OK
-        specs:
-          min: 0.0
-          max: 5.0
-          type: float
 
       aux_out_4:
         default: 0.0
@@ -327,10 +267,6 @@ devices:
         setter:
           q: "AUXV 4, {:.1f}"
           r: OK
-        specs:
-          min: 0.0
-          max: 5.0
-          type: float
 
       output_interface:
         defaul: 1
@@ -340,9 +276,6 @@ devices:
         setter:
           q: "OUTX {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       buffer_SR:
         default: 13
@@ -352,10 +285,6 @@ devices:
         setter:
           q: "SRAT {:d}"
           r: OK
-        specs:
-          min: 0
-          max: 14
-          type: int
 
       buffer_acq_mode:
         default: 1
@@ -365,24 +294,15 @@ devices:
         setter:
           q: "SEND {:d}"
           r: OK
-        specs:
-          valid: [0, 1]
-          type: int
 
       buffer_trig_mode:
         default: 1
-          getter:
-            q: "TSTR ?"
-            r: "{:d}"
-          setter:
-            q: "TSTR {:d}"
-            r: OK
-          specs:
-            valid: [ 0, 1 ]
-            type: int
-
-
-
+        getter:
+          q: "TSTR ?"
+          r: "{:d}"
+        setter:
+          q: "TSTR {:d}"
+          r: OK
 
 resources:
   "GPIB0::10::INSTR":
