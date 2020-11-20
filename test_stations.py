@@ -12,7 +12,6 @@ import unittest
 from stations import cryogenics_station, magnetism_station, data_acquisition_station
 import time
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 # Helper function to test frequencies
