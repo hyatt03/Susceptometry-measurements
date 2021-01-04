@@ -152,3 +152,6 @@ dashboard.db
 dashboard.db-journal
 dashboard.db-wal
 dashboard.db-shm
+
+# Node modules
+node_modules

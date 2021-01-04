@@ -33,7 +33,7 @@ def setup_instruments():
     n9310a = Keysight_N9310A.N9310A('signal_gen', signal_generator_address)
 
     # And finally the voltmeter (Implemented using an oscilloscope by computing the RMS)
-    discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm', visalib=visalibs["discovery2"])
+    discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm')
 
     # Return the instruments as a list
     return [sr830, n9310a, discovery2]

@@ -55,9 +55,9 @@ class BaseQueueClass():
 
 # Create the base namespace we work with
 # Implements any shared features such as idn
-class BaseClientNamespace(socketio.AsyncClientNamespace):
+class BaseClientNamespace(socketio.ClientNamespace):
     # We save the server address in the baseclient so we only have to change it one place.
-    server_address = 'http://localhost:8080'
+    server_address = 'http://localhost:3000'
 
     def __init__(self, QueueClass, namespace=None):
         super().__init__(namespace)
@@ -68,45 +68,45 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
         self.my_queue = QueueClass(self)
         self.my_queue.create_queue()
 
-    async def background_job(self):
+    def background_job(self):
         pass
 
     # Helper function to append to the queue
-    async def append_to_queue(self, data):
-        await self.my_queue.queue.put(data)
+    def append_to_queue(self, data):
+        self.my_queue.queue.put_nowait(data)
 
     # Event received when size of queue is required
     # Returns the size immediately
-    async def on_get_queue_size(self):
-        await self.emit('current_queue_size', self.my_queue.queue.qsize())
+    def on_get_queue_size(self):
+        self.emit('current_queue_size', self.my_queue.queue.qsize())
 
     # Event received when this client connects to the server
-    async def on_connect(self):
+    def on_connect(self):
         print('connected to:', self.server_address)
 
     # Event received when the connection to the server is lost
-    async def on_disconnect(self):
+    def on_disconnect(self):
         print('Lost connection, trying to reconnect')
 
     # Generate and send idn, uses the mac address of the client to generate unique static idn
-    async def on_idn(self):
+    def on_idn(self):
         node = uuid.getnode()
         idn = f'{self.client_type}_{node}'
-        await self.emit('idn', idn)
+        self.emit('idn', idn)
         print('Sent idn:', idn)
 
 
 # Create an entrypoint for the client
 async def main(NamespaceClass, namespace_address):
     # Define async socket client
-    sio = socketio.AsyncClient()
+    sio = socketio.Client()
 
     # Register the namespace to the client
     namespace = NamespaceClass(namespace_address)
     sio.register_namespace(namespace)
 
     # Connect to the server
-    await sio.connect(namespace.server_address)
+    sio.connect(namespace.server_address)
 
     # add the SID to the namespace
     namespace.sid = sio.sid
@@ -115,5 +115,5 @@ async def main(NamespaceClass, namespace_address):
     sio.start_background_task(namespace.background_job)
 
     # Run the event loop
-    await sio.wait()
+    sio.wait()
 

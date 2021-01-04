@@ -48,4 +48,4 @@ if __name__ == '__main__':
         db.create_tables([Session, ExperimentConfiguration, ExperimentStep, StationStatus])
 
     # Run the app
-    web.run_app(app)
+    web.run_app(app, port=3000)
