@@ -17,22 +17,42 @@ function get_magnet_field_list(state) {
         <div class="magnet-field-value--label">B_small = ${state['ac_field']}T</div>`;
 }
 
-// Simple function to return status page html given the state
-function get_status_template(state) {
+function get_pressure_list(state) {
+    return `
+    <div>Current Pressures</div>
+    <div class="pressure--label">p_1 = ${state['pressures']['p_1']}</div>
+    <div class="pressure--label">p_2 = ${state['pressures']['p_2']}</div>
+    <div class="pressure--label">p_3 = ${state['pressures']['p_3']}</div>
+    <div class="pressure--label">p_4 = ${state['pressures']['p_4']}</div>
+    <div class="pressure--label">p_5 = ${state['pressures']['p_5']}</div>
+    <div class="pressure--label">p_6 = ${state['pressures']['p_6']}</div>
+    <div class="pressure--label">p_7 = ${state['pressures']['p_7']}</div>
+    <div class="pressure--label">p_8 = ${state['pressures']['p_8']}</div>
+    `;
+}
+
+function get_temperature_plot(state) {
     return `
 <div class="cryogenics_status status_container">
     <h1 class="h4">Cryogenics status</h1>
-    <div class="status_contents row">
+    <div class="status_contents plot_container row">
         <div class="temperature-plot--container col-9" id="temperature-plot"></div>
         <div class="temperature--container col-3">
             ${get_temperature_list(state)}
         </div>
     </div>
 </div>
+`
+}
+
+// Simple function to return status page html given the state
+function get_status_template(state) {
+    return `
+${get_temperature_plot(state)}
 
 <div class="magnets_status status_container">
     <h1 class="h4">Magnet status</h1>
-    <div class="status_contents row">
+    <div class="status_contents plot_container row">
         <div class="magnet-plot--container col-9" id="magnet-plot"></div>
         <div class="magnet-field-value--container col-3">
             ${get_magnet_field_list(state)}
@@ -74,7 +94,7 @@ function get_config_page_template(state) {
         <h1 class="h4">Data collection options</h1>
         <div class="instrument--config">
             <div class="config--parameter">
-                <label for="data_wait_before_measure">Select wait time before measuring: </label>
+                <label for="data_wait_before_measure">Select wait time before measuring [s]: </label>
                 <input type="number" name="data_wait_before_measuring" id="data_wait_before_measure" 
                        placeholder="Wait time" value="${experiment_config['data_wait_before_measuring']}" />
             </div>
@@ -172,19 +192,9 @@ function get_config_page_template(state) {
         <h1 class="h4">Oscilloscope (Analog discovery 2) configuration</h1>
         <div class="instrument--config">
             <div class="config--parameter">
-                <label for="oscope_resistor">Select resistor value [Ohm]: </label>
+                <label for="oscope_resistor">Select resistor value [Ω]: </label>
                 <input type="number" name="oscope_resistor" id="oscope_resistor" 
                        placeholder="Resistor" value="${experiment_config['oscope_resistor']}" />
-            </div>
-        </div>
-    </div>
-    
-    <div class="instrument--container">
-        <h1 class="h4">Dilution fridge (MCK50-100) configuration</h1>
-        <div class="instrument--config">
-            <div class="config--parameter">
-                <input type="button" value="Begin automatic cooldown" 
-                       name="df_auto_cool" onclick="begin_cooldown_procedure()">
             </div>
         </div>
     </div>
@@ -197,12 +207,51 @@ function get_config_page_template(state) {
                 overwrite the experiment configuration, and start a new run.
             </div>
             <div class="config--parameter">
-                <input type="button" value="Save experiment configuration" 
+                <input type="button" value="Save experiment configuration" class="save_config_button"
                        name="save_experiment" onclick="save_experiment_configuration()">
             </div>
         </div>
     </div>
 </form>
+    `
+}
+
+function get_cryogenics_page_html() {
+    return `
+    <div class="cryogenics_status status_container">
+        <h1 class="h4">Instrument status and latest ack</h1>
+        <div class="status_contents row">
+            <div class="status-ack--container col-3">
+                <div>stat</div>
+                <div>ack</div>
+            </div>
+        </div>
+    </div>
+    
+    <form id="cryo_config_form" class="cooldown_form">
+        <div class="instrument--container">
+            <div class="instrument--config">
+                <div class="config--parameter">
+                    <input type="button" value="Get status" 
+                           name="df_auto_cool" onclick="get_cryo_status()">
+                    <input type="button" value="Begin automatic cooldown" 
+                           name="df_auto_cool" onclick="begin_cooldown_procedure()">
+                </div>
+            </div>
+        </div>
+    </form>
+    
+    ${get_temperature_plot(state)}
+    
+    <div class="cryogenics_status status_container">
+        <h1 class="h4">Pressures</h1>
+        <div class="status_contents plot_container row">
+            <div class="pressure-plot--container col-9" id="pressure-plot"></div>
+            <div class="pressure--container col-3">
+                ${get_pressure_list(state)}
+            </div>
+        </div>
+    </div>
     `
 }
 

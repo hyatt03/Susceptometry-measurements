@@ -22,6 +22,12 @@ class CryoNamespace(UniversalEvents):
     async def get_temperature_trace(self):
         await self.emit('c_get_temperature_trace')
 
+    async def get_pressures(self):
+        await self.emit('c_get_pressures')
+
+    async def get_pressure_trace(self):
+        await self.emit('c_get_pressure_trace')
+
     # Emitted when user wishes updates to the mck state
     async def get_mck_state(self):
         await self.emit('c_get_mck_state')
@@ -41,6 +47,12 @@ class CryoNamespace(UniversalEvents):
 
     async def on_c_got_temperature_trace(self, sid, temperature_trace):
         await self.browser_namespace.send_temperature_trace(temperature_trace)
+
+    async def on_c_got_pressures(self, sid, pressures):
+        await self.browser_namespace.send_pressures(pressures)
+
+    async def on_c_got_pressure_trace(self, sid, pressure_trace):
+        await self.browser_namespace.send_pressure_trace(pressure_trace)
 
     # Event received when mck state is updated
     async def on_c_got_mck_state(self, mck_state):

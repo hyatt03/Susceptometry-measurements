@@ -10,7 +10,8 @@ from collections import deque
 from baseclient import BaseClientNamespace, BaseQueueClass, main
 
 experiment_state = {
-    'temperatures': deque(maxlen=20),  # initialize a double ended queue
+    'temperatures': deque(maxlen=20),  # initialize a double ended queues
+    'pressures': deque(maxlen=20),
     'startup_time': time.time()
 }
 
@@ -25,6 +26,9 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('get_temperatures', self.get_temperatures)
         self.register_queue_processor('get_temperature_trace', self.get_temperature_trace)
         self.register_queue_processor('update_temperatures', self.update_temperatures)
+        self.register_queue_processor('get_pressures', self.get_pressures)
+        self.register_queue_processor('get_pressure_trace', self.get_pressure_trace)
+        self.register_queue_processor('update_pressures', self.update_pressures)
         self.register_queue_processor('start_cooling', self.start_cooling)
         self.register_queue_processor('get_mck_state', self.get_mck_state)
 
@@ -53,11 +57,32 @@ class CryoQueue(BaseQueueClass):
 
         await self.get_temperatures(queue, name, task)
 
+    async def update_pressures(self, queue, name, task):
+        experiment_state['pressures'].append({
+            'p_1': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_2': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_3': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_4': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_5': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_6': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_7': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'p_8': round(float(np.abs(np.random.normal(2.2212))), 4),
+            'timestamp': time.time() - experiment_state['startup_time']
+        })
+
+        await self.get_pressures(queue, name, task)
+
     async def get_temperatures(self, queue, name, task):
         await self.socket_client.send_temperatures(experiment_state['temperatures'][-1])
 
     async def get_temperature_trace(self, queue, name, task):
         await self.socket_client.send_temperature_trace(experiment_state['temperatures'])
+
+    async def get_pressures(self, queue, name, task):
+        await self.socket_client.send_pressures(experiment_state['pressures'][-1])
+
+    async def get_pressure_trace(self, queue, name, task):
+        await self.socket_client.send_pressure_trace(experiment_state['pressures'])
 
     # Queue task to get the mck state
     async def get_mck_state(self, queue, name, task):
@@ -93,6 +118,7 @@ class CryoClientNamespace(BaseClientNamespace):
     async def background_job(self):
         while True:
             await self.append_to_queue({'function_name': 'update_temperatures'})
+            await self.append_to_queue({'function_name': 'update_pressures'})
             await asyncio.sleep(5)
 
     # Received when testing should start
@@ -114,6 +140,12 @@ class CryoClientNamespace(BaseClientNamespace):
     async def on_c_get_temperature_trace(self):
         await self.append_to_queue({'function_name': 'get_temperature_trace'})
 
+    async def on_c_get_pressures(self):
+        await self.append_to_queue({'function_name': 'get_pressures'})
+
+    async def on_c_get_pressure_trace(self):
+        await self.append_to_queue({'function_name': 'get_pressure_trace'})
+
     # Received when the mck state is desired
     async def on_c_get_mck_state(self):
         await self.append_to_queue({'function_name': 'get_mck_state'})
@@ -124,6 +156,12 @@ class CryoClientNamespace(BaseClientNamespace):
 
     async def send_temperature_trace(self, temperature_trace):
         await self.emit('c_got_temperature_trace', list(temperature_trace))
+
+    async def send_pressures(self, pressures):
+        await self.emit('c_got_pressures', pressures)
+
+    async def send_pressure_trace(self, pressure_trace):
+        await self.emit('c_got_pressure_trace', list(pressure_trace))
 
 
 if __name__ == '__main__':

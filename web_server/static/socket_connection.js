@@ -5,6 +5,8 @@ const state = {
     'last_temperature_update': 1603707641.0,
     'magnet_trace_plot_data': [],
     'magnet_trace_plot_layout': 0,
+    'pressure_trace_plot_data': [],
+    'pressure_trace_plot_layout': 0,
     'temperatures': {
         't_still': 0.0,
         't_1': 0.0,
@@ -14,6 +16,16 @@ const state = {
         't_5': 0.0,
         't_6': 0.0,
         'timestamp': 0
+    },
+    'pressures': {
+        'p_1': 0.0,
+        'p_2': 0.0,
+        'p_3': 0.0,
+        'p_4': 0.0,
+        'p_5': 0.0,
+        'p_6': 0.0,
+        'p_7': 0.0,
+        'p_8': 0.0
     },
     'ac_field': 0.0,
     'dc_field': 0.0,
@@ -48,13 +60,15 @@ function main_socket_connection() {
     window.pagehandlers = {
         status_page: open_status_page,
         experiment_config: open_experiment_config_page,
-        info_page: open_info_page
+        info_page: open_info_page,
+        cryo_page: open_cryogenics_page,
     };
 
     // Setup events
     // Get events
     socket.on('idn', idn_requested);
     socket.on('b_temperatures', temperatures_updated);
+    socket.on('b_pressures', pressures_updated);
     socket.on('b_dc_field', dc_field_updated);
     socket.on('b_ac_field', ac_field_updated);
     socket.on('b_n_points_taken', n_points_taken_updated);
@@ -62,6 +76,7 @@ function main_socket_connection() {
     socket.on('b_rms', rms_updated);
     socket.on('b_magnet_trace', magnet_trace_updated);
     socket.on('b_temperature_trace', temperature_trace_updated);
+    socket.on('b_pressure_trace', pressure_trace_updated);
     socket.on('b_latest_experiment_config', experiment_config_updated);
 
     // Open status page by default
@@ -135,6 +150,11 @@ function update_temperature_trace() {
     window.my_socket.emit('b_get_temperature_trace');
 }
 
+function update_pressure_trace() {
+    // Request an update for the pressure trace
+    window.my_socket.emit('b_get_pressure_trace');
+}
+
 function update_experiment_config() {
     window.my_socket.emit('b_get_latest_experiment_config');
 }
@@ -190,6 +210,58 @@ function temperatures_updated(temperatures) {
     else if (tc.length > 0) {
         // Otherwise we just update the whole page
         state['current_page'](false);
+    }
+}
+
+function pressures_updated(pressures) {
+    if (typeof pressures !== 'undefined') {
+        state['pressures']['p_1'] = pressures['p_1'];
+        state['pressures']['p_2'] = pressures['p_2'];
+        state['pressures']['p_3'] = pressures['p_3'];
+        state['pressures']['p_4'] = pressures['p_4'];
+        state['pressures']['p_5'] = pressures['p_5'];
+        state['pressures']['p_6'] = pressures['p_6'];
+        state['pressures']['p_7'] = pressures['p_7'];
+        state['pressures']['p_8'] = pressures['p_8'];
+        state['pressures']['last_update'] = pressures['timestamp'];
+    }
+
+    // Update the temperatures if they exist
+    const tc = $('.pressure--container');
+
+    // Next we append the new temperatures to the data
+    if (state['pressure_trace_plot_data'].length > 0 && state['pressure_plot_layout'] !== 0) {
+        if (typeof pressures !== 'undefined') {
+            // Add new data
+            for (let i = 0; i < 8; i++) {
+                state['pressure_trace_plot_data'][i].x.push(pressures['timestamp']);
+                state['pressure_trace_plot_data'][i].y.push(pressures['p_' + (i + 1)]);
+            }
+
+            // Ensure length is at max 20 items
+            if (state['pressure_trace_plot_data'][0].x.length > 20) {
+                for (let i = 0; i < 8; i++) {
+                    state['pressure_trace_plot_data'][i].x.shift();
+                    state['pressure_trace_plot_data'][i].y.shift();
+                }
+            }
+
+            // Update data revision and range
+            state['pressure_plot_layout']['datarevision'] += 1;
+            state['pressure_plot_layout']['xaxis.range'] = [
+                state['pressure_trace_plot_data'][0].x[0],
+                state['pressure_trace_plot_data'][0].x[-1]
+            ];
+        }
+
+        if (tc.length > 0) {
+            tc.html(get_pressure_list(state));
+            Plotly.react('pressure-plot', state['pressure_trace_plot_data'], state['pressure_plot_layout']);
+        }
+    }
+    else if (tc.length > 0) {
+        // Otherwise we just update the pressure list container
+        tc.html(get_pressure_list(state));
     }
 }
 
@@ -319,6 +391,48 @@ function temperature_trace_updated(temperature_trace) {
     }
 }
 
+function pressure_trace_updated(pressure_trace) {
+    if (state['pressure_trace_plot_data'].length < 1) {
+        // Initialize the data model
+        for (let i = 0; i < 8; i++) {
+            state['pressure_trace_plot_data'].push({
+                x: [],
+                y: [],
+                mode: 'lines+markers',
+                name: 'pressure in probe ' + (i + 1)
+            });
+        }
+
+        // Add the datapoints
+        for (let i = 0; i < pressure_trace.length; i++) {
+            for (let j = 0; j < 8; j++) {
+                state['pressure_trace_plot_data'][j].x.push(pressure_trace[i]['timestamp'])
+                state['pressure_trace_plot_data'][j].y.push(pressure_trace[i]['p_' + (j+1)])
+            }
+        }
+
+        state['pressure_plot_layout'] = {
+            datarevision: 0,
+            title: 'Pressure over time',
+            xaxis: {
+                title: 'Time [seconds]',
+                showgrid: false,
+                zeroline: true
+            },
+            yaxis: {
+                title: 'Pressure',
+                showline: false,
+                zeroline: true
+            }
+        }
+
+        Plotly.newPlot('pressure-plot', state['pressure_trace_plot_data'], state['pressure_plot_layout']);
+    }
+    else {
+        pressures_updated();
+    }
+}
+
 function experiment_config_updated(config) {
     state.experiment_config = config;
 }
@@ -336,6 +450,10 @@ function save_experiment_configuration() {
 
 function begin_cooldown_procedure() {
     window.my_socket.emit('b_begin_cooldown');
+}
+
+function get_cryo_status() {
+    window.my_socket.emit('b_get_cryo_status');
 }
 
 // Function to setup the DOM to contain the statuspage
@@ -368,6 +486,19 @@ function open_info_page() {
 
     $('.content-title').text('About this page');
     $('.content-container').html(get_info_page_html());
+}
+
+function open_cryogenics_page(should_update) {
+    state['current_page'] = open_cryogenics_page;
+
+    $('.content-title').text('Cryogenics configuration');
+    $('.content-container').html(get_cryogenics_page_html());
+
+    if (typeof (should_update) === 'undefined') {
+        update_status_state_tree();
+        update_temperature_trace();
+        update_pressure_trace();
+    }
 }
 
 // Entrypoint, is called on document ready event

@@ -75,6 +75,7 @@ class LC_GHS(VisaInstrument):
     }
 
     acks = ['command ok', 'command error', 'parameter error', 'receive error', 'not accepted']
+    statuses = ['Start', '3He', '4He', 'Normal', 'Recovery']
 
     def __init__(self, name, address, **kwargs):
         super().__init__(name, address, terminator='\n', **kwargs)
@@ -98,7 +99,7 @@ class LC_GHS(VisaInstrument):
         # 5 = Recovery
         self.add_parameter('status', GroupParameter, label='System status', vals=vals.Ints(1, 5))
         self.status_group = Group([self.latest_ack, self.status],
-                                  get_parser=lambda x: self.ack_int_parser('status', x),
+                                  get_parser=self.status_parser,
                                   get_cmd='STATUS?')
 
         # Led status - Tells us what leds are on or off
@@ -166,6 +167,11 @@ class LC_GHS(VisaInstrument):
 
         # Return a dict describing the contents
         return {'latest_ack': int(ack_string), param_name: int(res_string)}
+
+    def status_parser(self, status_string):
+        res = self.ack_int_parser('status', status_string)
+        res['status'] = self.statuses[res['status'] - 1]
+        return res
 
     def ack_comma_sep_list(self, param_format, param_offset, status_string):
         # Create a dict to contain the results

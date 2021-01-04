@@ -18,6 +18,9 @@ class BrowserNamespace(UniversalEvents):
     async def on_b_get_temperatures(self, sid):
         await self.cryo_namespace.get_temperatures()
 
+    async def on_b_get_pressures(self, sid):
+        await self.cryo_namespace.get_pressures()
+
     async def send_temperatures(self, temperatures):
         with db.connection_context():
             await self.emit('b_temperatures', temperatures)
@@ -25,6 +28,14 @@ class BrowserNamespace(UniversalEvents):
     async def send_temperature_trace(self, temperature_trace):
         with db.connection_context():
             await self.emit('b_temperature_trace', temperature_trace)
+
+    async def send_pressures(self, pressures):
+        with db.connection_context():
+            await self.emit('b_pressures', pressures)
+
+    async def send_pressure_trace(self, pressure_trace):
+        with db.connection_context():
+            await self.emit('b_pressure_trace', pressure_trace)
 
     async def got_magnet_trace(self, data):
         with db.connection_context():
@@ -74,6 +85,10 @@ class BrowserNamespace(UniversalEvents):
     async def on_b_get_temperature_trace(self, sid):
         with db.connection_context():
             await self.cryo_namespace.get_temperature_trace()
+
+    async def on_b_get_pressure_trace(self, sid):
+        with db.connection_context():
+            await self.cryo_namespace.get_pressure_trace()
 
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration

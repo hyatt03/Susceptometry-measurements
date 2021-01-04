@@ -7,14 +7,35 @@
     min-height: 100%;
 }
 
+.content-container {
+    margin-bottom: 2em;
+}
+
 .nav {
     margin-top: 20px;
 }
 
-.status_contents {
+.plot_container {
     height: 400px;
+}
+
+.status_contents {
+    margin-bottom: 20px;
 }
 
 .temperature--container, .magnet-field-value--container {
     padding-top: 67px;
+}
+
+.cooldown_form {
+    margin-bottom: 1.4em;
+}
+
+.config--parameter > label {
+    width: 100%;
+    max-width: 320px;
+}
+
+.save_config_button {
+    margin: 1em 0;
 }
