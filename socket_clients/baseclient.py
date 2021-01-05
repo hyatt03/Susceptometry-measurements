@@ -55,7 +55,7 @@ class BaseQueueClass():
 
 # Create the base namespace we work with
 # Implements any shared features such as idn
-class BaseClientNamespace(socketio.ClientNamespace):
+class BaseClientNamespace(socketio.AsyncClientNamespace):
     # We save the server address in the baseclient so we only have to change it one place.
     server_address = 'http://localhost:3000'
 
@@ -72,13 +72,13 @@ class BaseClientNamespace(socketio.ClientNamespace):
         pass
 
     # Helper function to append to the queue
-    def append_to_queue(self, data):
-        self.my_queue.queue.put_nowait(data)
+    async def append_to_queue(self, data):
+        await self.my_queue.queue.put(data)
 
     # Event received when size of queue is required
     # Returns the size immediately
-    def on_get_queue_size(self):
-        self.emit('current_queue_size', self.my_queue.queue.qsize())
+    async def on_get_queue_size(self):
+        await self.emit('current_queue_size', self.my_queue.queue.qsize())
 
     # Event received when this client connects to the server
     def on_connect(self):
@@ -89,31 +89,32 @@ class BaseClientNamespace(socketio.ClientNamespace):
         print('Lost connection, trying to reconnect')
 
     # Generate and send idn, uses the mac address of the client to generate unique static idn
-    def on_idn(self):
+    async def on_idn(self):
         node = uuid.getnode()
         idn = f'{self.client_type}_{node}'
-        self.emit('idn', idn)
+        await self.emit('idn', idn)
         print('Sent idn:', idn)
 
 
 # Create an entrypoint for the client
 async def main(NamespaceClass, namespace_address):
     # Define async socket client
-    sio = socketio.Client()
+    sio = socketio.AsyncClient()
 
     # Register the namespace to the client
     namespace = NamespaceClass(namespace_address)
     sio.register_namespace(namespace)
 
     # Connect to the server
-    sio.connect(namespace.server_address)
+    await sio.connect(namespace.server_address)
 
     # add the SID to the namespace
     namespace.sid = sio.sid
 
     # Run the background job
-    sio.start_background_task(namespace.background_job)
+    # sio.start_background_task(namespace.background_job)
+    asyncio.create_task(namespace.background_job())
 
     # Run the event loop
-    sio.wait()
+    await sio.wait()
 

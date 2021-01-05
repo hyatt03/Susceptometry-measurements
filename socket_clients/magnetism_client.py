@@ -137,60 +137,59 @@ class MagnetismClientNamespace(BaseClientNamespace):
         # Set the client type
         self.client_type = 'magnetism'
 
-    def background_job(self):
-        pass
-        # while True:
-        #     self.on_m_get_magnet_trace()
-        #     asyncio.sleep(5)
+    async def background_job(self):
+        while True:
+            await self.on_m_get_magnet_trace()
+            await asyncio.sleep(5)
 
-    def on_test_queue(self):
-        self.append_to_queue({'function_name': 'test_queue'})
+    async def on_test_queue(self):
+        await self.append_to_queue({'function_name': 'test_queue'})
 
     """#### GET methods ####"""
-    def on_m_get_sr830_config(self):
-        self.append_to_queue({'function_name': 'get_sr830_config'})
+    async def on_m_get_sr830_config(self):
+        await self.append_to_queue({'function_name': 'get_sr830_config'})
 
-    def on_m_get_oscilloscope_config(self):
-        self.append_to_queue({'function_name': 'get_get_oscilloscope_config'})
+    async def on_m_get_oscilloscope_config(self):
+        await self.append_to_queue({'function_name': 'get_get_oscilloscope_config'})
 
-    def on_m_get_n9310a_config(self):
-        self.append_to_queue({'function_name': 'get_n9310a_config'})
+    async def on_m_get_n9310a_config(self):
+        await self.append_to_queue({'function_name': 'get_n9310a_config'})
 
-    def on_m_get_magnet_config(self):
-        self.append_to_queue({'function_name': 'get_magnet_config'})
+    async def on_m_get_magnet_config(self):
+        await self.append_to_queue({'function_name': 'get_magnet_config'})
 
-    def on_m_get_magnet_state(self):
-        self.append_to_queue({'function_name': 'get_magnet_state'})
+    async def on_m_get_magnet_state(self):
+        await self.append_to_queue({'function_name': 'get_magnet_state'})
 
-    def on_m_get_latest_datapoint(self):
-        self.append_to_queue({'function_name': 'get_latest_datapoint'})
+    async def on_m_get_latest_datapoint(self):
+        await self.append_to_queue({'function_name': 'get_latest_datapoint'})
 
-    def on_m_get_magnet_trace(self):
-        self.append_to_queue({'function_name': 'get_magnet_trace'})
+    async def on_m_get_magnet_trace(self):
+        await self.append_to_queue({'function_name': 'get_magnet_trace'})
 
     """#### SET methods ####"""
-    def on_m_set_next_step(self, step):
-        self.append_to_queue({'function_name': 'process_next_step', 'step': step})
+    async def on_m_set_next_step(self, step):
+        await self.append_to_queue({'function_name': 'process_next_step', 'step': step})
 
     """#### CONFIG methods ####"""
-    def on_m_config_set_oscilloscope_config(self, config):
-        self.append_to_queue({'function_name': 'set_oscilloscope_config', 'config': config})
+    async def on_m_config_set_oscilloscope_config(self, config):
+        await self.append_to_queue({'function_name': 'set_oscilloscope_config', 'config': config})
 
-    def on_m_config_set_sr830_config(self, config):
-        self.append_to_queue({'function_name': 'set_sr830_config', 'config': config})
+    async def on_m_config_set_sr830_config(self, config):
+        await self.append_to_queue({'function_name': 'set_sr830_config', 'config': config})
 
-    def on_m_config_set_magnet_config(self, config):
-        self.append_to_queue({'function_name': 'set_magnet_config', 'config': config})
+    async def on_m_config_set_magnet_config(self, config):
+        await self.append_to_queue({'function_name': 'set_magnet_config', 'config': config})
 
-    def on_m_config_set_n9310a_config(self, config):
-        self.append_to_queue({'function_name': 'set_n9310a_config', 'config': config})
+    async def on_m_config_set_n9310a_config(self, config):
+        await self.append_to_queue({'function_name': 'set_n9310a_config', 'config': config})
 
     """ #### SEND METHODS ###"""
-    def send_magnet_trace(self, times, trace):
-        self.emit('m_got_magnet_trace', [list(times), list(trace)])
+    async def send_magnet_trace(self, times, trace):
+        await self.emit('m_got_magnet_trace', [list(times), list(trace)])
 
-    def send_magnet_rms(self, rms):
-        self.emit('m_got_magnet_rms', float(rms))
+    async def send_magnet_rms(self, rms):
+        await self.emit('m_got_magnet_rms', float(rms))
 
 
 if __name__ == '__main__':
