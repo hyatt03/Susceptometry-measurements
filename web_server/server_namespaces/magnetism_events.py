@@ -11,3 +11,7 @@ class MagnetismNamespace(UniversalEvents):
 
     async def on_m_got_magnet_rms(self, sid, rms):
         await self.browser_namespace.got_magnet_rms(rms)
+
+    async def push_next_step(self, step):
+        print('pushing next step to magnet')
+        await self.emit('m_next_step', step)

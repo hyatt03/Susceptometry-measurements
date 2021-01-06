@@ -3,6 +3,9 @@ from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 import numpy as np
 
+from playhouse.shortcuts import model_to_dict
+import json
+
 
 # All the methods related to the browser connection
 class BrowserNamespace(UniversalEvents):
@@ -90,6 +93,22 @@ class BrowserNamespace(UniversalEvents):
         with db.connection_context():
             await self.cryo_namespace.get_pressure_trace()
 
+    async def push_next_step_to_clients(self):
+        # Get the next step
+        step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
+        
+        # Convert step to dict
+        step_d = model_to_dict(step)
+        
+        # Remove datetime and experiment configuration from the dict
+        # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
+        del(step_d['created'])
+        del(step_d['experiment_configuration'])
+
+        # Send the step dict to the clients
+        await self.cryo_namespace.push_next_step(step_d)
+        await self.magnetism_namespace.push_next_step(step_d)
+
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration
     async def on_b_get_latest_experiment_config(self, sid):
@@ -146,8 +165,14 @@ class BrowserNamespace(UniversalEvents):
             ExperimentStep.update(step_done=True).where(ExperimentStep.step_done==False).execute()
 
             # Generate a new set of steps
-            ec.generate_steps()
+            n_steps = ec.generate_steps()
+
+            # Alert the user
+            print(f'Generated {n_steps} new steps')
 
             # Push new configuration to all users
             await self.emit('b_latest_experiment_config', data)
             await self.emit('b_experiment_configuration_saved', room=sid)
+
+            # Push next step to client
+            await self.push_next_step_to_clients()

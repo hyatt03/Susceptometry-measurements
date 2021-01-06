@@ -3,17 +3,32 @@ import asyncio
 
 # Import numpy
 import numpy as np
-import time
+
+import time, sys, os
+
+import matplotlib.pyplot as plt
+
+
+# Import qcodes for measurering 
+import qcodes as qc
+from qcodes.measure import Measure
+from qcodes.dataset.plotting import plot_dataset
+
+# Add top level packages to path
+sys.path.append(os.path.dirname(__file__) + '/..')
 
 # Import the base namespace, contains shared methods and information
-from baseclient import BaseClientNamespace, BaseQueueClass, main
+from socket_clients.baseclient import BaseClientNamespace, BaseQueueClass, main
 
-#from stations import magnetism_station
+# Import magnetism station to collect data
+from stations import magnetism_station
 
 magnetism_state = {
     'magnet_trace': [],
     'magnet_trace_times': [],
-    'startup_time': time.time()
+    'startup_time': time.time(),
+    'current_step': {'step_done': True},
+    'next_step': {}
 }
 
 
@@ -22,6 +37,17 @@ magnetism_state = {
 class MagnetismQueue(BaseQueueClass):
     def __init__(self, socket_client):
         super().__init__(socket_client)
+
+        # Setup stations and connect to the instruments
+        self.station = magnetism_station.get_station()
+        self.dvm = self.station.components['dvm']
+        self.signal_gen = self.station.components['signal_gen']
+        self.lockin = self.station.components['lockin']
+
+        # Turn on the signal generator (0.4 volts peak to peak)
+        self.signal_gen.LFOutputState.set(1)
+        self.signal_gen.LFOutputAmplitude.set(0.2)
+        self.signal_gen.LFOutputFrequency.set(1000)
 
         # Register queue processors
         self.register_queue_processor('test_queue', self.test_queue)
@@ -81,30 +107,121 @@ class MagnetismQueue(BaseQueueClass):
 
     # Gets a trace from the oscilloscope and creates a magnetism trace
     async def get_magnet_trace(self, queue, name, task):
-        magnetism_state['magnet_trace_times'] = np.arange(0.0, 1, 0.01) / 100
-        magnetism_state['magnet_trace'] = np.random.normal(loc=0, scale=0.2, size=100) + \
-                                          np.sin(2 * np.pi * 1000 * magnetism_state['magnet_trace_times'])
+        # Get a trace from the oscilloscope
+        magnetism_state['magnet_trace'] = self.dvm.get_trace(0)
 
+        # Compute the times
+        magnetism_state['magnet_trace_times'] = np.arange(0.0, 1, 1/len(magnetism_state['magnet_trace'])) / 100
+
+        # Send the results to the client
         await self.get_latest_rms_of_magnet_trace(queue, name, task)
         await self.get_latest_magnet_trace(queue, name, task)
 
+        # Return the results to the requester (used for measurements)
+        return magnetism_state['magnet_trace']
+
     async def get_latest_magnet_trace(self, queue, name, task):
-        await self.socket_client.send_magnet_trace(magnetism_state['magnet_trace_times'], magnetism_state['magnet_trace'])
+        # Send the data to the client
+        # We only send every tenth datapoint here
+        # It seems excessive to send 4096 datapoints
+        await self.socket_client.send_magnet_trace(magnetism_state['magnet_trace_times'][::10], magnetism_state['magnet_trace'][::10])
 
     async def get_latest_rms_of_magnet_trace(self, queue, name, task):
+        # Compute the RMS value of the trace, and send it to the client
         await self.socket_client.send_magnet_rms(np.sqrt(np.mean(magnetism_state['magnet_trace']**2.)))
 
-    async def process_next_step(self, queue, name, task):
-        # We execute the step
-        step = task['step']
+    async def get_dc_field(self, queue, name, task):
         await asyncio.sleep(1)
+        return 1.0
+
+    async def get_sr830_trace(self, queue, name, task):
+        # Clear the buffer
+        self.lockin.buffer_reset()
+
+        # Start filling the buffer at the sample rate
+        self.lockin.buffer_start()        
+
+        # Compute the time to wait
+        buffersize = task['step']['sr830_buffersize']
+        sleep_time = buffersize / task['step']['sr830_frequency']
+        sleep_time += np.minimum(sleep_time, 1)  # Add some extra time to ensure it has enough time to get all the datapoints
+                                                 # We want to either add 1 second or double the time, whichever is smallest
+
+        # Wait for enough points to gather
+        await asyncio.sleep(sleep_time)
+
+        # Stop filling the buffers
+        self.lockin.buffer_pause()
+
+        # Dump the buffer of channel 1
+        self.lockin.ch1_databuffer.prepare_buffer_readout()
+        ch1_meas = Measure(self.lockin.ch1_databuffer)
+        ch1_raw_data = ch1_meas.run()
+
+        # Dump the buffer of channel 2
+        self.lockin.ch2_databuffer.prepare_buffer_readout()
+        ch2_meas = Measure(self.lockin.ch2_databuffer)
+        ch2_raw_data = ch2_meas.run()
+        
+        # Return the data (cut to the buffer size)
+        return [ch1_raw_data.lockin_ch1_databuffer[:buffersize], ch2_raw_data.lockin_ch2_databuffer[:buffersize]]
+
+    async def process_next_step(self, queue, name, task):
+        # We get the step
+        step = task['step']
+        magnetism_state['next_step'] = step
+
+        # Wait until the current step is done
+        # Sleep 1 second at a time
+        while not magnetism_state['current_step']['step_done']:
+            asyncio.sleep(1)
+
+        # Set the next step to the current step
+        magnetism_state['current_step'] = step
+
+        # Alert the user to what is happening
         print('processing next step')
+
+        # Set the magentic field
+        await self.set_magnet_config(queue, name, {'config': {
+            'magnet_field': step['magnet_field']
+        }})
+
+        # set the signal generator config
+        await self.set_n9310a_config(queue, name, {'config': {
+            'frequency': step['n9310a_frequency'], 
+            'amplitude': step['n9310a_amplitude']
+        }})
+
+        # set the oscilloscope config
+        await self.set_oscilloscope_config(queue, name, {'config': {
+            'resistor': step['oscope_resistor']
+        }})
+
+        # set the lock-in amplifier config
+        await self.set_sr830_config(queue, name, {'config': {
+            'sensitivity': step['sr830_sensitivity'], 
+            'frequency': step['sr830_frequency'], 
+            'buffersize': step['sr830_buffersize']
+        }})
+
+        # Do the measurement
+        for datapoint_idx in range(step['data_points_per_measurement']):
+            # Start by waiting for the system to stabalize
+            await asyncio.sleep(step['data_wait_before_measuring'])
+
+            # Get the data concurrently
+            raw_data = await asyncio.gather(self.get_magnet_trace(queue, name, task), 
+                                            self.get_dc_field(queue, name, task), 
+                                            self.get_sr830_trace(queue, name, task))
+
+            print(raw_data)
 
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
 
         # Then we ask for the next step
-        await self.socket_client.emit('get_next_step')
+        await self.socket_client.emit('m_get_next_step')
 
     async def set_oscilloscope_config(self, queue, name, task):
         config = task['config']
@@ -113,8 +230,20 @@ class MagnetismQueue(BaseQueueClass):
 
     async def set_sr830_config(self, queue, name, task):
         config = task['config']
-        await asyncio.sleep(1)
-        print('setting sr830 config')
+
+        # Set the displays to show phase and amplitude of the signal
+        self.lockin.ch1_display('R')
+        self.lockin.ch2_display('Phase')
+
+        # Reset any ratios
+        self.lockin.ch1_ratio('none')
+        self.lockin.ch2_ratio('none')
+
+        # Set the sensitivity
+        self.lockin.sensitivity.set(config['sensitivity'])
+
+        # Set the buffer frequency
+        self.lockin.buffer_SR(config['frequency'])
 
     async def set_magnet_config(self, queue, name, task):
         config = task['config']
@@ -139,8 +268,8 @@ class MagnetismClientNamespace(BaseClientNamespace):
 
     async def background_job(self):
         while True:
-            await self.on_m_get_magnet_trace()
             await asyncio.sleep(5)
+            await self.on_m_get_magnet_trace()
 
     async def on_test_queue(self):
         await self.append_to_queue({'function_name': 'test_queue'})
@@ -168,7 +297,7 @@ class MagnetismClientNamespace(BaseClientNamespace):
         await self.append_to_queue({'function_name': 'get_magnet_trace'})
 
     """#### SET methods ####"""
-    async def on_m_set_next_step(self, step):
+    async def on_m_next_step(self, step):
         await self.append_to_queue({'function_name': 'process_next_step', 'step': step})
 
     """#### CONFIG methods ####"""
@@ -182,6 +311,7 @@ class MagnetismClientNamespace(BaseClientNamespace):
         await self.append_to_queue({'function_name': 'set_magnet_config', 'config': config})
 
     async def on_m_config_set_n9310a_config(self, config):
+        print('got signal config')
         await self.append_to_queue({'function_name': 'set_n9310a_config', 'config': config})
 
     """ #### SEND METHODS ###"""

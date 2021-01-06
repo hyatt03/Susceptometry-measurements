@@ -100,6 +100,9 @@ class ExperimentConfiguration(Model):
             for batch in chunked(steps, 100):
                 ExperimentStep.insert_many(batch).execute()
 
+        # Return number of steps generated
+        return len(steps)
+
 
 # Experiment steps (Generated from ExperimentConfiguration)
 class ExperimentStep(Model):

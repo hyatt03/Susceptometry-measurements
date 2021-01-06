@@ -28,6 +28,10 @@ class CryoNamespace(UniversalEvents):
     async def get_pressure_trace(self):
         await self.emit('c_get_pressure_trace')
 
+    async def push_next_step(self, step):
+        print('pushing next step to cryo')
+        await self.emit('c_next_step', step)
+
     # Emitted when user wishes updates to the mck state
     async def get_mck_state(self):
         await self.emit('c_get_mck_state')
@@ -60,3 +64,6 @@ class CryoNamespace(UniversalEvents):
 
     async def on_current_queue_size(self, size):
         print('got current queue size:', size)
+
+    
+
