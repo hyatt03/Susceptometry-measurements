@@ -1,13 +1,17 @@
 # Import asyncio to get event loop
 import asyncio
 
+# Import time and path python packages
+import time, sys, os
+
 # Import numpy
 import numpy as np
 
-import time, sys, os
+# Import pandas for saving experiment data
+import pandas as pd
 
+# Import plotting libraries
 import matplotlib.pyplot as plt
-
 
 # Import qcodes for measurering 
 import qcodes as qc
@@ -23,13 +27,21 @@ from socket_clients.baseclient import BaseClientNamespace, BaseQueueClass, main
 # Import magnetism station to collect data
 from stations import magnetism_station
 
+# Setup magnetism state
 magnetism_state = {
     'magnet_trace': [],
     'magnet_trace_times': [],
     'startup_time': time.time(),
     'current_step': {'step_done': True},
-    'next_step': {}
+    'next_step': {},
+    'experiment_file': None,
+    'experiment_file_id': None
 }
+
+
+# Simple helper function to convert a list containing arrays to a list of means of each array
+def get_mean_from_list_of_arrays(a):
+    return list(np.array(a).mean(axis=1))
 
 
 # A queue to process magnetism related tasks
@@ -174,13 +186,26 @@ class MagnetismQueue(BaseQueueClass):
         # Wait until the current step is done
         # Sleep 1 second at a time
         while not magnetism_state['current_step']['step_done']:
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
 
         # Set the next step to the current step
         magnetism_state['current_step'] = step
 
         # Alert the user to what is happening
         print('processing next step')
+
+        # Close the old datafile if necessary
+        if magnetism_state['experiment_file_id'] != step['experiment_configuration_id'] and magnetism_state['experiment_file'] is not None:
+            magnetism_state['experiment_file'].close()
+            magnetism_state['experiment_file'] = None
+
+        # Ensure we have an open datafile
+        if magnetism_state['experiment_file_id'] is None:
+            # Start by updating the id we're working on
+            magnetism_state['experiment_file_id'] = step['experiment_configuration_id']
+
+            # Open the file
+            magnetism_state['experiment_file'] = pd.HDFStore(f'magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5')
 
         # Set the magentic field
         await self.set_magnet_config(queue, name, {'config': {
@@ -205,6 +230,12 @@ class MagnetismQueue(BaseQueueClass):
             'buffersize': step['sr830_buffersize']
         }})
 
+        # Create lists to hold the results
+        ac_fields = []
+        dc_fields = []
+        lockin_amplitudes = []
+        lockin_phases = []
+        
         # Do the measurement
         for datapoint_idx in range(step['data_points_per_measurement']):
             # Start by waiting for the system to stabalize
@@ -215,13 +246,57 @@ class MagnetismQueue(BaseQueueClass):
                                             self.get_dc_field(queue, name, task), 
                                             self.get_sr830_trace(queue, name, task))
 
-            print(raw_data)
+            # Sort the data into the lists
+            # Compute the rms value of the ac_field strength
+            ac_fields.append(np.sqrt(np.mean(raw_data[0]**2.)))
+
+            # Add the dc field
+            dc_fields.append(raw_data[1])
+
+            # Add the amplitude and phase of the measured signal
+            lockin_amplitudes.append(raw_data[2][0])
+            lockin_phases.append(raw_data[2][1])
+
+        # Create numpy arrays from lock-in data and flatten them
+        lockin_amplitudes_np = np.array(lockin_amplitudes).ravel()
+        lockin_phases_np = np.array(lockin_phases).ravel()
+
+        # Create dataframes to prepare for saving
+        magnet_field_frame = pd.DataFrame({
+            'ac_rms_field': ac_fields, 
+            'dc_field': dc_fields, 
+            'step_id': step['id']
+        })
+        lockin_frame = pd.DataFrame({
+            'lockin_amplitude': lockin_amplitudes_np, 
+            'lockin_phase': lockin_phases_np, 
+            'step_id': np.ones_like(lockin_amplitudes_np, dtype=int) * step['id']
+        })
+
+        # Save the measurement
+        magnetism_state['experiment_file'].append(
+            'tables/magnetic_field_data', 
+            magnet_field_frame, 
+            format='table', data_columns=True
+        )
+        magnetism_state['experiment_file'].append(
+            'tables/lockin_amplifier_data', 
+            lockin_frame, 
+            format='table', data_columns=True
+        )
+
+        # Send the measurements to the server
+        await self.socket_client.emit('m_got_step_results', {
+            'ac_rms_field': ac_fields, 
+            'dc_field': dc_fields,
+            'lockin_amplitude': get_mean_from_list_of_arrays(lockin_amplitudes), 
+            'lockin_phase': get_mean_from_list_of_arrays(lockin_phases), 
+            'step_id': step['id']
+        })
 
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
-
-        # Then we ask for the next step
-        await self.socket_client.emit('m_get_next_step')
+        magnetism_state['current_step']['step_done'] = True
 
     async def set_oscilloscope_config(self, queue, name, task):
         config = task['config']

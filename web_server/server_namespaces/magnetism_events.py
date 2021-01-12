@@ -1,4 +1,5 @@
 from server_namespaces.universal_events import UniversalEvents
+from models import db, DataPoint
 
 
 # All the methods related to the magnetism station from the servers perspective
@@ -11,6 +12,16 @@ class MagnetismNamespace(UniversalEvents):
 
     async def on_m_got_magnet_rms(self, sid, rms):
         await self.browser_namespace.got_magnet_rms(rms)
+
+    async def on_m_got_step_results(self, sid, results):
+        with db.connection_context():
+            # Get the datapoint associated with the step (should be generated when step is sent)
+            datapoint = DataPoint.select().where(DataPoint.step == results['step_id']).order_by(DataPoint.created).get()
+
+            # Then we save the datapoint
+            if datapoint is not None:
+                datapoint.save_magnetism_data(results)
+
 
     async def push_next_step(self, step):
         print('pushing next step to magnet')

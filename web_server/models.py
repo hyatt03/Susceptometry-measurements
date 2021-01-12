@@ -15,21 +15,21 @@ db = PooledSqliteDatabase('dashboard.db',
                           })
 
 
-# Sessions table
-class Session(Model):
+# Simple baseclass that inherits the PooledSqliteDatabase
+class DBModel(Model):
     class Meta:
         database = db
 
+
+# Sessions table
+class Session(DBModel):
     idn = CharField(max_length=50)
     sid = CharField(max_length=50)
     type = CharField(max_length=10)
 
 
 # Configure experiments
-class ExperimentConfiguration(Model):
-    class Meta:
-        database = db
-
+class ExperimentConfiguration(DBModel):
     # Metadata
     created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
     created_by = ForeignKeyField(Session, backref='experiments')
@@ -105,10 +105,7 @@ class ExperimentConfiguration(Model):
 
 
 # Experiment steps (Generated from ExperimentConfiguration)
-class ExperimentStep(Model):
-    class Meta:
-        database = db
-
+class ExperimentStep(DBModel):
     # Metadata
     created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
     step_done = BooleanField(default=False)
@@ -133,14 +130,105 @@ class ExperimentStep(Model):
     data_wait_before_measuring = FloatField()
     data_points_per_measurement = IntegerField()
 
+    def generate_datapoint(self):
+        # Create datapoint and save it
+        DataPoint(step=self).save()
 
-class StationStatus(Model):
-    class Meta:
-        database = db
 
+class StationStatus(DBModel):
     # Are we currently running a measurement
     is_running = BooleanField(default=False)
 
     # Are the instruments connected
     cryo_connection_established = BooleanField(default=False)
     magnet_connection_established = BooleanField(default=False)
+
+
+class DataPoint(DBModel):
+    # Backreference to the step that triggered the measurement
+    step = ForeignKeyField(ExperimentStep, backref='datapoint')
+    created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+
+    def save_magnetism_data(self, data):
+        magnetism_data_point = MagnetismDataPoint(datapoint=self)
+        magnetism_data_point.save()
+
+        # Iterate through the measurements we have collected for this step
+        # and save the data
+        for ac, dc, amp, phs in zip(data['ac_rms_field'], data['dc_field'], 
+                                    data['lockin_amplitude'], data['lockin_phase']):
+            MagnetismMeasurement(magnetism_data_point=magnetism_data_point, ac_rms_field=ac, 
+                                 dc_field=dc, lockin_amplitude=amp, lockin_phase=phs).save()
+
+    def save_cryo_data(self, data):
+        pass
+
+
+class MagnetismDataPoint(DBModel):
+    # Backreference to the datapoint which collects the measurements from all stations
+    datapoint = ForeignKeyField(DataPoint, backref='magnetism')
+    created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+
+
+class MagnetismMeasurement(DBModel):
+    # Create fields to store the data
+    ac_rms_field = FloatField()
+    dc_field = FloatField()
+    lockin_amplitude = FloatField()
+    lockin_phase = FloatField()
+
+    # Backreference the magnetism datapoint model to collect many measurements per step
+    magnetism_data_point = ForeignKeyField(MagnetismDataPoint, backref='measurements')
+
+
+class CryogenicsDataPoint(DBModel):
+    # Backreference to the datapoint which collects the measurements from all stations
+    datapoint = ForeignKeyField(DataPoint, backref='cryogenics')
+    created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+
+
+class PressureDataPoint(DBModel):
+    # Pressure data
+    p_1 = FloatField()
+    p_2 = FloatField()
+    p_3 = FloatField()
+    p_4 = FloatField()
+    p_5 = FloatField()
+    p_6 = FloatField()
+    p_7 = FloatField()
+    p_8 = FloatField() # Flow sensor
+
+    # Backreference to the CryogenicsDataPoint model (this way we can have many datapoints to one step)
+    cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='pressures')
+
+
+class TemperatureDataPoint(DBModel):
+    # Upper HEx
+    t_0 = FloatField()
+
+    # Lower HEx
+    t_1 = FloatField()
+
+    # He Pot
+    t_2 = FloatField()
+
+    # 1st stage
+    t_3 = FloatField()
+
+    # 2nd stage
+    t_4 = FloatField()
+
+    # Inner coil
+    t_5 = FloatField()
+
+    # Outer coil
+    t_6 = FloatField()
+
+    # Switch
+    t_7 = FloatField()
+
+    # He pot
+    t_8  = FloatField()
+
+    # Backreference to the CryogenicsDataPoint model
+    cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='temperatures')

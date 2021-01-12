@@ -153,6 +153,7 @@ dashboard.db-journal
 dashboard.db-wal
 dashboard.db-shm
 data
+magnetism_data_experiment_*
 
 # Node modules
 node_modules

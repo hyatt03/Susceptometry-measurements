@@ -1,4 +1,4 @@
-from models import db, ExperimentConfiguration, ExperimentStep, Session
+from models import db, ExperimentConfiguration, ExperimentStep, Session, DataPoint
 from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 import numpy as np
@@ -94,20 +94,30 @@ class BrowserNamespace(UniversalEvents):
             await self.cryo_namespace.get_pressure_trace()
 
     async def push_next_step_to_clients(self):
-        # Get the next step
-        step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
+        with db.connection_context():
+            # Get the next step
+            step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
         
-        # Convert step to dict
-        step_d = model_to_dict(step)
-        
-        # Remove datetime and experiment configuration from the dict
-        # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
-        del(step_d['created'])
-        del(step_d['experiment_configuration'])
+            # Check if the step even exists
+            if step is not None:
+                # Check if the step has an associated datapoint
+                if DataPoint.select().where(ExperimentStep==step).count() < 1:
+                    step.generate_datapoint()
 
-        # Send the step dict to the clients
-        await self.cryo_namespace.push_next_step(step_d)
-        await self.magnetism_namespace.push_next_step(step_d)
+                # Convert step to dict
+                step_d = model_to_dict(step)
+                
+                # Set the experiment id (different from the step id)
+                step_d['experiment_configuration_id'] = step_d['experiment_configuration']['id']
+
+                # Remove datetime and experiment configuration from the dict
+                # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
+                del(step_d['created'])
+                del(step_d['experiment_configuration'])
+
+                # Send the step dict to the clients
+                await self.cryo_namespace.push_next_step(step_d)
+                await self.magnetism_namespace.push_next_step(step_d)
 
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration
