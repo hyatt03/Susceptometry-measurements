@@ -3,6 +3,8 @@ from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 import numpy as np
 
+from peewee import DoesNotExist
+
 from playhouse.shortcuts import model_to_dict
 import json
 
@@ -95,11 +97,14 @@ class BrowserNamespace(UniversalEvents):
 
     async def push_next_step_to_clients(self):
         with db.connection_context():
-            # Get the next step
-            step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
-        
-            # Check if the step even exists
-            if step is not None:
+            try:
+                # Get the next step
+                step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
+
+                # Check if the step is none, and skip to the catch clause if it is
+                if step is None:
+                    raise DoesNotExist('Step does not exist')
+
                 # Check if the step has an associated datapoint
                 if DataPoint.select().where(ExperimentStep==step).count() < 1:
                     step.generate_datapoint()
@@ -118,6 +123,11 @@ class BrowserNamespace(UniversalEvents):
                 # Send the step dict to the clients
                 await self.cryo_namespace.push_next_step(step_d)
                 await self.magnetism_namespace.push_next_step(step_d)
+        
+            # Check if the step even exists
+            except DoesNotExist:
+                # It is OK if it does not exist, we should just stop measuring
+                print('No more steps ready')
 
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration

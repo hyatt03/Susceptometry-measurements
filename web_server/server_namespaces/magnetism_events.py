@@ -22,6 +22,8 @@ class MagnetismNamespace(UniversalEvents):
             if datapoint is not None:
                 datapoint.save_magnetism_data(results)
 
+    async def on_m_set_step_ready(self, sid, step_id):
+        await self.cryo_namespace.send_step_ready(step_id)
 
     async def push_next_step(self, step):
         print('pushing next step to magnet')

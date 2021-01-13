@@ -3,19 +3,31 @@ import asyncio
 
 # get numpy
 import numpy as np
+
+# import pandas to support HDF5
+import pandas as pd
+
+# Import time module for startup reference, and import deque to store temperatures and pressures
 import time
 from collections import deque
 
 # Import the base namespace, contains shared methods and information
 from baseclient import BaseClientNamespace, BaseQueueClass, main
 
+# Experiments are naturally stateful, and we must remember some things
 experiment_state = {
     'temperatures': deque(maxlen=20),  # initialize a double ended queues
     'pressures': deque(maxlen=20),
-    'startup_time': time.time()
+    'startup_time': time.time(),
+    'current_step': {'step_done': True},
+    'next_step': {},
+    'experiment_file': None,
+    'experiment_file_id': None,
+    'step_ready_for_measurement': None
 }
 
 
+# We have a class that creates a queue so we can expect things to happen in a specific order
 class CryoQueue(BaseQueueClass):
     def __init__(self, socket_client):
         super().__init__(socket_client)
@@ -31,6 +43,7 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('update_pressures', self.update_pressures)
         self.register_queue_processor('start_cooling', self.start_cooling)
         self.register_queue_processor('get_mck_state', self.get_mck_state)
+        self.register_queue_processor('process_next_step', self.process_next_step)
 
     @property
     def queue_name(self):
@@ -42,9 +55,9 @@ class CryoQueue(BaseQueueClass):
         await asyncio.sleep(1)
         print('configuring avs47b with config:', config)
 
-    # Queue task to retrieve temperatures
-    async def update_temperatures(self, queue, name, task):
-        experiment_state['temperatures'].append({
+    async def get_updated_temperatures(self, queue, name, task):
+        # Get (mock) temperatures
+        temperatures = {
             't_still': round(float(np.abs(np.random.normal(2.2212))), 4),
             't_1': round(float(np.abs(np.random.normal(2.2212))), 4),
             't_2': round(float(np.abs(np.random.normal(2.2212))), 4),
@@ -53,11 +66,24 @@ class CryoQueue(BaseQueueClass):
             't_5': round(float(np.abs(np.random.normal(2.2212))), 4),
             't_6': round(float(np.abs(np.random.normal(2.2212))), 4),
             'timestamp': time.time() - experiment_state['startup_time']
-        })
+        }
 
+        # Append the updated temperatures to the state
+        experiment_state['temperatures'].append(temperatures)
+
+        # And return them
+        return temperatures
+
+    # Queue task to retrieve temperatures
+    async def update_temperatures(self, queue, name, task):
+        # Update the temperatures
+        await self.get_updated_temperatures(queue, name, task)
+
+        # Send them to the server
         await self.get_temperatures(queue, name, task)
 
-    async def update_pressures(self, queue, name, task):
+    async def get_updated_pressures(self, queue, name, task):
+        # Update the pressures
         experiment_state['pressures'].append({
             'p_1': round(float(np.abs(np.random.normal(2.2212))), 4),
             'p_2': round(float(np.abs(np.random.normal(2.2212))), 4),
@@ -70,17 +96,30 @@ class CryoQueue(BaseQueueClass):
             'timestamp': time.time() - experiment_state['startup_time']
         })
 
+        # Return the updated state
+        return experiment_state['pressures'][-1]
+
+    # Queue task to retrieve pressures from the front panel
+    async def update_pressures(self, queue, name, task):
+        # Update the pressures
+        await self.get_updated_pressures(queue, name, task)
+
+        # And send them to the server
         await self.get_pressures(queue, name, task)
 
+    # Send the temperatures to the server
     async def get_temperatures(self, queue, name, task):
         await self.socket_client.send_temperatures(experiment_state['temperatures'][-1])
 
+    # Send a trace containing last 20 temperature measurements
     async def get_temperature_trace(self, queue, name, task):
         await self.socket_client.send_temperature_trace(experiment_state['temperatures'])
 
+    # Send the latest pressures
     async def get_pressures(self, queue, name, task):
         await self.socket_client.send_pressures(experiment_state['pressures'][-1])
 
+    # Send a trace containing the last 20 pressure measurements
     async def get_pressure_trace(self, queue, name, task):
         await self.socket_client.send_pressure_trace(experiment_state['pressures'])
 
@@ -93,6 +132,97 @@ class CryoQueue(BaseQueueClass):
     async def start_cooling(self, queue, name, task):
         await asyncio.sleep(1)
         print('going to start cooling')
+
+    # Process the next step of the current experiment
+    async def process_next_step(self, queue, name, task):
+        # We get the step
+        step = task['step']
+        experiment_state['next_step'] = step
+
+        # Wait until the current step is done
+        # Sleep 1 second at a time
+        while not experiment_state['current_step']['step_done']:
+            await asyncio.sleep(1)
+
+        # Set the next step to the current step
+        experiment_state['current_step'] = step
+
+        # Alert the user to what is happening
+        print('processing next step')
+
+        # Close the old datafile if necessary
+        if experiment_state['experiment_file_id'] != step['experiment_configuration_id'] and experiment_state['experiment_file'] is not None:
+            experiment_state['experiment_file'].close()
+            experiment_state['experiment_file'] = None
+
+        # Ensure we have an open datafile
+        if experiment_state['experiment_file_id'] is None:
+            # Start by updating the id we're working on
+            experiment_state['experiment_file_id'] = step['experiment_configuration_id']
+
+            # Open the file
+            experiment_state['experiment_file'] = pd.HDFStore(f'data/cryogenics_data_experiment_{experiment_state["experiment_file_id"]}.h5')
+
+        # Wait for the magnetism station to be ready for measurement
+        # Sleep 0.1 seconds at a time
+        while experiment_state['step_ready_for_measurement'] != step['id']:
+            await asyncio.sleep(0.1)
+
+        # Now the stations should be pretty syncronized
+        # And we can begin measuring
+        # Create dictionaries to hold the results
+        pressures = {'step_id': step['id']}
+        temperatures = {'step_id': step['id']}
+        
+        # Do the measurement
+        for datapoint_idx in range(step['data_points_per_measurement']):
+            # Start by waiting for the system to stabalize
+            await asyncio.sleep(step['data_wait_before_measuring'])
+
+            # Get the data concurrently
+            raw_data = await asyncio.gather(self.get_updated_pressures(queue, name, task), 
+                                            self.get_updated_temperatures(queue, name, task))
+
+            # Sort the data into the lists
+            # Append pressures to each list
+            for p_label in raw_data[0].keys():
+                if p_label not in pressures.keys():
+                    pressures[p_label] = []
+                pressures[p_label].append(raw_data[0][p_label])
+
+            # do the same for temperatures
+            for t_label in raw_data[1].keys():
+                if t_label not in temperatures.keys():
+                    temperatures[t_label] = []
+                temperatures[t_label].append(raw_data[1][t_label])
+
+        # We're done measuring, so now we save the data
+        # Create dataframes to prepare for saving
+        pressures_frame = pd.DataFrame(pressures)
+        temperatures_frame = pd.DataFrame(temperatures)
+
+        # Save the measurement
+        experiment_state['experiment_file'].append(
+            'tables/pressure_data', 
+            pressures_frame, 
+            format='table', data_columns=True
+        )
+        experiment_state['experiment_file'].append(
+            'tables/temperature_data', 
+            temperatures_frame, 
+            format='table', data_columns=True
+        )
+
+        # Next we send the results to the server
+        await self.socket_client.emit('c_got_step_results', {
+            'pressures': pressures, 
+            'temperatures': temperatures,
+            'step_id': step['id']
+        })
+
+        # Then we mark it as done
+        await self.socket_client.emit('mark_step_as_done', step)
+        experiment_state['current_step']['step_done'] = True
 
     # Queue task to test functionality
     async def test_queue(self, queue, name, task):
@@ -162,6 +292,15 @@ class CryoClientNamespace(BaseClientNamespace):
 
     async def send_pressure_trace(self, pressure_trace):
         await self.emit('c_got_pressure_trace', list(pressure_trace))
+
+    # Event received when server has a new step for us
+    async def on_c_next_step(self, step):
+        await self.append_to_queue({'function_name': 'process_next_step', 'step': step})
+
+    # Event we receive when the magnetism station is ready for measurements
+    # Process next step polls for this to be ready
+    async def on_c_step_ready_for_measurement(self, step_id):
+        experiment_state['step_ready_for_measurement'] = step_id
 
 
 if __name__ == '__main__':

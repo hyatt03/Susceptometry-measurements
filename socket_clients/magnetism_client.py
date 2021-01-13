@@ -205,7 +205,7 @@ class MagnetismQueue(BaseQueueClass):
             magnetism_state['experiment_file_id'] = step['experiment_configuration_id']
 
             # Open the file
-            magnetism_state['experiment_file'] = pd.HDFStore(f'magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5')
+            magnetism_state['experiment_file'] = pd.HDFStore(f'data/magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5')
 
         # Set the magentic field
         await self.set_magnet_config(queue, name, {'config': {
@@ -229,6 +229,10 @@ class MagnetismQueue(BaseQueueClass):
             'frequency': step['sr830_frequency'], 
             'buffersize': step['sr830_buffersize']
         }})
+
+        # Mark this step as ready and wait a short time
+        await self.socket_client.emit('m_set_step_ready', step['id'])
+        await asyncio.sleep(0.06)
 
         # Create lists to hold the results
         ac_fields = []

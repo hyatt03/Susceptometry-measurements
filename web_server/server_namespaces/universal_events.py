@@ -52,8 +52,8 @@ class UniversalEvents(socketio.AsyncNamespace):
         await self.emit('get_queue_size')
 
     # Define a method to check if a step is done
-    def is_step_done(self, id):
-        return id in self.steps_done
+    def is_step_done(self, step_id):
+        return step_id in self.steps_done
 
     # And an endpoint to mark a step as done
     async def on_mark_step_as_done(self, sid, step):
@@ -65,7 +65,7 @@ class UniversalEvents(socketio.AsyncNamespace):
         if self.magnetism_namespace.is_step_done(step_id) and self.cryo_namespace.is_step_done(step_id):
             # Both are done, so we should mark it as done in the database
             with db.connection_context():
-                ExperimentStep.get(id == step_id).update(step_done=True).execute()
+                ExperimentStep.get_by_id(step_id).update(step_done=True).execute()
             
             # Next we should push the next step to the clients (if applicable)
             await self.browser_namespace.push_next_step_to_clients()

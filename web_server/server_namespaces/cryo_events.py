@@ -28,6 +28,9 @@ class CryoNamespace(UniversalEvents):
     async def get_pressure_trace(self):
         await self.emit('c_get_pressure_trace')
 
+    async def send_step_ready(self, step_id):
+        await self.emit('c_step_ready_for_measurement', step_id)
+
     async def push_next_step(self, step):
         print('pushing next step to cryo')
         await self.emit('c_next_step', step)
