@@ -173,9 +173,9 @@ class CryoQueue(BaseQueueClass):
         # Create dictionaries to hold the results
         pressures = {'step_id': step['id']}
         temperatures = {'step_id': step['id']}
-        
+
         # Do the measurement
-        for datapoint_idx in range(step['data_points_per_measurement']):
+        for datapoint_idx in range(step['data_points_per_measurement']):            
             # Start by waiting for the system to stabalize
             await asyncio.sleep(step['data_wait_before_measuring'])
 

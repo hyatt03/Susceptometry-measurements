@@ -230,9 +230,8 @@ class MagnetismQueue(BaseQueueClass):
             'buffersize': step['sr830_buffersize']
         }})
 
-        # Mark this step as ready and wait a short time
+        # Mark this step as ready
         await self.socket_client.emit('m_set_step_ready', step['id'])
-        await asyncio.sleep(0.06)
 
         # Create lists to hold the results
         ac_fields = []

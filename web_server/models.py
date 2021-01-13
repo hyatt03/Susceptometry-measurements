@@ -161,7 +161,38 @@ class DataPoint(DBModel):
                                  dc_field=dc, lockin_amplitude=amp, lockin_phase=phs).save()
 
     def save_cryo_data(self, data):
-        pass
+        cryogenics_data_point = CryogenicsDataPoint(datapoint=self)
+        cryogenics_data_point.save()
+
+        # Iterate through the measurements we have collected for this step
+        # and save the data
+        for i in range(len(data['temperatures']['t_still'])):
+            # Save pressures
+            PressureDataPoint(
+                cryo_data_point=cryogenics_data_point,
+                p_1=data['pressures']['p_1'][i],
+                p_2=data['pressures']['p_2'][i],
+                p_3=data['pressures']['p_3'][i],
+                p_4=data['pressures']['p_4'][i],
+                p_5=data['pressures']['p_5'][i],
+                p_6=data['pressures']['p_6'][i],
+                p_7=data['pressures']['p_7'][i],
+                p_8=data['pressures']['p_8'][i]
+            ).save()
+
+            # Save temperatures
+            TemperatureDataPoint(
+                cryo_data_point=cryogenics_data_point,
+                t_0=data['temperatures']['t_still'][i],
+                t_1=data['temperatures']['t_1'][i],
+                t_2=data['temperatures']['t_2'][i],
+                t_3=data['temperatures']['t_3'][i],
+                t_4=data['temperatures']['t_4'][i],
+                t_5=data['temperatures']['t_5'][i],
+                t_6=data['temperatures']['t_6'][i],
+                t_7=data['temperatures']['t_1'][i],  # @TODO: Use the actual temperatures
+                t_8=data['temperatures']['t_1'][i]
+            ).save()
 
 
 class MagnetismDataPoint(DBModel):

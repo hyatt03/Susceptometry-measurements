@@ -1,4 +1,5 @@
 from server_namespaces.universal_events import UniversalEvents
+from models import db, DataPoint
 
 
 # All the methods related to the cryogenics station from the servers perspective
@@ -34,6 +35,15 @@ class CryoNamespace(UniversalEvents):
     async def push_next_step(self, step):
         print('pushing next step to cryo')
         await self.emit('c_next_step', step)
+
+    async def on_c_got_step_results(self, sid, results):
+        with db.connection_context():
+            # Get the datapoint associated with the step (should be generated when step is sent)
+            datapoint = DataPoint.select().where(DataPoint.step == results['step_id']).order_by(DataPoint.created).get()
+
+            # Then we save the datapoint
+            if datapoint is not None:
+                datapoint.save_cryo_data(results)
 
     # Emitted when user wishes updates to the mck state
     async def get_mck_state(self):
