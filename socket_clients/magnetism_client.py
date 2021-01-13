@@ -200,7 +200,7 @@ class MagnetismQueue(BaseQueueClass):
             magnetism_state['experiment_file'] = None
 
         # Ensure we have an open datafile
-        if magnetism_state['experiment_file_id'] is None:
+        if magnetism_state['experiment_file'] is None:
             # Start by updating the id we're working on
             magnetism_state['experiment_file_id'] = step['experiment_configuration_id']
 

@@ -156,7 +156,7 @@ class CryoQueue(BaseQueueClass):
             experiment_state['experiment_file'] = None
 
         # Ensure we have an open datafile
-        if experiment_state['experiment_file_id'] is None:
+        if experiment_state['experiment_file'] is None:
             # Start by updating the id we're working on
             experiment_state['experiment_file_id'] = step['experiment_configuration_id']
 

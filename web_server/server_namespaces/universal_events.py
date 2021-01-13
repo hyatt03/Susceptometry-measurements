@@ -65,7 +65,7 @@ class UniversalEvents(socketio.AsyncNamespace):
         if self.magnetism_namespace.is_step_done(step_id) and self.cryo_namespace.is_step_done(step_id):
             # Both are done, so we should mark it as done in the database
             with db.connection_context():
-                ExperimentStep.get_by_id(step_id).update(step_done=True).execute()
+                ExperimentStep.update(step_done=True).where(ExperimentStep.id == step_id).execute()
             
             # Next we should push the next step to the clients (if applicable)
             await self.browser_namespace.push_next_step_to_clients()

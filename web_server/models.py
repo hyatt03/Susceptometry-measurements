@@ -150,6 +150,7 @@ class DataPoint(DBModel):
     created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
 
     def save_magnetism_data(self, data):
+        # Create model to hold references to actual collected data
         magnetism_data_point = MagnetismDataPoint(datapoint=self)
         magnetism_data_point.save()
 
@@ -161,6 +162,7 @@ class DataPoint(DBModel):
                                  dc_field=dc, lockin_amplitude=amp, lockin_phase=phs).save()
 
     def save_cryo_data(self, data):
+        # Create model to hold references to actual collected data
         cryogenics_data_point = CryogenicsDataPoint(datapoint=self)
         cryogenics_data_point.save()
 
