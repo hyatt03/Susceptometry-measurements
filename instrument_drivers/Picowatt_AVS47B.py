@@ -1,5 +1,6 @@
 """
 QCodes driver for Picowatt AVS-47B AC Resistance Bridge
+This version expects a converter box between the PC and the bridge.
 """
 
 from qcodes import VisaInstrument, validators as vals

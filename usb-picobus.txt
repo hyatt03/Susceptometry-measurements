@@ -1,0 +1,77 @@
+Step 1: Open visa session for COM9
+  Substep 1: Set baud rate to 9600
+  Substep 2: Set data bits to 8
+  Substep 3: Set stop bits to 1.0
+  Substep 4: Set parity to None
+  Substep 4: Set flow control to none
+
+Step 2: Start the instrument in local mode (for some unspecified safety reason)
+  Substep 1: Construct the address (if the address is 1, then we send 00000001)
+  Substep 2: Construct the txstring and allocate the rxstring (both 48 bits)
+    Subsubstep 1: Set "disable AL" to 0 so we can tell when the measurement is done
+  
+  Substep 3: Loop over the bits in the address
+    Subsubstep 1: Set the clock pulse (CP=RTS state) to 0
+    Subsubstep 2: Read DI (CTS=data from instrument)
+    Subsubstep 3: Set the data from computer (DC=DTC state) to the address bit in the current iteration
+    Subsubstep 4: Wait for about 1 millisecond (or the shortest we can)
+    Subsubstep 5: Set the clock pulse (CP=RTS state) to 1
+    Subsubstep 6: Wait for about 1 millisecond (or the shortest we can)
+    Subsubstep 7: Set the clock pulse (CP=RTS state) to 0
+    Subsubstep 8: Set the data from computer to 0
+
+  Substep 4: Strobe the picobus address
+    Loop 3 times:
+      Subsubstep 1: Set the clock pulse (CP=RTS state) to 0
+      Subsubstep 2: Set the data from computer (DC=DTS state) to 0
+      Subsubstep 3: Delay 1 ms
+      Subsubstep 4: Set the DC state to 1
+      Subsubstep 5: Delay 1 ms
+      Subsubstep 6: Set the DC state to 0
+
+  Substep 5: Loop over the bits in the txstring (not including address)
+    Subsubstep 1: Set the clock pulse (CP=RTS state) to 0
+    Subsubstep 2: Read DI (CTS=data from instrument) and write it to the rxstring
+    Subsubstep 3: Set the data from computer (DC=DTC state) to the bit in the current iteration
+    Subsubstep 4: Wait for about 1 millisecond (or the shortest we can)
+    Subsubstep 5: Set the clock pulse (CP=RTS state) to 1
+    Subsubstep 6: Wait for about 1 millisecond (or the shortest we can)
+    Subsubstep 7: Set the clock pulse (CP=RTS state) to 0
+    Subsubstep 8: Set the data from computer to 0
+
+  Substep 6: Strobe the picobus txstring
+    Loop 3 times:
+      Subsubstep 1: Set the clock pulse (CP=RTS state) to 0
+      Subsubstep 2: Set the data from computer (DC=DTS state) to 0
+      Subsubstep 3: Delay 1 ms
+      Subsubstep 4: Set the DC state to 1
+      Subsubstep 5: Delay 1 ms
+      Subsubstep 6: Set the DC state to 0
+
+Step 3: Decode the received string
+
+Step 4: Store the instrument settings in a local variable
+
+Step 5: Enter loop over measurements
+  Loop: 
+    Step 1: Modify the local settings
+    Step 2: Send the new settings
+    Step 3: Wait for the signal to stabilize (Can take up to 15 seconds for low excitation changes)
+    Step 4: Read from the ADC
+
+Step 5: Set the bridge to local mode
+Step 6: Close the visa session
+
+Examples
+0000 0 0 1 0 001 000 000 000 01 00 
+
+txstring
+0000000000000000 00000011 00 00 000 000 000 111 0 1 0 1 0000
+000000000000000000000011000000000000011100010000
+
+rxstring
+0000000000000000 00010000 01 00 000 000 000 111 0 1 0 1 0000
+
+terminator: \n
+
+
