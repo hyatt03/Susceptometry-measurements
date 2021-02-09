@@ -39,7 +39,7 @@ class Avs_47b_direct(Instrument):
         # 0 = grounded input (zero resistance)
         # 1 = Measure the selected sensor channel
         # 2 = Calibrate (bridge measures internal 100 ohm resistor)
-        self.add_parameter('InputMode', vals=vals.Ints(0, 2), get_cmd=None, set_cmd=None, initial_value=1)
+        self.add_parameter('InputMode', vals=vals.Ints(0, 2), get_cmd=None, set_cmd=None, initial_value=0)
 
         # Get/Set multiplexer channel (7 channels available
         # Settling time is required before an accurate measurement can be conducted
@@ -150,7 +150,7 @@ class Avs_47b_direct(Instrument):
         self.ser.open()
 
         # And then we send a config in local mode
-        self.send_config(False)
+        self.send_config(False, True)
         print('Opened serial connection to AVS-47B')
 
     def construct_txstring(self, remote):
@@ -204,9 +204,50 @@ class Avs_47b_direct(Instrument):
         # Return the 48bit txstring
         return txstring
 
-    def send_config(self, remote=True):
+    def decode_rxstring(self, rxstring):
+        """
+        Method to decode the results from the AVS-47B
+        """
+
+        # Convert the array to a string
+        a = ''
+        for b in rxstring:
+            a += str(b)
+
+        # Extract the variables we need to determine the output
+        ovr = int(a[5], base=2)
+        pol = int(a[6], base=2)
+        msd = int(a[7], base=2)
+        d3 = int(a[8:12], base=2)
+        d2 = int(a[12:16], base=2)
+        d1 = int(a[16:20], base=2)
+        lsd = int(a[20:24], base=2)
+
+        # Extract variables that determine the state of the machine at time of measurement
+        input_out = int(a[26:28], base=2)
+        ch_out = int(a[28:31], base=2)
+        disp_out = int(a[31:34], base=2)
+        excitation = int(a[34:37], base=2)
+        range_out = int(a[37:40], base=2)
+        
+        # Compute the 4.5 digit number
+        adc = 10000*msd + 1000*d3 + 100*d2 + 10*d1 + lsd
+
+        # Set the sign and convert to float
+        if pol == 0:
+            adc *= -1.
+
+        # Convert the ADC value to a resistance
+        resistance = adc * 10**(range_out - 5)
+        
+        return ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out
+
+    def send_config(self, remote=False, save_device_config=False):
         """
         Sends the current config to the bridge, used with remote=False when opening a connection
+        Set remote to true to change settings on the device
+        Set "save_device_config" to true to overwrite local variables with settings from device
+        Returns the rxstring, which can be decoded by "decode_rxstring" method
         """
         # First we send the address
         # Construct an address (we just use the default (1) as recommended)
@@ -229,10 +270,42 @@ class Avs_47b_direct(Instrument):
         # Strobe the txstring
         self.strobe()
 
-        print(hw_address_old, rxstring)
+        # Check if we should save the devices config to the configuration of the module
+        if save_device_config:
+            ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out = self.decode_rxstring(rxstring)
+            
+            # Save the overrange
+            self.Overrange.set(ovr)
 
+            # Save the measured resistance
+            self.Resistance.set(resistance)
+
+            # Save the measured ADC value
+            self.ADCValue.set(adc)
+
+            # Save the input type
+            self.InputMode.set(input_out)
+
+            # Save the channel
+            self.MultiplexerChannel.set(ch_out)
+
+            # Save the display
+            self.Display.set(disp_out)
+
+            # Convert the excitation to an actual value and save it
+            for key, val in self.excitation_v_map.items():
+                if int(val) == excitation:
+                    self.Excitation.set(key)
+                    break
+
+            # Convert the range to an actual value and save it
+            for key, val in self.range_v_map.items():
+                if int(val) == range_out:
+                    self.Range.set(key)
+                    break
+
+        # Return the rxstring
         return rxstring
-
 
     def query_for_resistance(self):
         """
@@ -253,13 +326,13 @@ class Avs_47b_direct(Instrument):
             self.ser.dtr = bool(tx[i])
 
             # sleep for a short while
-            time.sleep(1e-5)
+            # python is pretty slow, so we don't need it
 
             # Set the clock pulse to 1
             self.ser.rts = True
 
             # sleep for a short while
-            time.sleep(1e-5)
+            # python is pretty slow, so we don't need it
 
             # Set the clock pulse to 0
             self.ser.rts = False
@@ -280,13 +353,13 @@ class Avs_47b_direct(Instrument):
             self.ser.dtr = False
 
             # sleep for a short while
-            time.sleep(1e-5)
+            # python is pretty slow, so we don't need it
 
             # Set the dataline to 1
             self.ser.dtr = True
 
             # sleep for a short while
-            time.sleep(1e-5)
+            # python is pretty slow, so we don't need it
 
             # Set the dataline to 0
             self.ser.dtr = False
