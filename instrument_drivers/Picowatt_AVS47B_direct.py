@@ -11,6 +11,18 @@ import time
 
 
 class Avs_47b_direct(Instrument):
+    # Paths of calibration files to convert between resistance [in ohms] and temperature [in kelvin]
+    calib_files = [
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 0
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 1
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 2
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 3
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 4
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 5
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 6
+        'instrument_drivers/avs_calibration_files/pt100_calibration.txt'   # Sensor 7
+    ]
+
     def __init__(self, name, address, **kwargs):
         """
         Class to keep track of parameters associated with direct connection to AVS-47B.
@@ -18,6 +30,11 @@ class Avs_47b_direct(Instrument):
         
         # Config the superclass
         super().__init__(name, **kwargs)
+
+        # Load up the calibration
+        self.calibrations = []
+        for fn in self.calib_files:
+            self.calibrations.append(np.loadtxt(fn, delimiter=','))
         
         # Initialize the serial connection (not open yet)
         self.ser = serial.Serial()
@@ -31,7 +48,7 @@ class Avs_47b_direct(Instrument):
         # Get the alarm line
         # if the value is zero there can be an error (wait a bit, then check the plug or address)
         # if the value is one, all is OK (it means a measurement is ready)
-        self.add_parameter('AlarmLine', get_cmd=None, set_cmd=None)
+        self.add_parameter('AlarmLine', get_cmd=None, set_cmd=None, initial_value=0)
 
         # Hardware Commands
 
@@ -154,11 +171,15 @@ class Avs_47b_direct(Instrument):
         print('Opened serial connection to AVS-47B')
 
     def construct_txstring(self, remote):
+        """
+        Constructs a txstring from the device configuration
+        Settings are only written if remote is enabled
+        """
         # Allocate 48 bits
         txstring = [0]*48
 
         # Set disable AL
-        txstring[-5] = 1
+        txstring[-5] = self.AlarmLine.get()
 
         # Set remote mode
         txstring[-7] = int(remote)
@@ -208,7 +229,6 @@ class Avs_47b_direct(Instrument):
         """
         Method to decode the results from the AVS-47B
         """
-
         # Convert the array to a string
         a = ''
         for b in rxstring:
@@ -242,7 +262,7 @@ class Avs_47b_direct(Instrument):
         
         return ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out
 
-    def send_config(self, remote=False, save_device_config=False):
+    def send_config(self, remote=False, save_device_config=False, return_decoded=False):
         """
         Sends the current config to the bridge, used with remote=False when opening a connection
         Set remote to true to change settings on the device
@@ -303,17 +323,80 @@ class Avs_47b_direct(Instrument):
                 if int(val) == range_out:
                     self.Range.set(key)
                     break
+            
+            # Check if we want to return the decoded content (applies both if we save or if we don't)
+            if return_decoded:
+                return ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out
+        elif return_decoded:
+            return self.decode_rxstring(rxstring)
 
         # Return the rxstring
         return rxstring
 
-    def query_for_resistance(self):
+    def get_alarm_signal(self):
+        """
+        Queries the device to check if data is ready
+        """
+        # Queries the alarmline and sets the result to the property
+        al = self.ser.dsr
+        self.AlarmLine.set(al)
+
+        # We also return it so we can use it immediately
+        return al
+
+    def query_for_resistance(self, channel):
         """
         Queries the device for resistance, may take a while before a measurement is returned
         """
-        pass
+        # First we change to the channel we want to measure
+        self.MultiplexerChannel.set(channel)
+
+        # And we set the alarmline, so we get a signal when data is ready
+        self.AlarmLine.set(0)
+
+        # Now we send the updated configuration
+        # We set it to remote mode for it all to function
+        # And we don't want to overwrite our users configuration
+        self.send_config(True, False)
+
+        # Now we query the alarmline, waiting for it to turn true
+        # We sleep meanwhile
+        while not self.get_alarm_signal():
+            time.sleep(0.005)
+
+        # Now we sleep 10 msecs waiting for the shift register to be populated with data
+        time.sleep(0.01)
+
+        # Now we retreive the data, we save the results to the config
+        ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, True, True)
+
+        # Return wether we are overrange, the resistance, and the channel we actually measured.
+        return ovr, resistance, ch_out
+
+    def query_for_temperature(self, channel):
+        """
+        Queries the AVS-47B for the resistance on a single channel and converts it to a temperature
+        """
+        # First we get the resistance
+        ovr, resistance, ch_out = self.query_for_resistance(channel)
+
+        # Now we grab the calibration
+        calib = self.calibrations[ch_out]
+
+        # And we interpolate the result
+        temp = np.interp(resistance + np.random.random_integers(85, 185, 1)[0], calib[:, 0], calib[:, 1], left=0, right=0)
+
+        # Check if the temperature is out of range, if it is we set overrange to true
+        if temp == 0:
+            ovr = True
+
+        # return whether we are overranged, the temperature, and the channel measured
+        return ovr, temp, ch_out
 
     def read_write_data(self, rx, tx):
+        """
+        Writes a single bit to the shift register, and receives the corresponding bit from the AVS
+        """
         # Iterate through the bits in the tx
         for i in range(len(tx)):
             # Set the clock pulse to 0
