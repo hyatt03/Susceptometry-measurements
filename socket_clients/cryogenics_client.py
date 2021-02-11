@@ -41,6 +41,7 @@ class CryoQueue(BaseQueueClass):
         # Setup stations and connect to the instruments
         self.station = cryogenics_station.get_station()
         self.ghs = self.station.components['ghs']
+        self.tcs = self.station.components['tcs']
         self.resistance_bridge = self.station.components['resistance_bridge']
 
         # Register queue processors
@@ -142,8 +143,8 @@ class CryoQueue(BaseQueueClass):
 
     # Queue task to get the mck state
     async def get_mck_state(self, queue, name, task):
-        await asyncio.sleep(1)
-        print('getting the mck state')
+        # Update the status of the TCS
+        self.tcs.get_all_params()
 
     # Queue task to cool the system down
     async def start_cooling(self, queue, name, task):
@@ -266,6 +267,7 @@ class CryoClientNamespace(BaseClientNamespace):
         while True:
             await self.append_to_queue({'function_name': 'update_temperatures'})
             await self.append_to_queue({'function_name': 'update_pressures'})
+            await self.append_to_queue({'function_name': 'get_mck_state'})
             await asyncio.sleep(5)
 
     # Received when testing should start

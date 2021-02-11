@@ -64,7 +64,12 @@ class LC_TCS(VisaInstrument):
                                   get_cmd='STATUS?')
 
         # Connect to the instrument and get an IDN
-        self.connect_message('ID?')
+        # self.connect_message()
+        print('Connect string:', self.ask('ID?'))
+
+    def get_all_params(self):
+        # Get the status of the system
+        self.range_1.get()
 
     # Sets the current for a channel in microamps
     def set_current(self, channel, current):

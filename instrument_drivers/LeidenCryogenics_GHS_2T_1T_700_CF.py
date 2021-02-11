@@ -159,7 +159,6 @@ class LC_GHS(VisaInstrument):
         self.keys_group = Group(keys_group, get_parser=self.keys_status_parser, get_cmd='KEYS?')
 
         # Connect to the instrument and get an IDN
-        self.connect_message()
         print('Connect string:', self.ask('ID?'))
 
     def ack_int_parser(self, param_name, status_string):

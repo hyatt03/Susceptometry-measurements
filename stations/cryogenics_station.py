@@ -20,7 +20,7 @@ from instrument_drivers import LeidenCryogenics_TripleCurrentSource, LeidenCryog
 # Set the addresses for the instruments
 resistance_bridge_address = 'COM9'
 ghs_address = 'ASRL7::INSTR'
-tcs_address = ''
+tcs_address = 'ASRL8::INSTR'
 
 
 def setup_instruments():
@@ -28,14 +28,13 @@ def setup_instruments():
     resistance_bridge = Picowatt_AVS47B_direct.Avs_47b_direct('resistance_bridge', resistance_bridge_address)
 
     # Setup the Leiden Cryogenics Triple Current Source
-    # tcs = LeidenCryogenics_TripleCurrentSource.LC_TCS('tcs', tcs_address)
+    tcs = LeidenCryogenics_TripleCurrentSource.LC_TCS('tcs', tcs_address)
 
     # Setup the Leiden Cryogenics GHS-2T-1T-700-CF
     ghs = LeidenCryogenics_GHS_2T_1T_700_CF.LC_GHS('ghs', ghs_address)
 
     # Return the instruments as a list
-    return [resistance_bridge, ghs]
-    # return [resistance_bridge, tcs, ghs]
+    return [resistance_bridge, tcs, ghs]
 
 
 def get_station():
