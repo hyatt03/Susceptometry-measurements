@@ -1,5 +1,4 @@
 import time
-import numpy as np
 import instrument_drivers.Picowatt_AVS47B_direct as Avs_47b
 
 

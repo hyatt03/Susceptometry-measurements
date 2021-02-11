@@ -8,11 +8,17 @@ import numpy as np
 import pandas as pd
 
 # Import time module for startup reference, and import deque to store temperatures and pressures
-import time
+import time, sys, os
 from collections import deque
+
+# Add top level packages to path
+sys.path.append(os.path.dirname(__file__) + '/..')
 
 # Import the base namespace, contains shared methods and information
 from baseclient import BaseClientNamespace, BaseQueueClass, main
+
+# Import cryogenics station to collect data
+from stations import cryogenics_station
 
 # Experiments are naturally stateful, and we must remember some things
 experiment_state = {
@@ -31,6 +37,11 @@ experiment_state = {
 class CryoQueue(BaseQueueClass):
     def __init__(self, socket_client):
         super().__init__(socket_client)
+
+        # Setup stations and connect to the instruments
+        self.station = cryogenics_station.get_station()
+        self.ghs = self.station.components['ghs']
+        self.resistance_bridge = self.station.components['resistance_bridge']
 
         # Register queue processors
         self.register_queue_processor('test_queue', self.test_queue)
@@ -56,16 +67,18 @@ class CryoQueue(BaseQueueClass):
         print('configuring avs47b with config:', config)
 
     async def get_updated_temperatures(self, queue, name, task):
-        # Get (mock) temperatures
+        # Get temperatures
         temperatures = {
-            't_still': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_1': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_2': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_3': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_4': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_5': round(float(np.abs(np.random.normal(2.2212))), 4),
-            't_6': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'timestamp': time.time() - experiment_state['startup_time']
+            't_still': self.resistance_bridge.query_for_temperature(0)[1],
+            't_1': self.resistance_bridge.query_for_temperature(1)[1],
+            't_2': self.resistance_bridge.query_for_temperature(2)[1],
+            't_3': self.resistance_bridge.query_for_temperature(3)[1],
+            't_4': self.resistance_bridge.query_for_temperature(4)[1],
+            't_5': self.resistance_bridge.query_for_temperature(5)[1],
+            't_6': self.resistance_bridge.query_for_temperature(6)[1],
+            't_7': self.resistance_bridge.query_for_temperature(7)[1],
+            'timestamp': time.time() - experiment_state['startup_time'],
+            'started': experiment_state['startup_time']
         }
 
         # Append the updated temperatures to the state
@@ -83,17 +96,21 @@ class CryoQueue(BaseQueueClass):
         await self.get_temperatures(queue, name, task)
 
     async def get_updated_pressures(self, queue, name, task):
-        # Update the pressures
+        # Query the frontpanel for updated pressures
+        self.ghs.get_all_params()
+
+        # Update the pressures dict
         experiment_state['pressures'].append({
-            'p_1': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_2': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_3': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_4': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_5': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_6': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_7': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'p_8': round(float(np.abs(np.random.normal(2.2212))), 4),
-            'timestamp': time.time() - experiment_state['startup_time']
+            'p_1': self.ghs.pressure_p1.get_latest(),
+            'p_2': self.ghs.pressure_p2.get_latest(),
+            'p_3': self.ghs.pressure_p3.get_latest(),
+            'p_4': self.ghs.pressure_p4.get_latest(),
+            'p_5': self.ghs.pressure_p5.get_latest(),
+            'p_6': self.ghs.pressure_p6.get_latest(),
+            'p_7': self.ghs.pressure_p7.get_latest(),
+            'p_8': self.ghs.pressure_p8.get_latest(),
+            'timestamp': time.time() - experiment_state['startup_time'],
+            'started': experiment_state['startup_time']
         })
 
         # Return the updated state

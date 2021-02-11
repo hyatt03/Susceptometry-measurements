@@ -6,7 +6,7 @@ which is the gas handling system for the MCK50-100 dilution fridge.
 from qcodes import VisaInstrument, validators as vals
 from qcodes.instrument.group_parameter import GroupParameter, Group
 
-sep = bytes.fromhex('09')  # Command separator
+sep = '\t'  # Command separator
 
 
 class LC_GHS(VisaInstrument):
@@ -110,7 +110,7 @@ class LC_GHS(VisaInstrument):
             # Create a parameter for each led
             led_label = f'led_x{i + 100}'
             self.add_parameter(led_label, GroupParameter, label=f'Led for key x{i+100}', vals=vals.Ints(1, 2))
-            led_group.append(self.get(led_label))
+            led_group.append(self[led_label])
 
         # Setup a group to describe the leds (and ack)
         self.led_group = Group(led_group, get_parser=self.led_status_parser, get_cmd='LEDS?')
@@ -123,7 +123,7 @@ class LC_GHS(VisaInstrument):
             # Create a parameter for each sensor
             pressure_label = f'pressure_p{i}'
             self.add_parameter(pressure_label, GroupParameter, label=f'Pressure sensor p{i}', vals=vals.Ints(0, 999999))
-            pressure_group.append(self.get(pressure_label))
+            pressure_group.append(self[pressure_label])
 
         # Add all the pressure sensors to a group
         self.pressure_group = Group(pressure_group, get_parser=self.pressure_status_parser, get_cmd='ADC?')
@@ -153,13 +153,14 @@ class LC_GHS(VisaInstrument):
             # Create a parameter for each key
             key_label = f'key_x{i+100}'
             self.add_parameter(key_label, GroupParameter, label=f'Status for key x{i+100}', vals=vals.Ints(1, 2))
-            keys_group.append(self.get(key_label))
+            keys_group.append(self[key_label])
 
         # Add all the keys to a group
         self.keys_group = Group(keys_group, get_parser=self.keys_status_parser, get_cmd='KEYS?')
 
         # Connect to the instrument and get an IDN
-        self.connect_message('ID?')
+        self.connect_message()
+        print('Connect string:', self.ask('ID?'))
 
     def ack_int_parser(self, param_name, status_string):
         # Split the result into an int of an ack and an int of the result
@@ -212,10 +213,28 @@ class LC_GHS(VisaInstrument):
 
         return status_dict
 
+    def get_all_params(self):
+        # Get system status
+        self.status.get()
+
+        # Get pressure settings
+        self.set_p6_low.get()
+
+        # Get LED statuses
+        self.led_x101.get()
+
+        # Get KEY statuses
+        self.key_x101.get()
+
+        # Get pressures
+        self.pressure_p1.get()
+
     # Helper function to manually press a button and return the acknowledgement
     def press_button(self, button):
         if button not in self.button_dict:
             raise ValueError('Invalid button!')
 
-        ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
-        return self.acks[int(ack)]
+        print('not enabled right now')
+
+        # ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
+        # return self.acks[int(ack)]

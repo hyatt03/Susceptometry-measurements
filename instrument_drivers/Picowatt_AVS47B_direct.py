@@ -7,20 +7,20 @@ Only driver that requires pyserial
 from qcodes import Instrument, validators as vals
 import serial
 import numpy as np
-import time
+import time, os, sys
 
 
 class Avs_47b_direct(Instrument):
     # Paths of calibration files to convert between resistance [in ohms] and temperature [in kelvin]
     calib_files = [
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 0
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 1
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 2
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 3
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 4
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 5
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt',  # Sensor 6
-        'instrument_drivers/avs_calibration_files/pt100_calibration.txt'   # Sensor 7
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 0
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 1
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 2
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 3
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 4
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 5
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 6
+        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt'   # Sensor 7
     ]
 
     def __init__(self, name, address, **kwargs):
@@ -384,11 +384,7 @@ class Avs_47b_direct(Instrument):
         calib = self.calibrations[ch_out]
 
         # And we interpolate the result
-        temp = np.interp(resistance + np.random.random_integers(85, 185, 1)[0], calib[:, 0], calib[:, 1], left=0, right=0)
-
-        # Check if the temperature is out of range, if it is we set overrange to true
-        if temp == 0:
-            ovr = True
+        temp = np.interp(resistance + np.random.random_integers(85, 185, 1)[0], calib[:, 0], calib[:, 1])
 
         # return whether we are overranged, the temperature, and the channel measured
         return ovr, temp, ch_out
