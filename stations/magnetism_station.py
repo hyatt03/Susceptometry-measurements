@@ -16,11 +16,13 @@ from qcodes import Station
 
 # Import instruments
 from qcodes.instrument_drivers.stanford_research.SR830 import SR830
-from instrument_drivers import Keysight_N9310A, Agilent_AnalogDiscovery2
+from qcodes.instrument_drivers.tektronix.TPS2012 import TPS2012
+from instrument_drivers import Keysight_N9310A# , Agilent_AnalogDiscovery2
 
 # VISA addresses for the instruments
 lock_in_amplifier_address = 'GPIB0::10::INSTR'
 signal_generator_address = 'USB0::0x0957::0x2018::01151879::INSTR'
+scope_address = 'USB0::0x0699::0x0368::C035740::INSTR'
 
 
 # Setup all the instruments for this station
@@ -33,10 +35,14 @@ def setup_instruments():
     n9310a = Keysight_N9310A.N9310A('signal_gen', signal_generator_address)
 
     # And finally the voltmeter (Implemented using an oscilloscope by computing the RMS)
-    discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm')
+    # discovery2 = Agilent_AnalogDiscovery2.AnalogDiscovery2('dvm')
+
+    # And finally the voltmeter (Implemented using a Tektronix TBS1072B oscilloscope, 
+    # which happens to need the same driver as the TPS2012B)
+    tek_scope = TPS2012('dvm', scope_address)
 
     # Return the instruments as a list
-    return [sr830, n9310a, discovery2]
+    return [sr830, n9310a, tek_scope]
 
 
 # Setup the station

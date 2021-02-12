@@ -64,9 +64,9 @@ ${get_temperature_plot(state)}
     <h1 class="h4">Data status</h1>
     <div class="status_contents">
         <div class="datapoints-status--container">
-            <div>Number of datapoints taken = ${state['n_points_taken']}</div>
-            <div>Number of datapoints remaining = ${state['n_points_total'] - state['n_points_taken']}</div>
-            <div>Number of datapoints total = ${state['n_points_total']}</div>        
+            <div>Number of datapoints taken = <span id="data--container--take">${state['n_points_taken']}</span></div>
+            <div>Number of datapoints remaining = <span id="data--container--remaining">${state['n_points_total'] - state['n_points_taken']}</span></div>
+            <div>Number of datapoints total = <span id="data--container--total">${state['n_points_total']}</span></div>        
         </div>
     </div>
 </div>

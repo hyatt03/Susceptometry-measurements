@@ -66,15 +66,34 @@ class BrowserNamespace(UniversalEvents):
     # Number of datapoints collected
     async def on_b_get_n_points_taken(self, sid):
         with db.connection_context():
-            n_points_taken = 21
-            await self.emit('b_n_points_taken', n_points_taken, room=sid)
+            if ExperimentConfiguration.select().count() > 0:
+                # get the latest config from the database
+                latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
+
+                # Compute the number of points taken
+                n_points_taken = ExperimentStep.select()\
+                                               .where(ExperimentStep.experiment_configuration == latest_config.id)\
+                                               .where(ExperimentStep.step_done==True)\
+                                               .count()
+
+                # Send it to the user
+                await self.emit('b_n_points_taken', n_points_taken, room=sid)
 
     # Total number of datapoints to be collected during this run
     async def on_b_get_n_points_total(self, sid):
         with db.connection_context():
-            n_points_total = 210
-            await self.emit('b_n_points_total', n_points_total, room=sid)
+            if ExperimentConfiguration.select().count() > 0:
+                # get the latest config from the database
+                latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
 
+                # Compute the number of points taken
+                n_points_total = ExperimentStep.select()\
+                                               .where(ExperimentStep.experiment_configuration == latest_config.id)\
+                                               .count()
+
+                # Send it to the user
+                await self.emit('b_n_points_total', n_points_total, room=sid)
+            
     # Get the rms value of the oscilloscope
     async def on_b_get_rms(self, sid):
         with db.connection_context():
