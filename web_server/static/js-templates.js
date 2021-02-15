@@ -1,13 +1,15 @@
 function get_temperature_list(state) {
     return `
         <div>Current temperatures: </div>
-        <div class="temperature--label">t_still = ${state['temperatures']['t_still']}K</div>
-        <div class="temperature--label">t_1 = ${state['temperatures']['t_1']}K</div>
-        <div class="temperature--label">t_2 = ${state['temperatures']['t_2']}K</div>
-        <div class="temperature--label">t_3 = ${state['temperatures']['t_3']}K</div>
-        <div class="temperature--label">t_4 = ${state['temperatures']['t_4']}K</div>
-        <div class="temperature--label">t_5 = ${state['temperatures']['t_5']}K</div>
-        <div class="temperature--label">t_6 = ${state['temperatures']['t_6']}K</div>`;
+        <div class="temperature--label">t_upper_hex = ${state['temperatures']['t_upper_hex']}K</div>
+        <div class="temperature--label">t_lower_hex = ${state['temperatures']['t_lower_hex']}K</div>
+        <div class="temperature--label">t_he_pot = ${state['temperatures']['t_he_pot']}K</div>
+        <div class="temperature--label">t_1st_stage = ${state['temperatures']['t_1st_stage']}K</div>
+        <div class="temperature--label">t_2nd_stage = ${state['temperatures']['t_2nd_stage']}K</div>
+        <div class="temperature--label">t_inner_coil = ${state['temperatures']['t_inner_coil']}K</div>
+        <div class="temperature--label">t_outer_coil = ${state['temperatures']['t_outer_coil']}K</div>
+        <div class="temperature--label">t_switch = ${state['temperatures']['t_switch']}K</div>
+        <div class="temperature--label">t_he_pot_2 = ${state['temperatures']['t_he_pot_2']}K</div>`;
 }
 
 function get_magnet_field_list(state) {

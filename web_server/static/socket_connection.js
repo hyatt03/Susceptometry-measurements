@@ -8,13 +8,15 @@ const state = {
     'pressure_trace_plot_data': [],
     'pressure_trace_plot_layout': 0,
     'temperatures': {
-        't_still': 0.0,
-        't_1': 0.0,
-        't_2': 0.0,
-        't_3': 0.0,
-        't_4': 0.0,
-        't_5': 0.0,
-        't_6': 0.0,
+        't_1st_stage': 0.0,
+        't_2nd_stage': 0.0,
+        't_he_pot': 0.0,
+        't_he_pot_2': 0.0,
+        't_inner_coil': 0.0,
+        't_lower_hex': 0.0,
+        't_outer_coil': 0.0,
+        't_switch': 0.0,
+        't_upper_hex': 0.0,
         'timestamp': 0
     },
     'pressures': {
@@ -48,6 +50,9 @@ const state = {
         'data_points_per_measurement': 10,
     }
 };
+
+const t_labels = ['t_upper_hex', 't_lower_hex', 't_he_pot', 't_1st_stage', 't_2nd_stage', 
+                            't_inner_coil', 't_outer_coil', 't_switch', 't_he_pot_2']
 
 function main_socket_connection() {
     // Open a socket connection
@@ -167,13 +172,15 @@ function update_experiment_config() {
 
 function temperatures_updated(temperatures) {
     if (typeof temperatures !== 'undefined') {
-        state['temperatures']['t_still'] = temperatures['t_still'];
-        state['temperatures']['t_1'] = temperatures['t_1'];
-        state['temperatures']['t_2'] = temperatures['t_2'];
-        state['temperatures']['t_3'] = temperatures['t_3'];
-        state['temperatures']['t_4'] = temperatures['t_4'];
-        state['temperatures']['t_5'] = temperatures['t_5'];
-        state['temperatures']['t_6'] = temperatures['t_6'];
+        state['temperatures']['t_1st_stage'] = temperatures['t_1st_stage'];
+        state['temperatures']['t_2nd_stage'] = temperatures['t_2nd_stage'];
+        state['temperatures']['t_he_pot'] = temperatures['t_he_pot'];
+        state['temperatures']['t_he_pot_2'] = temperatures['t_he_pot_2'];
+        state['temperatures']['t_inner_coil'] = temperatures['t_inner_coil'];
+        state['temperatures']['t_lower_hex'] = temperatures['t_lower_hex'];
+        state['temperatures']['t_outer_coil'] = temperatures['t_outer_coil'];
+        state['temperatures']['t_switch'] = temperatures['t_switch'];
+        state['temperatures']['t_upper_hex'] = temperatures['t_upper_hex'];
         state['temperatures']['last_update'] = temperatures['timestamp'];
     }
 
@@ -183,18 +190,15 @@ function temperatures_updated(temperatures) {
     // Next we append the new temperatures to the data
     if (state['temperature_trace_plot_data'].length > 0 && state['temperature_plot_layout'] !== 0) {
         if (typeof temperatures !== 'undefined') {
-            // Add new data
-            state['temperature_trace_plot_data'][0].x.push(temperatures['timestamp']);
-            state['temperature_trace_plot_data'][0].y.push(temperatures['t_still']);
-
-            for (let i = 1; i < 7; i++) {
+            // Add new data to the state
+            for (let i = 0; i < 9; i++) {
                 state['temperature_trace_plot_data'][i].x.push(temperatures['timestamp']);
-                state['temperature_trace_plot_data'][i].y.push(temperatures['t_' + i]);
+                state['temperature_trace_plot_data'][i].y.push(temperatures[t_labels[i]]);
             }
 
             // Ensure length is at max 20 items
             if (state['temperature_trace_plot_data'][0].x.length > 20) {
-                for (let i = 0; i < 7; i++) {
+                for (let i = 0; i < 9; i++) {
                     state['temperature_trace_plot_data'][i].x.shift();
                     state['temperature_trace_plot_data'][i].y.shift();
                 }
@@ -232,10 +236,10 @@ function pressures_updated(pressures) {
         state['pressures']['last_update'] = pressures['timestamp'];
     }
 
-    // Update the temperatures if they exist
+    // Update the pressures if they exist
     const tc = $('.pressure--container');
 
-    // Next we append the new temperatures to the data
+    // Next we append the new pressures to the data
     if (state['pressure_trace_plot_data'].length > 0 && state['pressure_plot_layout'] !== 0) {
         if (typeof pressures !== 'undefined') {
             // Add new data
@@ -373,23 +377,20 @@ function magnet_trace_updated(magnet_trace) {
 function temperature_trace_updated(temperature_trace) {
     if (state['temperature_trace_plot_data'].length < 1) {
         // Initialize the data model
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 9; i++) {
             state['temperature_trace_plot_data'].push({
                 x: [],
                 y: [],
                 mode: 'lines+markers',
-                name: 'Temperature in probe ' + i
+                name: t_labels[i]
             });
         }
 
         // Add the datapoints
         for (let i = 0; i < temperature_trace.length; i++) {
-            state['temperature_trace_plot_data'][0].x.push(temperature_trace[i]['timestamp']);
-            state['temperature_trace_plot_data'][0].y.push(temperature_trace[i]['t_still']);
-
-            for (let j = 1; j < 7; j++) {
-                state['temperature_trace_plot_data'][j].x.push(temperature_trace[i]['timestamp'])
-                state['temperature_trace_plot_data'][j].y.push(temperature_trace[i]['t_' + j])
+            for (let j = 0; j < 9; j++) {
+                state['temperature_trace_plot_data'][j].x.push(temperature_trace[i]['timestamp']);
+                state['temperature_trace_plot_data'][j].y.push(temperature_trace[i][t_labels[j]]);
             }
         }
 
