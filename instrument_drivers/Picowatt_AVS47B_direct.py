@@ -40,8 +40,6 @@ class Avs_47b_direct(Instrument):
             calib[:, 0] = (calib[:, 0])[sort]
             calib[:, 1] = (calib[:, 1])[sort]
             self.calibrations.append(calib)
-
-            print(calib)
         
         # Initialize the serial connection (not open yet)
         self.ser = serial.Serial()
@@ -372,7 +370,7 @@ class Avs_47b_direct(Instrument):
             time.sleep(0.005)
 
         # Now we sleep 10 msecs waiting for the shift register to be populated with data
-        time.sleep(0.01)
+        time.sleep(0.1)
 
         # Now we retreive the data, we save the results to the config
         ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, True, True)
