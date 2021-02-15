@@ -61,6 +61,25 @@ class MagnetismQueue(BaseQueueClass):
         self.signal_gen.LFOutputAmplitude.set(0.2)
         self.signal_gen.LFOutputFrequency.set(1000)
 
+        # Setup the oscilloscope
+        self.dvm.clear_message_queue()
+
+        # horizontal
+        self.dvm.horizontal_scale.set(500e-6)
+
+        # channel 1
+        self.dvm.channels[0].state('ON')
+        self.dvm.channels[0].scale.set(0.1)  # V/div
+        self.dvm.channels[0].position.set(0)  # divisions
+
+        # channel 2
+        self.dvm.channels[1].state('OFF')
+
+        # trigger
+        self.dvm.trigger_type.set('EDGE')
+        self.dvm.trigger_source.set('CH1')
+        self.dvm.trigger_level.set(0.0)
+
         # Register queue processors
         self.register_queue_processor('test_queue', self.test_queue)
 
@@ -120,10 +139,21 @@ class MagnetismQueue(BaseQueueClass):
     # Gets a trace from the oscilloscope and creates a magnetism trace
     async def get_magnet_trace(self, queue, name, task):
         # Get a trace from the oscilloscope
-        magnetism_state['magnet_trace'] = self.dvm.get_trace(0)
+        # We start by forcing a trigger to prepare the scope
+        self.dvm.force_trigger()
+
+        # Then we wait for the data to arrive
+        await asyncio.sleep(10 * self.dvm.horizontal_scale.get_latest())
+
+        # Now we prepare the data
+        self.dvm.channels[0].curvedata.prepare_curvedata()
+
+        # And we get the trace
+        magnetism_state['magnet_trace'] = self.dvm.channels[0].curvedata.get()
 
         # Compute the times
-        magnetism_state['magnet_trace_times'] = np.arange(0.0, 1, 1/len(magnetism_state['magnet_trace'])) / 100
+        magnetism_state['magnet_trace_times'] = np.arange(0.0, 10 * self.dvm.horizontal_scale.get_latest(), 
+                                                          (10 * self.dvm.horizontal_scale.get_latest()) / len(magnetism_state['magnet_trace']))
 
         # Send the results to the client
         await self.get_latest_rms_of_magnet_trace(queue, name, task)

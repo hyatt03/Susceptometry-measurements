@@ -50,4 +50,4 @@ if __name__ == '__main__':
                           MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint])
 
     # Run the app
-    web.run_app(app, port=3000)
+    web.run_app(app, port=3000, host='0.0.0.0')

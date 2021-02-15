@@ -81,6 +81,9 @@ function main_socket_connection() {
 
     // Open status page by default
     open_status_page();
+
+    // Request fresh data stats every 5 seconds
+    setInterval(update_data_status, 5000);
 }
 
 // Event handler for server requesting idn
@@ -101,13 +104,16 @@ function idn_requested() {
     socket.emit('idn', idn);
 }
 
+function update_data_status() {
+    update_n_points_taken();
+    update_n_points_total();
+}
+
 function update_status_state_tree() {
     update_temperatures();
     update_ac_field();
     update_dc_field();
-    update_n_points_taken();
-    update_n_points_total();
-    update_experiment_config();
+    update_data_status();
 }
 
 function update_temperatures() {
@@ -282,14 +288,32 @@ function ac_field_updated(fieldstrength) {
     update_magnet_state();
 }
 
+function update_data_status_values() {
+    const take_container = $('#data--container--take');
+    const remain_container = $('#data--container--remaining');
+    const total_container = $('#data--container--total');
+
+    if (take_container.length > 0) {
+        take_container.html(state['n_points_taken']);
+    }
+
+    if (remain_container.length > 0) {
+        remain_container.html(state['n_points_total'] - state['n_points_taken']);
+    }
+
+    if (total_container.length > 0) {
+        total_container.html(state['n_points_total']);
+    }
+}
+
 function n_points_taken_updated(n_points_taken) {
     state['n_points_taken'] = n_points_taken;
-    state['current_page'](false);
+    update_data_status_values();
 }
 
 function n_points_total_updated(n_points_total) {
     state['n_points_total'] = n_points_total;
-    state['current_page'](false);
+    update_data_status_values();
 }
 
 function rms_updated(b_rms) {
