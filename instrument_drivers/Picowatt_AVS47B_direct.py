@@ -13,14 +13,15 @@ import time, os, sys
 class Avs_47b_direct(Instrument):
     # Paths of calibration files to convert between resistance [in ohms] and temperature [in kelvin]
     calib_files = [
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 0
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 1
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 2
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 3
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 4
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 5
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt',  # Sensor 6
-        os.path.dirname(__file__) + '/avs_calibration_files/pt100_calibration.txt'   # Sensor 7
+        os.path.dirname(__file__) + '/avs_calibration_files/1)Upper HEx.txt',  # Sensor 0
+        os.path.dirname(__file__) + '/avs_calibration_files/2)Lower HEx.txt',  # Sensor 1
+        os.path.dirname(__file__) + '/avs_calibration_files/3)He Pot CCS.txt',  # Sensor 2
+        os.path.dirname(__file__) + '/avs_calibration_files/4)1st stage.txt',  # Sensor 3
+        os.path.dirname(__file__) + '/avs_calibration_files/5)2nd stage.txt',  # Sensor 4
+        os.path.dirname(__file__) + '/avs_calibration_files/6)Inner Coil.txt',  # Sensor 5
+        os.path.dirname(__file__) + '/avs_calibration_files/7)Outer Coil.txt',  # Sensor 6
+        os.path.dirname(__file__) + '/avs_calibration_files/8)Switch.txt',   # Sensor 7
+        os.path.dirname(__file__) + '/avs_calibration_files/9)He Pot.txt' # Duplicate of sensor 2
     ]
 
     def __init__(self, name, address, **kwargs):
@@ -34,7 +35,13 @@ class Avs_47b_direct(Instrument):
         # Load up the calibration
         self.calibrations = []
         for fn in self.calib_files:
-            self.calibrations.append(np.loadtxt(fn, delimiter=','))
+            calib = np.loadtxt(fn, delimiter=',')
+            sort = np.argsort(calib[:, 1])
+            calib[:, 0] = (calib[:, 0])[sort]
+            calib[:, 1] = (calib[:, 1])[sort]
+            self.calibrations.append(calib)
+
+            print(calib)
         
         # Initialize the serial connection (not open yet)
         self.ser = serial.Serial()
@@ -376,15 +383,20 @@ class Avs_47b_direct(Instrument):
     def query_for_temperature(self, channel):
         """
         Queries the AVS-47B for the resistance on a single channel and converts it to a temperature
-        """
+        """ 
+        # We have a two calibrations for one channel, take heigh for that
+        q_chan = channel
+        if channel == 8:
+            q_chan = 2
+
         # First we get the resistance
-        ovr, resistance, ch_out = self.query_for_resistance(channel)
+        ovr, resistance, ch_out = self.query_for_resistance(q_chan)
 
         # Now we grab the calibration
-        calib = self.calibrations[ch_out]
+        calib = self.calibrations[channel]
 
         # And we interpolate the result
-        temp = np.interp(resistance + np.random.random_integers(85, 185, 1)[0], calib[:, 0], calib[:, 1])
+        temp = np.interp(resistance, calib[:, 1], calib[:, 0])
 
         # return whether we are overranged, the temperature, and the channel measured
         return ovr, temp, ch_out
