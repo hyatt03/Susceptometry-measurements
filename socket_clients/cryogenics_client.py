@@ -45,7 +45,6 @@ class CryoQueue(BaseQueueClass):
         self.resistance_bridge = self.station.components['resistance_bridge']
 
         # Register queue processors
-        self.register_queue_processor('test_queue', self.test_queue)
         self.register_queue_processor('configure_avs47b', self.configure_avs47b)
         self.register_queue_processor('get_temperatures', self.get_temperatures)
         self.register_queue_processor('get_temperature_trace', self.get_temperature_trace)
@@ -63,9 +62,23 @@ class CryoQueue(BaseQueueClass):
 
     # Queue task to configure the avs47b
     async def configure_avs47b(self, queue, name, task):
+        # Grab the config
         config = task['config']
-        await asyncio.sleep(1)
-        print('configuring avs47b with config:', config)
+
+        # Create a list of accepted parameters
+        params = ['InputMode', 'MultiplexerChannel', 'Range', 'Excitation', 'ReferenceVoltage', 'ReferenceSource', 'Magnification', 'Display']
+
+        # Check if the parameters are in the config dict and change the ones that are
+        for p in params:
+            if p in config:
+                self.resistance_bridge[p].set(config[p])
+
+        # First we update the bridge to reflect the setting we just set
+        # The bools are remote, save config, and return decoded
+        self.resistance_bridge.send_config(True, False, False)
+
+        # Next we update our local config to reflect what the state of the device actually is
+        self.resistance_bridge.send_config(True, True, False)
 
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
@@ -149,8 +162,7 @@ class CryoQueue(BaseQueueClass):
 
     # Queue task to cool the system down
     async def start_cooling(self, queue, name, task):
-        await asyncio.sleep(1)
-        print('going to start cooling')
+        print('Cooling by script is currently disabled')
 
     # Process the next step of the current experiment
     async def process_next_step(self, queue, name, task):
@@ -243,17 +255,6 @@ class CryoQueue(BaseQueueClass):
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
 
-    # Queue task to test functionality
-    async def test_queue(self, queue, name, task):
-        # Alert that we received a test signal
-        print('got test signal')
-        await asyncio.sleep(1)
-
-        # Print out task info
-        print('queue:', queue)
-        print('name:', name)
-        print('task:', task)
-
 
 # Create the class containing the namespace for this client
 class CryoClientNamespace(BaseClientNamespace):
@@ -270,10 +271,6 @@ class CryoClientNamespace(BaseClientNamespace):
             await self.append_to_queue({'function_name': 'update_pressures'})
             await self.append_to_queue({'function_name': 'get_mck_state'})
             await asyncio.sleep(5)
-
-    # Received when testing should start
-    async def on_test_queue(self):
-        await self.append_to_queue({'function_name': 'test_queue'})
 
     # Received when cooling should start
     async def on_c_config_start_cooling(self):

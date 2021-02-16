@@ -44,6 +44,20 @@ def get_mean_from_list_of_arrays(a):
     return list(np.array(a).mean(axis=1))
 
 
+# list of parameters for the lock in amplifier
+# Used when getting and setting the config
+lockin_params = ['phase', 'reference_source', 'frequency', 'ext_trigger', 'harmonic', 'amplitude', 
+                 'input_config', 'input_shield', 'input_coupling', 'notch_filter', 'sensitivity', 
+                 'reserve', 'time_constant', 'filter_slope', 'sync_filter', 'X_offset', 'Y_offset', 
+                 'R_offset', 'aux_in1', 'aux_in2', 'aux_in3', 'aux_in4', 'aux_out1', 'aux_out2', 
+                 'aux_out3', 'aux_out4', 'output_interface', 'ch1_ratio', 'ch2_ratio', 'ch1_display', 
+                 'ch2_display', 'ch1_databuffer', 'ch2_databuffer', 'X', 'Y', 'R', 'P', 'buffer_SR', 
+                 'buffer_acq_mode', 'buffer_trig_mode', 'buffer_npts']
+
+# Resistor to calculate current
+resistor = 84.5 # Ohm
+
+
 # A queue to process magnetism related tasks
 # Such as adjusting equipment and taking measurements
 class MagnetismQueue(BaseQueueClass):
@@ -55,21 +69,22 @@ class MagnetismQueue(BaseQueueClass):
         self.dvm = self.station.components['dvm']
         self.signal_gen = self.station.components['signal_gen']
         self.lockin = self.station.components['lockin']
+        self.magnet_ps = self.station.components['magnet_ps']
 
         # Turn on the signal generator (0.4 volts peak to peak)
         self.signal_gen.LFOutputState.set(1)
-        self.signal_gen.LFOutputAmplitude.set(0.2)
+        self.signal_gen.LFOutputAmplitude.set(0.5)
         self.signal_gen.LFOutputFrequency.set(1000)
 
         # Setup the oscilloscope
         self.dvm.clear_message_queue()
 
         # horizontal
-        self.dvm.horizontal_scale.set(500e-6)
+        self.dvm.horizontal_scale.set(100e-5)
 
         # channel 1
         self.dvm.channels[0].state('ON')
-        self.dvm.channels[0].scale.set(0.1)  # V/div
+        self.dvm.channels[0].scale.set(0.01)  # V/div
         self.dvm.channels[0].position.set(0)  # divisions
 
         # channel 2
@@ -81,8 +96,6 @@ class MagnetismQueue(BaseQueueClass):
         self.dvm.trigger_level.set(0.0)
 
         # Register queue processors
-        self.register_queue_processor('test_queue', self.test_queue)
-
         self.register_queue_processor('get_sr830_config', self.get_sr830_config)
         self.register_queue_processor('get_n9310a_config', self.get_n9310a_config)
         self.register_queue_processor('get_oscilloscope_config', self.get_oscilloscope_config)
@@ -90,9 +103,7 @@ class MagnetismQueue(BaseQueueClass):
         self.register_queue_processor('get_magnet_state', self.get_magnet_state)
         self.register_queue_processor('get_magnet_trace', self.get_magnet_trace)
         self.register_queue_processor('get_latest_datapoint', self.get_latest_datapoint)
-
         self.register_queue_processor('process_next_step', self.process_next_step)
-
         self.register_queue_processor('set_oscilloscope_config', self.set_oscilloscope_config)
         self.register_queue_processor('set_sr830_config', self.set_sr830_config)
         self.register_queue_processor('set_magnet_config', self.set_magnet_config)
@@ -102,20 +113,16 @@ class MagnetismQueue(BaseQueueClass):
     def queue_name(self):
         return 'MagnetismQueue'
 
-    async def test_queue(self, queue, name, task):
-        # Alert that we received a test signal
-        print('got test signal')
-        await asyncio.sleep(1)
-
-        # Print out task info
-        print('queue:', queue)
-        print('name:', name)
-        print('task:', task)
-
     async def get_sr830_config(self, queue, name, task):
-        await asyncio.sleep(1)
-        print('getting sr830 config')
+        # Empty dict to store results
+        config = {}
 
+        # Get all the config params
+        for cp in lockin_params:
+            config[cp] = self.lockin[cp].get()
+
+        self.socket_client.send_lockin_config(config)
+        
     async def get_oscilloscope_config(self, queue, name, task):
         await asyncio.sleep(1)
         print('getting the oscilloscope config')
@@ -149,7 +156,7 @@ class MagnetismQueue(BaseQueueClass):
         self.dvm.channels[0].curvedata.prepare_curvedata()
 
         # And we get the trace
-        magnetism_state['magnet_trace'] = self.dvm.channels[0].curvedata.get()
+        magnetism_state['magnet_trace'] = self.dvm.channels[0].curvedata.get() / resistor
 
         # Compute the times
         magnetism_state['magnet_trace_times'] = np.arange(0.0, 10 * self.dvm.horizontal_scale.get_latest(), 
@@ -206,7 +213,8 @@ class MagnetismQueue(BaseQueueClass):
         ch2_raw_data = ch2_meas.run()
         
         # Return the data (cut to the buffer size)
-        return [ch1_raw_data.lockin_ch1_databuffer[:buffersize], ch2_raw_data.lockin_ch2_databuffer[:buffersize]]
+        return [ch1_raw_data.lockin_ch1_databuffer[:buffersize], 
+                ch2_raw_data.lockin_ch2_databuffer[:buffersize]]
 
     async def process_next_step(self, queue, name, task):
         # We get the step
@@ -225,7 +233,8 @@ class MagnetismQueue(BaseQueueClass):
         print('processing next step')
 
         # Close the old datafile if necessary
-        if magnetism_state['experiment_file_id'] != step['experiment_configuration_id'] and magnetism_state['experiment_file'] is not None:
+        if (magnetism_state['experiment_file_id'] != step['experiment_configuration_id'] 
+            and magnetism_state['experiment_file'] is not None):
             magnetism_state['experiment_file'].close()
             magnetism_state['experiment_file'] = None
 
@@ -235,7 +244,8 @@ class MagnetismQueue(BaseQueueClass):
             magnetism_state['experiment_file_id'] = step['experiment_configuration_id']
 
             # Open the file
-            magnetism_state['experiment_file'] = pd.HDFStore(f'data/magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5')
+            fp = f'data/magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5'
+            magnetism_state['experiment_file'] = pd.HDFStore(fp)
 
         # Set the magentic field
         await self.set_magnet_config(queue, name, {'config': {
@@ -332,16 +342,10 @@ class MagnetismQueue(BaseQueueClass):
         magnetism_state['current_step']['step_done'] = True
 
     async def set_oscilloscope_config(self, queue, name, task):
-        config = task['config']
-        await asyncio.sleep(1)
-        print('setting oscilloscope config')
+        pass
 
     async def set_sr830_config(self, queue, name, task):
         config = task['config']
-
-        # Set the displays to show phase and amplitude of the signal
-        self.lockin.ch1_display('R')
-        self.lockin.ch2_display('Phase')
 
         # Reset any ratios
         self.lockin.ch1_ratio('none')
@@ -353,10 +357,15 @@ class MagnetismQueue(BaseQueueClass):
         # Set the buffer frequency
         self.lockin.buffer_SR(config['frequency'])
 
+        # Set the remaining config parameters
+        for cp in lockin_params:
+            if cp in config:
+                self.lockin[cp].set(config[cp])
+
     async def set_magnet_config(self, queue, name, task):
-        config = task['config']
-        await asyncio.sleep(1)
-        print('setting magnet config')
+        # We can only set the magnetic field, so we set that
+        if 'MagneticField' in task['config']:
+            self.magnet_ps.MagneticField.set(task['config']['MagneticField'])
 
     async def set_n9310a_config(self, queue, name, task):
         config = task['config']
@@ -378,9 +387,6 @@ class MagnetismClientNamespace(BaseClientNamespace):
         while True:
             await asyncio.sleep(5)
             await self.on_m_get_magnet_trace()
-
-    async def on_test_queue(self):
-        await self.append_to_queue({'function_name': 'test_queue'})
 
     """#### GET methods ####"""
     async def on_m_get_sr830_config(self):
@@ -428,6 +434,9 @@ class MagnetismClientNamespace(BaseClientNamespace):
 
     async def send_magnet_rms(self, rms):
         await self.emit('m_got_magnet_rms', float(rms))
+
+    async def send_lockin_config(self, config):
+        await self.emit('m_got_lockin_config', config)
 
 
 if __name__ == '__main__':

@@ -34,7 +34,7 @@ class MagnetController(VisaInstrument):
     def set_magnetic_field(self, field):
         # The ramp speed, set in amps per second, converted to tesla per second
         tesla_per_amp = 0.14619  # T/amp
-        ramp = 0.1 * tesla_per_amp  # T/s
+        ramp = 0.25 * tesla_per_amp  # T/s
 
         # Start by interrupting whatever the magnet is currently doing
         self.ask('PAUSE ON')

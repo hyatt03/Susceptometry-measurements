@@ -123,50 +123,13 @@ class Avs_47b_direct(Instrument):
         #     Can be used for estimating the current lead resistance
         self.add_parameter('Display', vals=vals.Ints(0, 4), get_cmd=None, set_cmd=None, initial_value=0)
 
-        # Set the averaging on the ADC (Set the number of points to average over)
-        self.add_parameter('ADCAverage', vals=vals.Ints(1, 1000), get_cmd=None, set_cmd=None)
-
-        # Get the ADC value
-        # Returns a voltage between -2 and +2, yields exact 0 when overranged
-        # Real 0 and overrange 0 can be distinguished using Overrange command.
-        self.add_parameter('ADCValue', unit='V', get_cmd=None, set_cmd=None)
-
-        # Set the averaging on resistance measurements (number of points to average)
-        self.add_parameter('ResistanceAveraging', vals=vals.Ints(1, 1000), get_cmd=None, set_cmd=None)
-
         # Query for the resistance
-        self.add_parameter('Resistance', unit='Ohm', get_cmd=None, set_cmd=None)
+        self.add_parameter('Resistance', unit='Ohm', get_cmd=self.get_resistance, set_cmd=None)
 
         # Query overrange
         # 0 = no overrange
         # 1 = At least one measurement was overranged (you should probably use autoranging
         self.add_parameter('Overrange', get_cmd=None, set_cmd=None)
-
-        # Query minimum resistance in ohms of averaged resistance measurement
-        self.add_parameter('MinimumResistance', unit='Ohm', get_cmd=None, set_cmd=None)
-
-        # Query maximum resistance in ohms of averaged resistance measurement
-        self.add_parameter('MaximumResistance', unit='Ohm', get_cmd=None, set_cmd=None)
-
-        # Query standard deviation of the resistance in ohms of averaged resistance measurement
-        # Only reliable when noise is white
-        self.add_parameter('STDResistance', unit='Ohm', get_cmd=None, set_cmd=None)
-
-        # Query QRatio, white noise is about 5, much higher indicated external interference
-        # Affected by digitizing step if the excitation is high
-        self.add_parameter('QRatio', get_cmd=None, set_cmd=None)
-
-        # Setup autoranging
-        # 0 = No autoranging
-        # 1..30 = Autoranging with delay of n seconds
-        # Lower excitation necessitates longer delays
-        # Query range often to check if range has changed
-        self.add_parameter('Autorange', unit='s', vals=vals.Ints(0, 30), get_cmd=None, set_cmd=None)
-
-        # Other commands and queries
-
-        # Query for errors
-        self.add_parameter('Errors', get_cmd=None, set_cmd=None)
 
         # Now we open the serial connection
         self.ser.open()
@@ -377,6 +340,9 @@ class Avs_47b_direct(Instrument):
 
         # Return wether we are overrange, the resistance, and the channel we actually measured.
         return ovr, resistance, ch_out
+
+    def get_resistance(self):
+        return self.query_for_resistance(self.MultiplexerChannel.get())[1]
 
     def query_for_temperature(self, channel):
         """

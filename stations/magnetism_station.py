@@ -39,8 +39,6 @@ def setup_instruments():
     # Next we open a connection to the magnet power supply to control the DC field
     magnet_ps = CryogenicsLimited_MagnetController.MagnetController('magnet_ps', magnet_ps_address)
 
-    print('get field:', magnet_ps.MagneticField.get())
-
     # And finally the voltmeter (Implemented using a Tektronix TBS1072B oscilloscope, 
     # which happens to need the same driver as the TPS2012B)
     tek_scope = TPS2012('dvm', scope_address)
