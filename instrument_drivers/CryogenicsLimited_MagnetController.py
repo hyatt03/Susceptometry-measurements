@@ -9,15 +9,19 @@ import time
 
 class MagnetController(VisaInstrument):
     def __init__(self, name, address, **kwargs):
-        super().__init__(name, address, terminator='', **kwargs)
+        super().__init__(name, address, terminator='\n', **kwargs)
 
         # Sets the low frequency output amplitude
         self.add_parameter('MagneticField',
                            unit='T',
                            set_cmd=self.set_magnetic_field,
-                           set_parser=float,
-                           get_cmd='LFO:AMPL?',
-                           get_parser=float)
+                           get_cmd=self.get_magnetic_field)
+
+        # Connect to the instrument and get an IDN
+        self.connect_message()
+
+        # Ensure output is measured in Tesla
+        self.ask('TESLA ON')
 
     def get_magnetic_field(self):
         # The command returns something like
@@ -33,31 +37,33 @@ class MagnetController(VisaInstrument):
         ramp = 0.1 * tesla_per_amp  # T/s
 
         # Start by interrupting whatever the magnet is currently doing
-        self.write('PAUSE ON')
+        self.ask('PAUSE ON')
         time.sleep(0.75)
 
         # Set the rate of change for the field in amps per second
-        self.write(f'SET RAMP {ramp}')
+        self.ask(f'SET RAMP {ramp}')
         time.sleep(0.25)
 
         # Set units to tesla
-        self.write('TESLA ON')
+        self.ask('TESLA ON')
         time.sleep(0.25)
-        self.write('SET MID 0')
+        self.ask('SET MID 0')
         time.sleep(0.25)
 
         # Turn on the heater
-        self.write('HEATER ON')
+        self.ask('HEATER ON')
         time.sleep(0.25)
 
         # Set the magnetic field value (in tesla, 4 decimals accuracy)
-        self.write(f'SET MAX {round(float(field), 4)}')
+        self.ask(f'SET MAX {round(float(field), 4)}')
         time.sleep(0.25)
 
         # Tell the magnet to go to that field value
-        self.write('RAMP MAX')
+        self.ask('RAMP MAX')
         time.sleep(0.5)
 
         # Enable operation
-        self.write('PAUSE OFF')
+        self.ask('PAUSE OFF')
         time.sleep(0.25)
+
+        return self.get_magnetic_field()
