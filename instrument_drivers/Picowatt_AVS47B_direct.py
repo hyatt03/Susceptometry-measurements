@@ -123,6 +123,9 @@ class Avs_47b_direct(Instrument):
         #     Can be used for estimating the current lead resistance
         self.add_parameter('Display', vals=vals.Ints(0, 4), get_cmd=None, set_cmd=None, initial_value=0)
 
+        # Parameter where we save the raw ADC value
+        self.add_parameter('ADCValue', get_cmd=None, set_cmd=None, initial_value=0)
+
         # Query for the resistance
         self.add_parameter('Resistance', unit='Ohm', get_cmd=self.get_resistance, set_cmd=None)
 

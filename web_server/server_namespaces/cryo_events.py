@@ -29,6 +29,9 @@ class CryoNamespace(UniversalEvents):
     async def get_pressure_trace(self):
         await self.emit('c_get_pressure_trace')
 
+    async def get_fp_status(self):
+        await self.emit('on_c_get_frontpanel_status')
+
     async def send_step_ready(self, step_id):
         await self.emit('c_step_ready_for_measurement', step_id)
 
@@ -70,6 +73,9 @@ class CryoNamespace(UniversalEvents):
 
     async def on_c_got_pressure_trace(self, sid, pressure_trace):
         await self.browser_namespace.send_pressure_trace(pressure_trace)
+
+    async def on_c_got_fp_status(self, sid, status):
+        await self.browser_namespace.send_cryo_status(status)
 
     # Event received when mck state is updated
     async def on_c_got_mck_state(self, mck_state):

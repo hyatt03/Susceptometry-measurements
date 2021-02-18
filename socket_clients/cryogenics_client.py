@@ -51,6 +51,7 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('update_temperatures', self.update_temperatures)
         self.register_queue_processor('get_pressures', self.get_pressures)
         self.register_queue_processor('get_pressure_trace', self.get_pressure_trace)
+        self.register_queue_processor('get_fp_status', self.get_fp_status)
         self.register_queue_processor('update_pressures', self.update_pressures)
         self.register_queue_processor('start_cooling', self.start_cooling)
         self.register_queue_processor('get_mck_state', self.get_mck_state)
@@ -164,6 +165,10 @@ class CryoQueue(BaseQueueClass):
     async def start_cooling(self, queue, name, task):
         print('Cooling by script is currently disabled')
 
+    # Queue task to send the frontpanel status and ack to the frontend
+    async def get_fp_status(self, queue, name, task):
+        await self.socket_client.send_fp_status({'ack': self.ghs.latest_ack.get_latest(), 'status': self.ghs.status.get_latest()})
+
     # Process the next step of the current experiment
     async def process_next_step(self, queue, name, task):
         # We get the step
@@ -276,6 +281,10 @@ class CryoClientNamespace(BaseClientNamespace):
     async def on_c_config_start_cooling(self):
         await self.append_to_queue({'function_name': 'start_cooling'})
 
+    # Received when front panel status is wanted
+    async def on_c_get_frontpanel_status(self):
+        await self.append_to_queue({'function_name': 'get_fp_status'})
+
     # Received when config for avs47b should be updated
     async def on_c_config_avs47b(self, config):
         await self.append_to_queue({'function_name': 'configure_avs47b', 'config': config})
@@ -309,6 +318,9 @@ class CryoClientNamespace(BaseClientNamespace):
 
     async def send_pressure_trace(self, pressure_trace):
         await self.emit('c_got_pressure_trace', list(pressure_trace))
+
+    async def send_fp_status(self, status):
+        await self.emit('c_got_fp_status', status)
 
     # Event received when server has a new step for us
     async def on_c_next_step(self, step):
