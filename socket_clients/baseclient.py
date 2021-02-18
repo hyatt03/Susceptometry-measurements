@@ -30,7 +30,15 @@ class BaseQueueClass():
             task = await queue.get()
 
             # Execute the task
-            await self.queue_functions[task['function_name']](queue, name, task)
+            try:
+                await self.queue_functions[task['function_name']](queue, name, task)
+            except Exception as e:
+                # Exceptions happen here when the namespace is not ready for example
+                # So we put it on the queue again
+                print('got exception on queue task:', task['function_name'])
+                print(e)
+
+                await self.queue.put(task)
 
             # Notify the queue that the "work item" has been processed.
             queue.task_done()
@@ -112,7 +120,6 @@ async def main(NamespaceClass, namespace_address):
     namespace.sid = sio.sid
 
     # Run the background job
-    # sio.start_background_task(namespace.background_job)
     asyncio.create_task(namespace.background_job())
 
     # Run the event loop
