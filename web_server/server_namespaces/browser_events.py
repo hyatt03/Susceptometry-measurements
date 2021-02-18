@@ -27,9 +27,11 @@ class BrowserNamespace(UniversalEvents):
         await self.cryo_namespace.get_pressures()
 
     async def on_b_get_cryo_status(self, sid):
+        print('getting cryo status')
         await self.cryo_namespace.get_fp_status()
 
     async def send_cryo_status(self, status):
+        print('sending cryo status to browsers')
         await self.emit('b_got_cryo_status', status)
 
     async def send_temperatures(self, temperatures):
