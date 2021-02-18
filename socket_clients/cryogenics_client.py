@@ -167,7 +167,6 @@ class CryoQueue(BaseQueueClass):
 
     # Queue task to send the frontpanel status and ack to the frontend
     async def get_fp_status(self, queue, name, task):
-        print('retrieving fp status')
         await self.socket_client.send_fp_status({'ack': self.ghs.latest_ack.get_latest(), 'status': self.ghs.status.get_latest()})
 
     # Process the next step of the current experiment
@@ -321,7 +320,6 @@ class CryoClientNamespace(BaseClientNamespace):
         await self.emit('c_got_pressure_trace', list(pressure_trace))
 
     async def send_fp_status(self, status):
-        print('gonna send fp status')
         await self.emit('c_got_fp_status', status)
 
     # Event received when server has a new step for us

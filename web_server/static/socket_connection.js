@@ -83,6 +83,7 @@ function main_socket_connection() {
     socket.on('b_temperature_trace', temperature_trace_updated);
     socket.on('b_pressure_trace', pressure_trace_updated);
     socket.on('b_latest_experiment_config', experiment_config_updated);
+    socket.on('b_got_cryo_status', cryo_status_updated)
 
     // Open status page by default
     open_status_page();
@@ -168,6 +169,11 @@ function update_pressure_trace() {
 
 function update_experiment_config() {
     window.my_socket.emit('b_get_latest_experiment_config');
+}
+
+function cryo_status_updated(status) {
+    $('#cryo_ack').html('Latest ack: ' + status['ack']);
+    $('#cryo_status').html('Status: ' + status['status']);
 }
 
 function temperatures_updated(temperatures) {

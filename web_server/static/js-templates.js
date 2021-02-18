@@ -224,9 +224,9 @@ function get_cryogenics_page_html() {
     <div class="cryogenics_status status_container">
         <h1 class="h4">Instrument status and latest ack</h1>
         <div class="status_contents row">
-            <div class="status-ack--container col-3">
-                <div>stat</div>
-                <div>ack</div>
+            <div class="status-ack--container col-12">
+                <div id="cryo_status">Status: Unknown</div>
+                <div id="cryo_ack">Latest ack: Unknown</div>
             </div>
         </div>
     </div>
