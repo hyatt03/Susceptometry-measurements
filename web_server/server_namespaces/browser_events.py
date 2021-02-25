@@ -6,7 +6,6 @@ import numpy as np
 from peewee import DoesNotExist
 
 from playhouse.shortcuts import model_to_dict
-import json
 
 
 # All the methods related to the browser connection
@@ -25,41 +24,33 @@ class BrowserNamespace(UniversalEvents):
         await self.emit('b_got_cryo_status', status)
 
     async def send_temperatures(self, temperatures):
-        with db.connection_context():
-            await self.emit('b_temperatures', temperatures)
+        await self.emit('b_temperatures', temperatures)
 
     async def send_temperature_trace(self, temperature_trace):
-        with db.connection_context():
-            await self.emit('b_temperature_trace', temperature_trace)
+        await self.emit('b_temperature_trace', temperature_trace)
 
     async def send_pressures(self, pressures):
-        with db.connection_context():
-            await self.emit('b_pressures', pressures)
+        await self.emit('b_pressures', pressures)
 
     async def send_pressure_trace(self, pressure_trace):
-        with db.connection_context():
-            await self.emit('b_pressure_trace', pressure_trace)
+        await self.emit('b_pressure_trace', pressure_trace)
 
     async def got_magnet_trace(self, data):
-        with db.connection_context():
-            times, magnet_trace = data
-            await self.emit('b_magnet_trace', {'magnet_trace': magnet_trace, 'times': times})
+        times, magnet_trace = data
+        await self.emit('b_magnet_trace', {'magnet_trace': magnet_trace, 'times': times})
 
     async def got_magnet_rms(self, rms):
-        with db.connection_context():
-            await self.emit('b_ac_field', round(rms, 4))
+        await self.emit('b_ac_field', round(rms, 4))
 
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
-        with db.connection_context():
-            dc_field_strength = round(float(np.abs(np.random.normal(8, 0.2))), 4)
-            await self.emit('b_dc_field', dc_field_strength, room=sid)
+        dc_field_strength = round(float(np.abs(np.random.normal(8, 0.2))), 4)
+        await self.emit('b_dc_field', dc_field_strength, room=sid)
 
     # Get the field strength of the small magnet
     async def on_b_get_ac_field(self, sid):
-        with db.connection_context():
-            ac_field_strength = round(float(np.random.normal(loc=0.0, scale=0.5)), 4)
-            await self.emit('b_ac_field', ac_field_strength, room=sid)
+        ac_field_strength = round(float(np.random.normal(loc=0.0, scale=0.5)), 4)
+        await self.emit('b_ac_field', ac_field_strength, room=sid)
 
     # Number of datapoints collected
     async def on_b_get_n_points_taken(self, sid):
@@ -94,23 +85,19 @@ class BrowserNamespace(UniversalEvents):
             
     # Get the rms value of the oscilloscope
     async def on_b_get_rms(self, sid):
-        with db.connection_context():
-            rms_value = round(float(np.abs(np.random.normal(0.545535))), 5)
-            await self.emit('b_rms', rms_value, room=sid)
+        rms_value = round(float(np.abs(np.random.normal(0.545535))), 5)
+        await self.emit('b_rms', rms_value, room=sid)
 
     # Get a trace of the magnet field values
     async def on_b_get_magnet_trace(self, sid):
-        with db.connection_context():
-            await self.magnetism_namespace.get_magnet_trace()
+        await self.magnetism_namespace.get_magnet_trace()
 
     # Get a trace of the temperatures recorded
     async def on_b_get_temperature_trace(self, sid):
-        with db.connection_context():
-            await self.cryo_namespace.get_temperature_trace()
+        await self.cryo_namespace.get_temperature_trace()
 
     async def on_b_get_pressure_trace(self, sid):
-        with db.connection_context():
-            await self.cryo_namespace.get_pressure_trace()
+        await self.cryo_namespace.get_pressure_trace()
 
     async def push_next_step_to_clients(self):
         with db.connection_context():

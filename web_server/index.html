@@ -12,27 +12,31 @@
     <link rel="icon" type="image/png" href="/static/favicon.ico">
 
     <!-- Grab bootstrap styles -->
-    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/libraries/bootstrap.min.css">
 
     <!-- Grab my own styles -->
     <link rel="stylesheet" href="/static/styles.css">
 
     <!-- Grab bootstrap js -->
-    <script src="/static/jquery-3.4.1.slim.min.js"></script>
-    <script src="/static/popper.min.js"></script>
-    <script src="/static/bootstrap.min.js"></script>
+    <script src="/static/libraries/jquery-3.4.1.slim.min.js"></script>
+    <script src="/static/libraries/popper.min.js"></script>
+    <script src="/static/libraries/bootstrap.min.js"></script>
 
     <!-- Grab socket.io library -->
-    <script src="/static/socket.io.slim.min.js"></script>
+    <script src="/static/libraries/socket.io.slim.min.js"></script>
 
     <!-- Grab cookie library -->
-    <script src="/static/cookie.min.js"></script>
+    <script src="/static/libraries/cookie.min.js"></script>
 
     <!-- Grab plotting library -->
-    <script src="/static/plotly-latest.min.js"></script>
+    <script src="/static/libraries/plotly-latest.min.js"></script>
 
     <!-- Grab my own JS to establish connections -->
     <script src="/static/js-templates.js"></script>
+    <script src="/static/views.js"></script>
+    <script src="/static/socket_emitters.js"></script>
+    <script src="/static/socket_receivers.js"></script>
+    <script src="/static/shortcut_functions.js"></script>
     <script src="/static/socket_connection.js"></script>
 </head>
 <body>
@@ -55,6 +59,9 @@
                     </a></li>
                     <li class="nav-item"><a class="nav-link" href="#cryo" onclick="pagehandlers['cryo_page']()">
                         Cryogenic configuration
+                    </a></li>
+                    <li class="nav-item"><a class="nav-link" href="#data" onclick="pagehandlers['data_page']()">
+                        Data management
                     </a></li>
                     <li class="nav-item"><a class="nav-link" href="#info" onclick="pagehandlers['info_page']()">
                         About this site

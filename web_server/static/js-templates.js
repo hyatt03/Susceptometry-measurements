@@ -258,6 +258,12 @@ function get_cryogenics_page_html() {
     `
 }
 
+function get_data_page_html() {
+    return `
+    This is the data page
+    `;
+}
+
 function get_info_page_html() {
     return `
     This page was made for a thesis
