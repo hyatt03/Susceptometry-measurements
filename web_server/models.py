@@ -156,9 +156,9 @@ class DataPoint(DBModel):
 
         # Iterate through the measurements we have collected for this step
         # and save the data
-        for ac, dc, amp, phs in zip(data['ac_rms_field'], data['dc_field'], 
+        for ac, dc, amp, phs in zip(data['ac_rms_field'], data['dc_field'],
                                     data['lockin_amplitude'], data['lockin_phase']):
-            MagnetismMeasurement(magnetism_data_point=magnetism_data_point, ac_rms_field=ac, 
+            MagnetismMeasurement(magnetism_data_point=magnetism_data_point, ac_rms_field=ac,
                                  dc_field=dc, lockin_amplitude=amp, lockin_phase=phs).save()
 
     def save_cryo_data(self, data):
@@ -168,7 +168,7 @@ class DataPoint(DBModel):
 
         # Iterate through the measurements we have collected for this step
         # and save the data
-        for i in range(len(data['temperatures']['t_still'])):
+        for i in range(len(data['temperatures']['t_upper_hex'])):
             # Save pressures
             PressureDataPoint(
                 cryo_data_point=cryogenics_data_point,
@@ -185,15 +185,15 @@ class DataPoint(DBModel):
             # Save temperatures
             TemperatureDataPoint(
                 cryo_data_point=cryogenics_data_point,
-                t_0=data['temperatures']['t_still'][i],
-                t_1=data['temperatures']['t_1'][i],
-                t_2=data['temperatures']['t_2'][i],
-                t_3=data['temperatures']['t_3'][i],
-                t_4=data['temperatures']['t_4'][i],
-                t_5=data['temperatures']['t_5'][i],
-                t_6=data['temperatures']['t_6'][i],
-                t_7=data['temperatures']['t_1'][i],  # @TODO: Use the actual temperatures
-                t_8=data['temperatures']['t_1'][i]
+                t_upper_hex=data['temperatures']['t_upper_hex'][i],
+                t_lower_hex=data['temperatures']['t_lower_hex'][i],
+                t_he_pot=data['temperatures']['t_he_pot'][i],
+                t_1st_stage=data['temperatures']['t_1st_stage'][i],
+                t_2nd_stage=data['temperatures']['t_2nd_stage'][i],
+                t_inner_coil=data['temperatures']['t_inner_coil'][i],
+                t_outer_coil=data['temperatures']['t_outer_coil'][i],
+                t_switch=data['temperatures']['t_switch'][i],
+                t_he_pot_2=data['temperatures']['t_he_pot_2'][i]
             ).save()
 
 
@@ -229,39 +229,22 @@ class PressureDataPoint(DBModel):
     p_5 = FloatField()
     p_6 = FloatField()
     p_7 = FloatField()
-    p_8 = FloatField() # Flow sensor
+    p_8 = FloatField()  # Flow sensor
 
     # Backreference to the CryogenicsDataPoint model (this way we can have many datapoints to one step)
     cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='pressures')
 
 
 class TemperatureDataPoint(DBModel):
-    # Upper HEx
-    t_0 = FloatField()
-
-    # Lower HEx
-    t_1 = FloatField()
-
-    # He Pot
-    t_2 = FloatField()
-
-    # 1st stage
-    t_3 = FloatField()
-
-    # 2nd stage
-    t_4 = FloatField()
-
-    # Inner coil
-    t_5 = FloatField()
-
-    # Outer coil
-    t_6 = FloatField()
-
-    # Switch
-    t_7 = FloatField()
-
-    # He pot
-    t_8  = FloatField()
+    t_upper_hex = FloatField()
+    t_lower_hex = FloatField()
+    t_he_pot = FloatField()
+    t_1st_stage = FloatField()
+    t_2nd_stage = FloatField()
+    t_inner_coil = FloatField()
+    t_outer_coil = FloatField()
+    t_switch = FloatField()
+    t_he_pot_2 = FloatField()
 
     # Backreference to the CryogenicsDataPoint model
     cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='temperatures')

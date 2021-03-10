@@ -48,8 +48,12 @@ class BrowserNamespace(UniversalEvents):
 
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
+
         dc_field_strength = round(float(np.abs(np.random.normal(8, 0.2))), 4)
-        await self.emit('b_dc_field', dc_field_strength, room=sid)
+        # await self.emit('b_dc_field', dc_field_strength, room=sid)
+
+    async def got_dc_field(self, dc_field_strength):
+        await self.emit('b_dc_field', dc_field_strength)
 
     # Get the field strength of the small magnet
     async def on_b_get_ac_field(self, sid):
