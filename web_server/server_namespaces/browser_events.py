@@ -1,7 +1,11 @@
-from models import db, ExperimentConfiguration, ExperimentStep, Session, DataPoint
+from models import db, ExperimentConfiguration, ExperimentStep, Session, DataPoint, MagnetismDataPoint, \
+    CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint, MagnetismMeasurement
 from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
+
 import numpy as np
+
+import json
 
 from peewee import DoesNotExist
 
@@ -60,10 +64,10 @@ class BrowserNamespace(UniversalEvents):
                 latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
 
                 # Compute the number of points taken
-                n_points_taken = ExperimentStep.select()\
-                                               .where(ExperimentStep.experiment_configuration == latest_config.id)\
-                                               .where(ExperimentStep.step_done==True)\
-                                               .count()
+                n_points_taken = ExperimentStep.select() \
+                    .where(ExperimentStep.experiment_configuration == latest_config.id) \
+                    .where(ExperimentStep.step_done == True) \
+                    .count()
 
                 # Send it to the user
                 await self.emit('b_n_points_taken', n_points_taken, room=sid)
@@ -76,13 +80,51 @@ class BrowserNamespace(UniversalEvents):
                 latest_config = ExperimentConfiguration.select().order_by(ExperimentConfiguration.id.desc()).get()
 
                 # Compute the number of points taken
-                n_points_total = ExperimentStep.select()\
-                                               .where(ExperimentStep.experiment_configuration == latest_config.id)\
-                                               .count()
+                n_points_total = ExperimentStep.select() \
+                    .where(ExperimentStep.experiment_configuration == latest_config.id) \
+                    .count()
 
                 # Send it to the user
                 await self.emit('b_n_points_total', n_points_total, room=sid)
-            
+
+    async def on_b_get_experiment_list(self, sid, data):
+        # Grab the page we want
+        page = data['page']
+
+        # Open connection to database
+        with db.connection_context():
+            # Count number of experiments
+            experiment_count = ExperimentConfiguration.select().count()
+
+            # If no experiments exist, we send that to the client, otherwise we paginate
+            experiments = []
+            if experiment_count > 0:
+                # Paginate the experiments
+                experiments = list(ExperimentConfiguration \
+                                   .select() \
+                                   .order_by(ExperimentConfiguration.id.desc()) \
+                                   .paginate(page, 10) \
+                                   .dicts())
+
+            # Parse the dates out
+            # Add number of datapoints collected
+            # Add the total number of datapoints in the run
+            for e in experiments:
+                e['created'] = e['created'].isoformat()
+
+                # Compute the number of points taken
+                e['n_points_taken'] = ExperimentStep.select() \
+                    .where(ExperimentStep.experiment_configuration == e['id']) \
+                    .where(ExperimentStep.step_done == True) \
+                    .count()
+
+                # Compute the number of points taken
+                e['n_points_total'] = ExperimentStep.select() \
+                    .where(ExperimentStep.experiment_configuration == e['id']) \
+                    .count()
+
+            await self.emit('b_got_experiment_list', {'list': experiments, 'count': experiment_count, 'page': page})
+
     # Get the rms value of the oscilloscope
     async def on_b_get_rms(self, sid):
         rms_value = round(float(np.abs(np.random.normal(0.545535))), 5)
@@ -103,31 +145,32 @@ class BrowserNamespace(UniversalEvents):
         with db.connection_context():
             try:
                 # Get the next step
-                step = ExperimentStep.select().where(ExperimentStep.step_done==False).order_by(ExperimentStep.id).first()
+                step = ExperimentStep.select().where(ExperimentStep.step_done == False).order_by(
+                    ExperimentStep.id).first()
 
                 # Check if the step is none, and skip to the catch clause if it is
                 if step is None:
                     raise DoesNotExist('Step does not exist')
 
                 # Check if the step has an associated datapoint
-                if DataPoint.select().where(ExperimentStep==step).count() < 1:
+                if DataPoint.select().where(ExperimentStep == step).count() < 1:
                     step.generate_datapoint()
 
                 # Convert step to dict
                 step_d = model_to_dict(step)
-                
+
                 # Set the experiment id (different from the step id)
                 step_d['experiment_configuration_id'] = step_d['experiment_configuration']['id']
 
                 # Remove datetime and experiment configuration from the dict
                 # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
-                del(step_d['created'])
-                del(step_d['experiment_configuration'])
+                del (step_d['created'])
+                del (step_d['experiment_configuration'])
 
                 # Send the step dict to the clients
                 await self.cryo_namespace.push_next_step(step_d)
                 await self.magnetism_namespace.push_next_step(step_d)
-        
+
             # Check if the step even exists
             except DoesNotExist:
                 # It is OK if it does not exist, we should just stop measuring
@@ -186,7 +229,7 @@ class BrowserNamespace(UniversalEvents):
             ec.save()
 
             # Set all previous steps to be done
-            ExperimentStep.update(step_done=True).where(ExperimentStep.step_done==False).execute()
+            ExperimentStep.update(step_done=True).where(ExperimentStep.step_done == False).execute()
 
             # Generate a new set of steps
             n_steps = ec.generate_steps()

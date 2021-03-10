@@ -1,6 +1,9 @@
 # Import socket client, so we can connect to the webserver
 import socketio, asyncio
 
+# Import os to get environment variables
+import os
+
 # Import uuid to access a machine id
 import uuid
 
@@ -65,7 +68,7 @@ class BaseQueueClass():
 # Implements any shared features such as idn
 class BaseClientNamespace(socketio.AsyncClientNamespace):
     # We save the server address in the baseclient so we only have to change it one place.
-    server_address = 'http://172.20.2.237:3000'
+    server_address = os.environ.get('SERVER_ADDRESS', 'http://172.20.2.237:3000')
 
     def __init__(self, QueueClass, namespace=None):
         super().__init__(namespace)

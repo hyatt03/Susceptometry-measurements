@@ -21,30 +21,28 @@ function get_magnet_field_list(state) {
 
 function get_pressure_list(state) {
     return `
-    <div>Current Pressures</div>
-    <div class="pressure--label">p_1 = ${state['pressures']['p_1']}</div>
-    <div class="pressure--label">p_2 = ${state['pressures']['p_2']}</div>
-    <div class="pressure--label">p_3 = ${state['pressures']['p_3']}</div>
-    <div class="pressure--label">p_4 = ${state['pressures']['p_4']}</div>
-    <div class="pressure--label">p_5 = ${state['pressures']['p_5']}</div>
-    <div class="pressure--label">p_6 = ${state['pressures']['p_6']}</div>
-    <div class="pressure--label">p_7 = ${state['pressures']['p_7']}</div>
-    <div class="pressure--label">p_8 = ${state['pressures']['p_8']}</div>
-    `;
+        <div>Current Pressures</div>
+        <div class="pressure--label">p_1 = ${state['pressures']['p_1']}</div>
+        <div class="pressure--label">p_2 = ${state['pressures']['p_2']}</div>
+        <div class="pressure--label">p_3 = ${state['pressures']['p_3']}</div>
+        <div class="pressure--label">p_4 = ${state['pressures']['p_4']}</div>
+        <div class="pressure--label">p_5 = ${state['pressures']['p_5']}</div>
+        <div class="pressure--label">p_6 = ${state['pressures']['p_6']}</div>
+        <div class="pressure--label">p_7 = ${state['pressures']['p_7']}</div>
+        <div class="pressure--label">p_8 = ${state['pressures']['p_8']}</div>`;
 }
 
 function get_temperature_plot(state) {
     return `
-<div class="cryogenics_status status_container">
-    <h1 class="h4">Cryogenics status</h1>
-    <div class="status_contents plot_container row">
-        <div class="temperature-plot--container col-9" id="temperature-plot"></div>
-        <div class="temperature--container col-3">
-            ${get_temperature_list(state)}
-        </div>
-    </div>
-</div>
-`
+        <div class="cryogenics_status status_container">
+            <h1 class="h4">Cryogenics status</h1>
+            <div class="status_contents plot_container row">
+                <div class="temperature-plot--container col-9" id="temperature-plot"></div>
+                <div class="temperature--container col-3">
+                    ${get_temperature_list(state)}
+                </div>
+            </div>
+        </div>`;
 }
 
 // Simple function to return status page html given the state
@@ -71,8 +69,7 @@ ${get_temperature_plot(state)}
             <div>Number of datapoints total = <span id="data--container--total">${state['n_points_total']}</span></div>        
         </div>
     </div>
-</div>
-    `
+</div>`;
 }
 
 // Get the configuration page
@@ -215,8 +212,7 @@ function get_config_page_template(state) {
             </div>
         </div>
     </div>
-</form>
-    `
+</form>`;
 }
 
 function get_cryogenics_page_html() {
@@ -254,14 +250,198 @@ function get_cryogenics_page_html() {
                 ${get_pressure_list(state)}
             </div>
         </div>
-    </div>
-    `
+    </div>`;
+}
+
+function get_data_table_html(data) {
+    // Create a row for each experiment in the experiment configs
+    rows = ''
+    data.list.forEach(row => {
+        rows += `
+        <tr>
+          <th scope="row">${row.id}</th>
+          <td>${row.created}</td>
+          <td>${row.n_points_taken} / ${row.n_points_total}</td>
+          <td>${row.data_wait_before_measuring} s</td>
+          <td>${row.magnet_min_field} to ${row.magnet_max_field} T in ${row.magnet_sweep_steps} steps</td>
+          <td>${row.n9310a_min_amplitude} to ${row.n9310a_max_amplitude} V in ${row.n9310a_sweep_steps} steps</td>
+          <td>${row.n9310a_min_frequency} to ${row.n9310a_max_frequency} Hz in ${row.n9310a_sweep_steps} steps</td>
+          <td>${row.sr830_sensitivity} V</td>
+          <td><a class="btn btn-primary" href="/export?id=${row.id}" role="button" 
+                 download="data_export_id_${row.id}.json">Export</a></td>
+        </tr>`;
+    });
+
+    // If we're past the first page we want to display a back button
+    prev_button = '';
+    if (data.page > 1) {
+        prev_button = `<input type="button" value="Previous page" name="prev_page" 
+                              onclick="get_experiments_list(${data.page - 1})">`;
+    }
+
+    // If we're not at the last page, we want to display a next button
+    next_button = '';
+    if ((data.count - data.page * 10) % 10 > 0) {
+        next_button = `<input type="button" value="Next page" name="next_page"
+                              onclick="get_experiments_list(${data.page + 1})">`;
+    }
+
+    // Here we add column headers and collect the HTML we've generated until this point
+    return `
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Created</th>
+          <th scope="col">Datapoints</th>
+          <th scope="col">Delay</th>
+          <th scope="col">Magnet</th>
+          <th scope="col">Excitation amplitude</th>
+          <th scope="col">Excitation frequency</th>
+          <th scope="col">Lockin sensitivity</th>
+          <th scope="col">Export</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+    <hr>
+    ${prev_button}
+    ${next_button}`;
 }
 
 function get_data_page_html() {
     return `
-    This is the data page
-    `;
+    <div id="datatable_wrapper">
+        Loading experiment configurations...
+    </div><hr>
+    <div>
+        <h3>How to import and treat the data</h3>
+        <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #888888"># We need a couple of modules to import the data and print it</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">json</span>
+<span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">pprint</span> <span style="color: #008800; font-weight: bold">import</span> pprint
+
+<span style="color: #888888"># We import numpy to process data, but we don&#39;t actually need it to import the data</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">numpy</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">np</span>
+
+<span style="color: #888888"># We set the filename here</span>
+data_filename <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&#39;data_export_id_17.json&#39;</span>
+
+<span style="color: #888888"># We open the file</span>
+<span style="color: #008800; font-weight: bold">with</span> <span style="color: #007020">open</span>(data_filename, <span style="background-color: #fff0f0">&#39;r&#39;</span>) <span style="color: #008800; font-weight: bold">as</span> df:
+    <span style="color: #888888"># And read the contents</span>
+    file_contents <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&#39;&#39;</span><span style="color: #333333">.</span>join(df<span style="color: #333333">.</span>readlines())
+
+<span style="color: #888888"># Next we decode the file contents using the json module    </span>
+experiment_configuration <span style="color: #333333">=</span> json<span style="color: #333333">.</span>loads(file_contents)
+
+<span style="color: #888888">## Now we have all the data available</span>
+
+<span style="color: #888888"># And we print it to see what is going on</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;the entire experiment&#39;</span>)
+pprint(experiment_configuration)
+
+<span style="color: #888888"># After this we create a new line to seperate the content</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;</span><span style="color: #666666; font-weight: bold; background-color: #fff0f0">\\n</span><span style="background-color: #fff0f0">&#39;</span>)
+
+<span style="color: #888888"># It is a deep dictionary where the outermost layer contains the experiment configuration</span>
+<span style="color: #888888"># To see a specific experiment configuration parameter (for example the max frequency of </span>
+<span style="color: #888888"># the function generator) we can run:</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;the max frequency:&#39;</span>, experiment_configuration[<span style="background-color: #fff0f0">&#39;n9310a_max_frequency&#39;</span>])
+
+<span style="color: #888888"># After this we create a new line to seperate the content</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;</span><span style="color: #666666; font-weight: bold; background-color: #fff0f0">\\n</span><span style="background-color: #fff0f0">&#39;</span>)
+
+<span style="color: #888888"># Inside the configuration we have a parameter called steps, which contains all the steps </span>
+<span style="color: #888888"># generated by this specific configuration.</span>
+<span style="color: #888888"># We can either iterate through each step, or we can select a specific step.</span>
+<span style="color: #888888"># Let&#39;s iterate through the steps, and find the mean lockin_amplitude for each step</span>
+
+<span style="color: #888888"># We start with an empty list</span>
+mean_lockin_amplitudes <span style="color: #333333">=</span> []
+
+<span style="color: #888888"># Then we run through each step</span>
+<span style="color: #008800; font-weight: bold">for</span> step <span style="color: #000000; font-weight: bold">in</span> experiment_configuration[<span style="background-color: #fff0f0">&#39;steps&#39;</span>]:
+    <span style="color: #888888"># We create a second, temporary, list to hold the the amplitudes of this step (the ones we take the mean of)</span>
+    lockin_amplitude_datapoints <span style="color: #333333">=</span> []
+    
+    <span style="color: #888888"># We iterate through the datapoints</span>
+    <span style="color: #008800; font-weight: bold">for</span> datapoint <span style="color: #000000; font-weight: bold">in</span> step[<span style="background-color: #fff0f0">&#39;datapoints&#39;</span>]:
+        <span style="color: #888888"># And we iterate through the magnetism datapoints</span>
+        <span style="color: #008800; font-weight: bold">for</span> mdp <span style="color: #000000; font-weight: bold">in</span> datapoint[<span style="background-color: #fff0f0">&#39;magnetism_datapoints&#39;</span>]:
+            <span style="color: #888888"># We add the lockin amplitude to the list we created inside the for loop</span>
+            lockin_amplitude_datapoints<span style="color: #333333">.</span>append(mdp[<span style="background-color: #fff0f0">&#39;lockin_amplitude&#39;</span>])
+            
+    <span style="color: #888888"># Now we find a mean of that list and add it to the list of mean amplitudes</span>
+    mean_lockin_amplitudes<span style="color: #333333">.</span>append(np<span style="color: #333333">.</span>mean(lockin_amplitude_datapoints))
+    
+<span style="color: #888888"># Finally we print out the list of mean amplitudes</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;the mean lockin amplitudes&#39;</span>)
+pprint(mean_lockin_amplitudes)
+</pre></td></tr></table></div>
+    </div>
+`;
 }
 
 function get_info_page_html() {

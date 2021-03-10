@@ -72,6 +72,6 @@ function open_data_page(should_update) {
 
     // Grab the first page of experiments
     if (typeof (should_update) === 'undefined') {
-        get_experiments_list(0);
+        get_experiments_list(1);
     }
 }

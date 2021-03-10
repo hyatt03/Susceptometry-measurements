@@ -4,6 +4,9 @@ import asyncio
 # get numpy
 import numpy as np
 
+# Get OS to use environment variables
+import os
+
 # import pandas to support HDF5
 import pandas as pd
 
@@ -17,8 +20,12 @@ sys.path.append(os.path.dirname(__file__) + '/..')
 # Import the base namespace, contains shared methods and information
 from baseclient import BaseClientNamespace, BaseQueueClass, main
 
-# Import cryogenics station to collect data
-from stations import cryogenics_station
+if os.getenv('USE_FAKE_STATIONS') is None:
+    # Import cryogenics station to collect data
+    from stations import cryogenics_station
+else:
+    # Import the mocked magnetism station
+    from stations.fake_stations import cryogenics_station_fake as cryogenics_station
 
 # Experiments are naturally stateful, and we must remember some things
 experiment_state = {

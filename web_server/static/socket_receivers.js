@@ -300,3 +300,14 @@ function pressure_trace_updated(pressure_trace) {
 function experiment_config_updated(config) {
     state.experiment_config = config;
 }
+
+// Server sends a list of experiments
+// We use it to populate a table of data on the data management page
+function got_experiment_list(data) {
+    // If there's data, we want to show it, otherwise we show an error message
+    if (data.count < 1) {
+        $('#datatable_wrapper').html('No experiments have been configured.');
+    } else {
+        $('#datatable_wrapper').html(get_data_table_html(data));
+    }
+}

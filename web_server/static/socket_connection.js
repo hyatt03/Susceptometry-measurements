@@ -89,6 +89,7 @@ function main_socket_connection() {
     socket.on('b_pressure_trace', pressure_trace_updated);
     socket.on('b_latest_experiment_config', experiment_config_updated);
     socket.on('b_got_cryo_status', cryo_status_updated)
+    socket.on('b_got_experiment_list', got_experiment_list)
 
     // Open status page by default
     open_status_page();

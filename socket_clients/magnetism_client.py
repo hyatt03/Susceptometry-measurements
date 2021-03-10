@@ -1,6 +1,9 @@
 # Import asyncio to get event loop
 import asyncio
 
+# Get OS to use environment variables
+import os
+
 # Import time and path python packages
 import time, sys, os
 
@@ -10,13 +13,8 @@ import numpy as np
 # Import pandas for saving experiment data
 import pandas as pd
 
-# Import plotting libraries
-import matplotlib.pyplot as plt
-
 # Import qcodes for measurering 
-import qcodes as qc
 from qcodes.measure import Measure
-from qcodes.dataset.plotting import plot_dataset
 
 # Add top level packages to path
 sys.path.append(os.path.dirname(__file__) + '/..')
@@ -24,8 +22,12 @@ sys.path.append(os.path.dirname(__file__) + '/..')
 # Import the base namespace, contains shared methods and information
 from socket_clients.baseclient import BaseClientNamespace, BaseQueueClass, main
 
-# Import magnetism station to collect data
-from stations import magnetism_station
+if os.getenv('USE_FAKE_STATIONS') is None:
+    # Import magnetism station to collect data
+    from stations import magnetism_station
+else:
+    # Import the mocked magnetism station
+    from stations.fake_stations import magnetism_station_fake as magnetism_station
 
 # Setup magnetism state
 magnetism_state = {

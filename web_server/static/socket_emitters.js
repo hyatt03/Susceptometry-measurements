@@ -73,9 +73,5 @@ function get_cryo_status() {
 }
 
 function get_experiments_list(page) {
-
-}
-
-function export_data(experiment_id) {
-    window.my_socket.emit('b_begin_data_export', experiment_id);
+    window.my_socket.emit('b_get_experiment_list', {page: page});
 }
