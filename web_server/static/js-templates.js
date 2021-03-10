@@ -318,6 +318,26 @@ function get_data_page_html() {
     </div><hr>
     <div>
         <h3>How to import and treat the data</h3>
+        
+        <p>
+            The data is saved to a database when the experiment is running, and is sent to the user in a JSON format.
+            The JSON format is a nested object that can be read by builtin methods of most programming languages.
+            In Python it is read into a dictionary by default, but pandas for example supports reading it into a 
+            series for processing. <br>
+            
+            The outermost layer of the format contain the most generic options, here you can find the experiment 
+            configuration used to generate the steps, as well as a list of all the steps generated.
+            Each step contains the specific parameters used in that step and it contains a list of datapoints.
+            Each datapoint has a time of when it was saved, and it has some magnetism datapoints, where the ac rms
+            field, the dc field, the lockin amplitude, and the lockin phase are saved. It also has pressure datapoints
+            where each pressure of the GHS is saved, and finally it has temperature datapoints where all the 
+            temperatures are saved. <br>
+            
+            The following is an example Python script that opens a datafile (set by the variable "data_filename"), it
+            prints the entire export dictionary, then it grabs the max function generator frequency used, and it 
+            computes the mean lockin amplitudes and prints those out.
+        </p>
+        
         <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
  2
  3
