@@ -255,6 +255,10 @@ class MagnetismQueue(BaseQueueClass):
             # Start by updating the id we're working on
             magnetism_state['experiment_file_id'] = step['experiment_configuration_id']
 
+            # Ensure we have a folder to place the data in
+            if not os.path.exists('data'):
+                os.makedirs('data')
+
             # Open the file
             fp = f'data/magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5'
             magnetism_state['experiment_file'] = pd.HDFStore(fp)
@@ -336,11 +340,20 @@ class MagnetismQueue(BaseQueueClass):
         )
 
         # Send the measurements to the server
+        # await self.socket_client.emit('m_got_step_results', {
+        #     'ac_rms_field': ac_fields,
+        #     'dc_field': dc_fields,
+        #     'lockin_amplitude': get_mean_from_list_of_arrays(lockin_amplitudes),
+        #     'lockin_phase': get_mean_from_list_of_arrays(lockin_phases),
+        #     'step_id': step['id']
+        # })
+
+        # Test not sending data for stability
         await self.socket_client.emit('m_got_step_results', {
-            'ac_rms_field': ac_fields,
-            'dc_field': dc_fields,
-            'lockin_amplitude': get_mean_from_list_of_arrays(lockin_amplitudes),
-            'lockin_phase': get_mean_from_list_of_arrays(lockin_phases),
+            'ac_rms_field': [],
+            'dc_field': [],
+            'lockin_amplitude': 0.0,
+            'lockin_phase': 0.0,
             'step_id': step['id']
         })
 

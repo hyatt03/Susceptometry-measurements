@@ -206,6 +206,10 @@ class CryoQueue(BaseQueueClass):
             # Start by updating the id we're working on
             experiment_state['experiment_file_id'] = step['experiment_configuration_id']
 
+            # Ensure we have a folder to place the data in
+            if not os.path.exists('data'):
+                os.makedirs('data')
+
             # Open the file
             experiment_state['experiment_file'] = pd.HDFStore(
                 f'data/cryogenics_data_experiment_{experiment_state["experiment_file_id"]}.h5'
@@ -278,9 +282,16 @@ class CryoQueue(BaseQueueClass):
         print('saved data to dataframes')
 
         # Next we send the results to the server
+        # await self.socket_client.emit('c_got_step_results', {
+        #     'pressures': pressures,
+        #     'temperatures': temperatures,
+        #     'step_id': step['id']
+        # })
+
+        # Test not sending data for stability
         await self.socket_client.emit('c_got_step_results', {
-            'pressures': pressures, 
-            'temperatures': temperatures,
+            'pressures': [],
+            'temperatures': [],
             'step_id': step['id']
         })
 
