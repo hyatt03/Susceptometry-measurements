@@ -99,6 +99,9 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
     def on_connect(self):
         print('connected to:', self.server_address)
 
+        # Run the IDN
+        await self.on_idn()
+
     # Event received when the connection to the server is lost
     def on_disconnect(self):
         print('Lost connection, trying to reconnect')

@@ -20,8 +20,9 @@ class UniversalEvents(socketio.AsyncNamespace):
 
     # Ask for idn on connect
     async def on_connect(self, sid, environ):
-        await asyncio.sleep(0.5)
-        await self.emit('idn', room=sid)
+        # await asyncio.sleep(0.5)
+        # await self.emit('idn', room=sid)
+        print('Got a connection from ', sid)
 
     # Tell the user that a client disconnected
     def on_disconnect(self, sid):
