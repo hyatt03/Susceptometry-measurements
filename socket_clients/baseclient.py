@@ -96,7 +96,7 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
         await self.emit('current_queue_size', self.my_queue.queue.qsize())
 
     # Event received when this client connects to the server
-    def on_connect(self):
+    async def on_connect(self):
         print('connected to:', self.server_address)
 
         # Run the IDN
@@ -122,6 +122,8 @@ async def main(NamespaceClass, namespace_address):
     # Register the namespace to the client
     namespace = NamespaceClass(namespace_address)
     sio.register_namespace(namespace)
+
+    await asyncio.sleep(10.0)
 
     async def connect_to_server():
         # Connect to the server

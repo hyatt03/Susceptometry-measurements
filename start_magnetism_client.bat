@@ -1,1 +1,3 @@
 %windir%\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy ByPass -NoExit -Command "& 'C:\ProgramData\Anaconda3\shell\condabin\conda-hook.ps1' ; conda activate 'C:\ProgramData\Anaconda3' ; cd C:\Susceptometry\susceptometry_measurements\socket_clients ; $env:SERVER_ADDRESS = 'http://localhost:3000' ; python .\magnetism_client.py"
+
+python -m pip install --upgrade python-socketio python-engineio 
