@@ -41,11 +41,11 @@ class BaseQueueClass():
                 print('got exception on queue task:', task['function_name'])
                 print(e)
 
+                await self.queue.put(task)
+
                 # Disconnect and reconnect here to prevent namespace errors
                 await self.socket_client.disconnect()
                 await self.socket_client.connect_to_server()
-
-                await self.queue.put(task)
 
             # Notify the queue that the "work item" has been processed.
             queue.task_done()
@@ -114,7 +114,7 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 # Create an entrypoint for the client
 async def main(NamespaceClass, namespace_address):
     # Define async socket client
-    sio = socketio.AsyncClient()
+    sio = socketio.AsyncClient(logger=True, engineio_logger=True)
 
     # Register the namespace to the client
     namespace = NamespaceClass(namespace_address)
