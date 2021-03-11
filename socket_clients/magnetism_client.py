@@ -339,6 +339,8 @@ class MagnetismQueue(BaseQueueClass):
             format='table', data_columns=True
         )
 
+        print('saved data to hdf5')
+
         # Send the measurements to the server
         # await self.socket_client.emit('m_got_step_results', {
         #     'ac_rms_field': ac_fields,
@@ -352,8 +354,8 @@ class MagnetismQueue(BaseQueueClass):
         await self.socket_client.emit('m_got_step_results', {
             'ac_rms_field': [],
             'dc_field': [],
-            'lockin_amplitude': 0.0,
-            'lockin_phase': 0.0,
+            'lockin_amplitude': [],
+            'lockin_phase': [],
             'step_id': step['id']
         })
 
