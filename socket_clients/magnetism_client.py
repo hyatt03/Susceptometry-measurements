@@ -5,7 +5,7 @@ import asyncio
 import os
 
 # Import time and path python packages
-import time, sys, os
+import time, sys, os, math
 
 # Import numpy
 import numpy as np
@@ -415,7 +415,12 @@ class MagnetismQueue(BaseQueueClass):
     async def set_magnet_config(self, queue, name, task):
         # We can only set the magnetic field, so we set that
         if 'magnet_field' in task['config']:
-            self.magnet_ps.MagneticField.set(task['config']['magnet_field'])
+            old_field = self.magnet_ps.MagneticField.get()
+            new_field = task['config']['magnet_field']
+
+            # If there is not at least a 1% difference in the fields, we don't do anything
+            if not math.isclose(old_field, new_field, abs_tol=1e-4, rel_tol=0.01):
+                self.magnet_ps.MagneticField.set(new_field)
 
     def configure_n9310a(self, config):
         # Turn on the signal generator
