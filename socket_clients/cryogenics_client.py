@@ -194,9 +194,12 @@ class CryoQueue(BaseQueueClass):
         print('processing next step')
 
         # Close the old datafile if necessary
-        if experiment_state['experiment_file_id'] != step['experiment_configuration_id'] and experiment_state['experiment_file'] is not None:
+        if experiment_state['experiment_file_id'] != step['experiment_configuration_id'] and \
+                experiment_state['experiment_file'] is not None:
             experiment_state['experiment_file'].close()
             experiment_state['experiment_file'] = None
+
+        print('closed old file')
 
         # Ensure we have an open datafile
         if experiment_state['experiment_file'] is None:
@@ -204,12 +207,18 @@ class CryoQueue(BaseQueueClass):
             experiment_state['experiment_file_id'] = step['experiment_configuration_id']
 
             # Open the file
-            experiment_state['experiment_file'] = pd.HDFStore(f'data/cryogenics_data_experiment_{experiment_state["experiment_file_id"]}.h5')
+            experiment_state['experiment_file'] = pd.HDFStore(
+                f'data/cryogenics_data_experiment_{experiment_state["experiment_file_id"]}.h5'
+            )
+
+        print('opened new file')
 
         # Wait for the magnetism station to be ready for measurement
         # Sleep 0.1 seconds at a time
         while experiment_state['step_ready_for_measurement'] != step['id']:
             await asyncio.sleep(0.1)
+
+        print('ready for experiment to start')
 
         # Now the stations should be pretty syncronized
         # And we can begin measuring
@@ -217,14 +226,20 @@ class CryoQueue(BaseQueueClass):
         pressures = {'step_id': step['id']}
         temperatures = {'step_id': step['id']}
 
+        print('created pressure and temperature dicts')
+
         # Do the measurement
         for datapoint_idx in range(step['data_points_per_measurement']):            
             # Start by waiting for the system to stabalize
             await asyncio.sleep(step['data_wait_before_measuring'])
 
+            print('Done waiting, doing measurement')
+
             # Get the data concurrently
             raw_data = await asyncio.gather(self.get_updated_pressures(queue, name, task), 
                                             self.get_updated_temperatures(queue, name, task))
+
+            print('done with measurement, saving data')
 
             # Sort the data into the lists
             # Append pressures to each list
@@ -239,10 +254,14 @@ class CryoQueue(BaseQueueClass):
                     temperatures[t_label] = []
                 temperatures[t_label].append(raw_data[1][t_label])
 
+            print('saved data')
+
         # We're done measuring, so now we save the data
         # Create dataframes to prepare for saving
         pressures_frame = pd.DataFrame(pressures)
         temperatures_frame = pd.DataFrame(temperatures)
+
+        print('Opened dataframes for results')
 
         # Save the measurement
         experiment_state['experiment_file'].append(
@@ -256,6 +275,8 @@ class CryoQueue(BaseQueueClass):
             format='table', data_columns=True
         )
 
+        print('saved data to dataframes')
+
         # Next we send the results to the server
         await self.socket_client.emit('c_got_step_results', {
             'pressures': pressures, 
@@ -263,9 +284,13 @@ class CryoQueue(BaseQueueClass):
             'step_id': step['id']
         })
 
+        print('sent results to server')
+
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
+
+        print('marked as done')
 
 
 # Create the class containing the namespace for this client
