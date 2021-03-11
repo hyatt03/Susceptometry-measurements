@@ -41,6 +41,10 @@ class BaseQueueClass():
                 print('got exception on queue task:', task['function_name'])
                 print(e)
 
+                # Disconnect and reconnect here to prevent namespace errors
+                await self.socket_client.disconnect()
+                await self.socket_client.connect_to_server()
+
                 await self.queue.put(task)
 
             # Notify the queue that the "work item" has been processed.
@@ -116,11 +120,18 @@ async def main(NamespaceClass, namespace_address):
     namespace = NamespaceClass(namespace_address)
     sio.register_namespace(namespace)
 
-    # Connect to the server
-    await sio.connect(namespace.server_address)
+    async def connect_to_server():
+        # Connect to the server
+        await sio.connect(namespace.server_address)
 
-    # add the SID to the namespace
-    namespace.sid = sio.sid
+        # add the SID to the namespace
+        namespace.sid = sio.sid
+
+    # Add the connection method to the namespace (for reconnects)
+    namespace.connect_to_server = connect_to_server
+
+    # Wait for the connection to be established
+    await connect_to_server()
 
     # Run the background job
     asyncio.create_task(namespace.background_job())

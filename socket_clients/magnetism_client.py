@@ -359,6 +359,9 @@ class MagnetismQueue(BaseQueueClass):
             'step_id': step['id']
         })
 
+        # Wait a second to let other background tasks run
+        await asyncio.sleep(1)
+
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
         magnetism_state['current_step']['step_done'] = True

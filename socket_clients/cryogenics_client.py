@@ -297,6 +297,9 @@ class CryoQueue(BaseQueueClass):
 
         print('sent results to server')
 
+        # Wait a second to let other background tasks run
+        await asyncio.sleep(1)
+
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
