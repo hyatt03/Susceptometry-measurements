@@ -127,6 +127,9 @@ async def main(NamespaceClass, namespace_address):
         # add the SID to the namespace
         namespace.sid = sio.sid
 
+        # Wait a short while just in case
+        await asyncio.sleep(1.0)
+
     # Add the connection method to the namespace (for reconnects)
     namespace.connect_to_server = connect_to_server
 
