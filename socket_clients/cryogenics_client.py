@@ -290,8 +290,8 @@ class CryoQueue(BaseQueueClass):
 
         # Test not sending data for stability
         await self.socket_client.emit('c_got_step_results', {
-            'pressures': [],
-            'temperatures': [],
+            'pressures': {},
+            'temperatures': {},
             'step_id': step['id']
         })
 
