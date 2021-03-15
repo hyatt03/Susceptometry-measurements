@@ -85,6 +85,12 @@ class MagnetismQueue(BaseQueueClass):
             'horizontal_scale': 100e-5
         })
 
+        # Setup oscope measurement
+        print(self.dvm.ask('MEASUREMENT:IMMED:SOURCE[1] CH1'))  # Sets the measurement to channel 1
+        print(self.dvm.ask('MEASUREMENT:IMMED:TYPE CRMS'))  # Sets the measurement type to RMS
+
+        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
+
         # Register queue processors
         self.register_queue_processor('get_sr830_config', self.get_sr830_config)
         self.register_queue_processor('get_n9310a_config', self.get_n9310a_config)
@@ -177,6 +183,10 @@ class MagnetismQueue(BaseQueueClass):
 
         # Return the results to the requester (used for measurements)
         return magnetism_state['magnet_trace']
+
+    async def get_magnet_rms_direct(self, queue, name, task):
+        # self.dvm.
+        pass
 
     async def get_latest_magnet_trace(self, queue, name, task):
         # Send the data to the client
