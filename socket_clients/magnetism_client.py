@@ -103,6 +103,8 @@ class MagnetismQueue(BaseQueueClass):
             'horizontal_scale': 100e-5
         })
 
+        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
+
         # Register queue processors
         self.register_queue_processor('get_sr830_config', self.get_sr830_config)
         self.register_queue_processor('get_n9310a_config', self.get_n9310a_config)
