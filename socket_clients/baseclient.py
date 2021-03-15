@@ -9,6 +9,8 @@ import uuid
 
 
 class BaseQueueClass():
+    n_workers = 2
+
     def __init__(self, socket_client):
         super().__init__()
 
@@ -17,7 +19,7 @@ class BaseQueueClass():
 
         # Setup the queue variables
         self.queue = None
-        self.worker_instance = None
+        self.worker_instances = []
 
         # Initialize queue processors
         self.queue_functions = {}
@@ -60,7 +62,8 @@ class BaseQueueClass():
         self.queue = asyncio.Queue()
 
         # Create a worker to process the items in our queue
-        self.worker_instance = asyncio.create_task(self.worker(f'{self.queue_name}-worker', self.queue))
+        for i in range(0, self.n_workers):
+            self.worker_instances.append(asyncio.create_task(self.worker(f'{self.queue_name}-worker-{i}', self.queue)))
 
     # Kills the worker and cleans up after it
     async def destroy_queue(self):
