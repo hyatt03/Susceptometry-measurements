@@ -244,7 +244,9 @@ function temperature_trace_updated(temperature_trace) {
             }
         }
 
-        Plotly.newPlot('temperature-plot', state['temperature_trace_plot_data'], state['temperature_plot_layout']);
+        if (document.getElementById("temperature-plot")) {
+            Plotly.newPlot('temperature-plot', state['temperature_trace_plot_data'], state['temperature_plot_layout']);
+        }
     }
     else {
         temperatures_updated();
