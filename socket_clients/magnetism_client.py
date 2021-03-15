@@ -242,7 +242,7 @@ class MagnetismQueue(BaseQueueClass):
         magnetism_state['current_step'] = step
 
         # Alert the user to what is happening
-        print('processing next step')
+        print('processing next step for experiment:', step['experiment_configuration_id'])
 
         # Close the old datafile if necessary
         if (magnetism_state['experiment_file_id'] != step['experiment_configuration_id']
@@ -339,8 +339,6 @@ class MagnetismQueue(BaseQueueClass):
             format='table', data_columns=True
         )
 
-        print('saved data to hdf5')
-
         # Send the measurements to the server
         await self.socket_client.emit('m_got_step_results', {
             'ac_rms_field': ac_fields,
@@ -349,15 +347,6 @@ class MagnetismQueue(BaseQueueClass):
             'lockin_phase': get_mean_from_list_of_arrays(lockin_phases),
             'step_id': step['id']
         })
-
-        # Test not sending data for stability
-        # await self.socket_client.emit('m_got_step_results', {
-        #     'ac_rms_field': [],
-        #     'dc_field': [],
-        #     'lockin_amplitude': [],
-        #     'lockin_phase': [],
-        #     'step_id': step['id']
-        # })
 
         # Wait a second to let other background tasks run
         await asyncio.sleep(1)
