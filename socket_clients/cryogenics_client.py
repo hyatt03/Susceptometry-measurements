@@ -213,6 +213,9 @@ class CryoQueue(BaseQueueClass):
                 f'data/cryogenics_data_experiment_{experiment_state["experiment_file_id"]}.h5'
             )
 
+        # Be sure to ask the server if the step is ready
+        await self.socket_client.is_step_ready(step['id'])
+
         # Wait for the magnetism station to be ready for measurement
         # Sleep 0.1 seconds at a time
         while experiment_state['step_ready_for_measurement'] != step['id']:
@@ -338,6 +341,9 @@ class CryoClientNamespace(BaseClientNamespace):
 
     async def send_fp_status(self, status):
         await self.emit('c_got_fp_status', status)
+
+    async def is_step_ready(self, step_id):
+        await self.emit('c_is_step_ready', step_id)
 
     # Event received when server has a new step for us
     async def on_c_next_step(self, step):

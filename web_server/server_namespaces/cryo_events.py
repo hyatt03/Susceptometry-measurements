@@ -1,9 +1,13 @@
 from server_namespaces.universal_events import UniversalEvents
 from models import db, DataPoint
+from collections import deque
 
 
 # All the methods related to the cryogenics station from the servers perspective
 class CryoNamespace(UniversalEvents):
+    # Keep at max 20 ids ready
+    steps_ready = deque([], maxlen=20)
+
     """ #### EMITTING EVENTS #### """
     async def test_queue(self):
         await self.emit('test_queue')
@@ -32,7 +36,16 @@ class CryoNamespace(UniversalEvents):
     async def get_fp_status(self):
         await self.emit('c_get_frontpanel_status')
 
+    # if the clients reset, we want to be able to tell it the step is ready
+    async def on_is_step_ready(self, step_id):
+        if step_id in self.steps_ready:
+            await self.send_step_ready(step_id)
+
     async def send_step_ready(self, step_id):
+        # Keep track of the steps that have been ready
+        self.steps_ready.append(step_id)
+
+        # Send the step that is ready
         await self.emit('c_step_ready_for_measurement', step_id)
 
     async def push_next_step(self, step):
