@@ -183,7 +183,7 @@ class MagnetismQueue(BaseQueueClass):
         return magnetism_state['magnet_trace']
 
     async def get_magnet_rms_direct(self, queue, name, task):
-        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
+        return float(self.dvm.ask('MEASUrement:IMMed:VALue?'))
 
     async def get_latest_magnet_trace(self, queue, name, task):
         # Send the data to the client
@@ -194,8 +194,6 @@ class MagnetismQueue(BaseQueueClass):
 
     async def get_latest_rms_of_magnet_trace(self, queue, name, task):
         # Compute the RMS value of the trace, and send it to the client
-        await self.get_magnet_rms_direct(queue, name, task)
-
         await self.socket_client.send_magnet_rms(np.sqrt(np.mean(magnetism_state['magnet_trace'] ** 2.)))
 
     async def get_dc_field(self, queue, name, task):
@@ -305,13 +303,13 @@ class MagnetismQueue(BaseQueueClass):
             await asyncio.sleep(step['data_wait_before_measuring'])
 
             # Get the data concurrently
-            raw_data = await asyncio.gather(self.get_magnet_trace(queue, name, task),
+            raw_data = await asyncio.gather(self.get_magnet_rms_direct(queue, name, task),
                                             self.get_dc_field(queue, name, task),
                                             self.get_sr830_trace(queue, name, task))
 
             # Sort the data into the lists
             # Compute the rms value of the ac_field strength
-            ac_fields.append(np.sqrt(np.mean(raw_data[0] ** 2.)))
+            ac_fields.append(raw_data[0])
 
             # Add the dc field
             dc_fields.append(raw_data[1])
