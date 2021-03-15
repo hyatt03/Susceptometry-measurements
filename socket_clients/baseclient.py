@@ -120,7 +120,7 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 # Create an entrypoint for the client
 async def main(NamespaceClass, namespace_address):
     # Define async socket client
-    sio = socketio.AsyncClient(logger=True, engineio_logger=True)
+    sio = socketio.AsyncClient()
 
     # Register the namespace to the client
     namespace = NamespaceClass(namespace_address)
