@@ -91,6 +91,18 @@ class MagnetismQueue(BaseQueueClass):
 
         print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
 
+        # Setup the oscilloscope
+        self.configure_oscilloscope({
+            'ch1': {'state': 'ON', 'scale': 0.01, 'position': 0},
+            'ch2': {'state': 'OFF'},
+            'trigger': {
+                'trigger_type': 'EDGE',
+                'trigger_source': 'CH1',
+                'trigger_level': 0.0
+            },
+            'horizontal_scale': 100e-5
+        })
+
         # Register queue processors
         self.register_queue_processor('get_sr830_config', self.get_sr830_config)
         self.register_queue_processor('get_n9310a_config', self.get_n9310a_config)
