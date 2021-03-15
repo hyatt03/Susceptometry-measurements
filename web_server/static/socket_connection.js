@@ -76,7 +76,7 @@ function main_socket_connection() {
 
     // Setup events
     // Get events
-    socket.on('idn', idn_requested);
+    socket.on('connect', idn_requested);
     socket.on('b_temperatures', temperatures_updated);
     socket.on('b_pressures', pressures_updated);
     socket.on('b_dc_field', dc_field_updated);
