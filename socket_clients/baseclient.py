@@ -126,8 +126,6 @@ async def main(NamespaceClass, namespace_address):
     namespace = NamespaceClass(namespace_address)
     sio.register_namespace(namespace)
 
-    await asyncio.sleep(10.0)
-
     async def connect_to_server():
         # Connect to the server
         await sio.connect(namespace.server_address)

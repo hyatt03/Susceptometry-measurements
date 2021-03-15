@@ -291,6 +291,8 @@ class MagnetismQueue(BaseQueueClass):
         # Mark this step as ready
         await self.socket_client.emit('m_set_step_ready', step['id'])
 
+        print('ready for measurement')
+
         # Create lists to hold the results
         ac_fields = []
         dc_fields = []
@@ -317,6 +319,8 @@ class MagnetismQueue(BaseQueueClass):
             # Add the amplitude and phase of the measured signal
             lockin_amplitudes.append(raw_data[2][0])
             lockin_phases.append(raw_data[2][1])
+
+            print('took single measurement')
 
         # Create numpy arrays from lock-in data and flatten them
         lockin_amplitudes_np = np.array(lockin_amplitudes).ravel()
