@@ -111,10 +111,16 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 
     # Generate and send idn, uses the mac address of the client to generate unique static idn
     async def on_idn(self):
+        # Generate IDN
         node = uuid.getnode()
         idn = f'{self.client_type}_{node}'
+
+        # Send the IDN
         await self.emit('idn', idn)
         print('Sent idn:', idn)
+
+        # Ask for the latest non-completed step
+        await self.emit('get_latest_step')
 
 
 # Create an entrypoint for the client

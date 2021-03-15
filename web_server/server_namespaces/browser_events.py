@@ -146,39 +146,14 @@ class BrowserNamespace(UniversalEvents):
         await self.cryo_namespace.get_pressure_trace()
 
     async def push_next_step_to_clients(self):
-        with db.connection_context():
-            try:
-                # Get the next step
-                step = ExperimentStep.select().where(ExperimentStep.step_done == False).order_by(
-                    ExperimentStep.id).first()
+        # Grab the latest step
+        step = await self.get_next_step()
 
-                # Check if the step is none, and skip to the catch clause if it is
-                if step is None:
-                    raise DoesNotExist('Step does not exist')
+        if step is not None:
+            # Send the step dict to the clients
+            await self.cryo_namespace.push_next_step(step)
+            await self.magnetism_namespace.push_next_step(step)
 
-                # Check if the step has an associated datapoint
-                if DataPoint.select().where(ExperimentStep == step).count() < 1:
-                    step.generate_datapoint()
-
-                # Convert step to dict
-                step_d = model_to_dict(step)
-
-                # Set the experiment id (different from the step id)
-                step_d['experiment_configuration_id'] = step_d['experiment_configuration']['id']
-
-                # Remove datetime and experiment configuration from the dict
-                # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
-                del (step_d['created'])
-                del (step_d['experiment_configuration'])
-
-                # Send the step dict to the clients
-                await self.cryo_namespace.push_next_step(step_d)
-                await self.magnetism_namespace.push_next_step(step_d)
-
-            # Check if the step even exists
-            except DoesNotExist:
-                # It is OK if it does not exist, we should just stop measuring
-                print('No more steps ready')
 
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration

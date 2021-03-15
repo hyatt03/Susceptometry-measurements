@@ -1,5 +1,8 @@
 import socketio, asyncio
-from models import db, Session, ExperimentStep
+from models import db, Session, ExperimentStep, DataPoint
+
+from peewee import DoesNotExist
+from playhouse.shortcuts import model_to_dict
 
 
 # Class containing events relevant for all different namespaces (used as a baseclass
@@ -70,4 +73,52 @@ class UniversalEvents(socketio.AsyncNamespace):
             
             # Next we should push the next step to the clients (if applicable)
             await self.browser_namespace.push_next_step_to_clients()
+
+    # This method is implemented in the individual clients, where relevant
+    async def push_next_step(self, step):
+        pass
+
+    async def get_next_step(self):
+        with db.connection_context():
+            try:
+                # Get the next step
+                step = ExperimentStep.select().where(ExperimentStep.step_done == False).order_by(
+                    ExperimentStep.id).first()
+
+                # Check if the step is none, and skip to the catch clause if it is
+                if step is None:
+                    raise DoesNotExist('Step does not exist')
+
+                # Check if the step has an associated datapoint
+                if DataPoint.select().where(ExperimentStep == step).count() < 1:
+                    step.generate_datapoint()
+
+                # Convert step to dict
+                step_d = model_to_dict(step)
+
+                # Set the experiment id (different from the step id)
+                step_d['experiment_configuration_id'] = step_d['experiment_configuration']['id']
+
+                # Remove datetime and experiment configuration from the dict
+                # They are not needed in the client, and they are not directly serializable to json (due to missing datetime format)
+                del (step_d['created'])
+                del (step_d['experiment_configuration'])
+
+                # Return the step if it exists
+                return step_d
+            # Check if the step even exists
+            except DoesNotExist:
+                # It is OK if it does not exist, we should just stop measuring
+                print('No more steps ready')
+
+                # Return None if no step exists
+                return None
+
+    async def on_get_latest_step(self, sid):
+        # We grab the latest step, where it isn't marked as done, and send it
+        step = await self.get_next_step()
+
+        # Push it to the client
+        if step is not None:
+            await self.push_next_step(step)
 
