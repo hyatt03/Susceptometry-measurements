@@ -86,8 +86,8 @@ class MagnetismQueue(BaseQueueClass):
         })
 
         # Setup oscope measurement
-        print(self.dvm.ask('MEASUREMENT:IMMED:SOURCE[1] CH1'))  # Sets the measurement to channel 1
         print(self.dvm.ask('MEASUREMENT:IMMED:TYPE CRMS'))  # Sets the measurement type to RMS
+        print(self.dvm.ask('MEASUREMENT:IMMED:SOURCE[1] CH1'))  # Sets the measurement to channel 1
 
         print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
 
