@@ -342,22 +342,22 @@ class MagnetismQueue(BaseQueueClass):
         print('saved data to hdf5')
 
         # Send the measurements to the server
-        # await self.socket_client.emit('m_got_step_results', {
-        #     'ac_rms_field': ac_fields,
-        #     'dc_field': dc_fields,
-        #     'lockin_amplitude': get_mean_from_list_of_arrays(lockin_amplitudes),
-        #     'lockin_phase': get_mean_from_list_of_arrays(lockin_phases),
-        #     'step_id': step['id']
-        # })
-
-        # Test not sending data for stability
         await self.socket_client.emit('m_got_step_results', {
-            'ac_rms_field': [],
-            'dc_field': [],
-            'lockin_amplitude': [],
-            'lockin_phase': [],
+            'ac_rms_field': ac_fields,
+            'dc_field': dc_fields,
+            'lockin_amplitude': get_mean_from_list_of_arrays(lockin_amplitudes),
+            'lockin_phase': get_mean_from_list_of_arrays(lockin_phases),
             'step_id': step['id']
         })
+
+        # Test not sending data for stability
+        # await self.socket_client.emit('m_got_step_results', {
+        #     'ac_rms_field': [],
+        #     'dc_field': [],
+        #     'lockin_amplitude': [],
+        #     'lockin_phase': [],
+        #     'step_id': step['id']
+        # })
 
         # Wait a second to let other background tasks run
         await asyncio.sleep(1)

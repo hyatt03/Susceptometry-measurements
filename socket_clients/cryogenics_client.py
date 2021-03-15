@@ -282,18 +282,18 @@ class CryoQueue(BaseQueueClass):
         print('saved data to dataframes')
 
         # Next we send the results to the server
-        # await self.socket_client.emit('c_got_step_results', {
-        #     'pressures': pressures,
-        #     'temperatures': temperatures,
-        #     'step_id': step['id']
-        # })
-
-        # Test not sending data for stability
         await self.socket_client.emit('c_got_step_results', {
-            'pressures': {},
-            'temperatures': {},
+            'pressures': pressures,
+            'temperatures': temperatures,
             'step_id': step['id']
         })
+
+        # Test not sending data for stability
+        # await self.socket_client.emit('c_got_step_results', {
+        #     'pressures': {},
+        #     'temperatures': {},
+        #     'step_id': step['id']
+        # })
 
         print('sent results to server')
 
