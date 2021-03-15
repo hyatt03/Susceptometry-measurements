@@ -73,24 +73,10 @@ class MagnetismQueue(BaseQueueClass):
         # Turn on the signal generator (0.5 volts peak to peak)
         self.configure_n9310a({'amplitude': 0.5, 'frequency': 1000})
 
-        # Setup the oscilloscope
-        self.configure_oscilloscope({
-            'ch1': {'state': 'ON', 'scale': 0.01, 'position': 0},
-            'ch2': {'state': 'OFF'},
-            'trigger': {
-                'trigger_type': 'EDGE',
-                'trigger_source': 'CH1',
-                'trigger_level': 0.0
-            },
-            'horizontal_scale': 100e-5
-        })
-
-        # Setup oscope measurement
+        # Setup oscilloscope measurement
         self.dvm.write('MEASUREMENT:IMMED:TYPE CRMS')  # Sets the measurement type to RMS
         self.dvm.write('MEASUREMENT:IMMED:SOURCE[1] CH1')  # Sets the measurement to channel 1
 
-        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
-
         # Setup the oscilloscope
         self.configure_oscilloscope({
             'ch1': {'state': 'ON', 'scale': 0.01, 'position': 0},
@@ -102,8 +88,6 @@ class MagnetismQueue(BaseQueueClass):
             },
             'horizontal_scale': 100e-5
         })
-
-        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
 
         # Register queue processors
         self.register_queue_processor('get_sr830_config', self.get_sr830_config)
@@ -199,8 +183,7 @@ class MagnetismQueue(BaseQueueClass):
         return magnetism_state['magnet_trace']
 
     async def get_magnet_rms_direct(self, queue, name, task):
-        # self.dvm.
-        pass
+        print('rms:', self.dvm.ask('MEASUrement:IMMed:VALue?'))
 
     async def get_latest_magnet_trace(self, queue, name, task):
         # Send the data to the client
@@ -211,6 +194,8 @@ class MagnetismQueue(BaseQueueClass):
 
     async def get_latest_rms_of_magnet_trace(self, queue, name, task):
         # Compute the RMS value of the trace, and send it to the client
+        await self.get_magnet_rms_direct(queue, name, task)
+
         await self.socket_client.send_magnet_rms(np.sqrt(np.mean(magnetism_state['magnet_trace'] ** 2.)))
 
     async def get_dc_field(self, queue, name, task):
