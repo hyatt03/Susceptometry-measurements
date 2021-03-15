@@ -13,7 +13,7 @@ from server_namespaces.cryo_events import CryoNamespace
 from server_namespaces.magnetism_events import MagnetismNamespace
 
 # Create app and setup websockets
-sio = socketio.AsyncServer()
+sio = socketio.AsyncServer(ping_timeout=300)
 app = web.Application()
 sio.attach(app)
 
