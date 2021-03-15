@@ -270,23 +270,32 @@ class MagnetismQueue(BaseQueueClass):
             fp = f'data/magnetism_data_experiment_{magnetism_state["experiment_file_id"]}.h5'
             magnetism_state['experiment_file'] = pd.HDFStore(fp)
 
-        # Set the magentic field
-        await self.set_magnet_config(queue, name, {'config': {
-            'magnet_field': step['magnet_field']
-        }})
+        try:
+            # Set the magentic field
+            await self.set_magnet_config(queue, name, {'config': {
+                'magnet_field': step['magnet_field']
+            }})
+        except:
+            print('Could not set magnetic field')
 
-        # set the signal generator config
-        await self.set_n9310a_config(queue, name, {'config': {
-            'frequency': step['n9310a_frequency'],
-            'amplitude': step['n9310a_amplitude']
-        }})
+        try:
+            # set the signal generator config
+            await self.set_n9310a_config(queue, name, {'config': {
+                'frequency': step['n9310a_frequency'],
+                'amplitude': step['n9310a_amplitude']
+            }})
+        except:
+            print('Could not configure function generator')
 
-        # set the lock-in amplifier config
-        await self.set_sr830_config(queue, name, {'config': {
-            'sensitivity': step['sr830_sensitivity'],
-            'frequency': step['sr830_frequency'],
-            'buffersize': step['sr830_buffersize']
-        }})
+        try:
+            # set the lock-in amplifier config
+            await self.set_sr830_config(queue, name, {'config': {
+                'sensitivity': step['sr830_sensitivity'],
+                'frequency': step['sr830_frequency'],
+                'buffersize': step['sr830_buffersize']
+            }})
+        except:
+            print('Could not configure lockin amplifier')
 
         # Mark this step as ready
         await self.socket_client.emit('m_set_step_ready', step['id'])
@@ -360,7 +369,7 @@ class MagnetismQueue(BaseQueueClass):
         })
 
         # Wait a second to let other background tasks run
-        await asyncio.sleep(1)
+        await asyncio.sleep(.1)
 
         # Then we mark it as done
         await self.socket_client.emit('mark_step_as_done', step)
