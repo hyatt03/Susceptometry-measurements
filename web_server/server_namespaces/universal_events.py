@@ -117,7 +117,11 @@ class UniversalEvents(socketio.AsyncNamespace):
         pass
 
     async def on_get_number_of_clients(self, sid):
-        print(self.connected_clients)
+        await self.emit('number_of_client', {
+            'webbrowser': len(self.connected_clients['webbrowser']),
+            'magnetism': len(self.connected_clients['magnetism']),
+            'cryo': len(self.connected_clients['cryo'])
+        }, room=sid)
 
     async def get_next_step(self):
         with db.connection_context():
