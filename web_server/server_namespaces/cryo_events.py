@@ -37,7 +37,7 @@ class CryoNamespace(UniversalEvents):
         await self.emit('c_get_frontpanel_status')
 
     # if the clients reset, we want to be able to tell it the step is ready
-    async def on_c_is_step_ready(self, step_id):
+    async def on_c_is_step_ready(self, sid, step_id):
         if step_id in self.steps_ready:
             await self.send_step_ready(step_id)
 
