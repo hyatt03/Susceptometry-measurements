@@ -216,10 +216,14 @@ class CryoQueue(BaseQueueClass):
         # Be sure to ask the server if the step is ready
         await self.socket_client.is_step_ready(step['id'])
 
+        print('Requested is step ready, waiting for response')
+
         # Wait for the magnetism station to be ready for measurement
         # Sleep 0.1 seconds at a time
         while experiment_state['step_ready_for_measurement'] != step['id']:
             await asyncio.sleep(0.1)
+
+        print('Got step is ready signal, doing measurement.')
 
         # Now the stations should be pretty syncronized
         # And we can begin measuring

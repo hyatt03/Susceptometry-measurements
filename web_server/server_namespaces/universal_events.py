@@ -120,5 +120,7 @@ class UniversalEvents(socketio.AsyncNamespace):
 
         # Push it to the client
         if step is not None:
+            print('Pushing latest step to client')
+
             await self.push_next_step(step)
 
