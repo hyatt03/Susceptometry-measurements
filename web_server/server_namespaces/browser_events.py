@@ -1,16 +1,8 @@
-from models import db, ExperimentConfiguration, ExperimentStep, Session, DataPoint, MagnetismDataPoint, \
-    CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint, MagnetismMeasurement
+from models import db, ExperimentConfiguration, ExperimentStep, Session
 from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 
 import numpy as np
-
-import json
-
-from peewee import DoesNotExist
-
-from playhouse.shortcuts import model_to_dict
-
 
 # All the methods related to the browser connection
 class BrowserNamespace(UniversalEvents):
@@ -199,7 +191,7 @@ class BrowserNamespace(UniversalEvents):
             data['magnet_min_field'] = float(data['magnet_min_field'])
             data['magnet_max_field'] = float(data['magnet_max_field'])
             data['magnet_sweep_steps'] = int(data['magnet_sweep_steps'])
-            data['oscope_resistor'] = float(data['oscope_resistor'])
+            data['oscope_resistor'] = 84.5  # Not configurable any more
             data['data_wait_before_measuring'] = float(data['data_wait_before_measuring'])
             data['data_points_per_measurement'] = int(data['data_points_per_measurement'])
 

@@ -78,14 +78,27 @@ const sr830_sensitivities = [2e-9, 5e-9, 10e-9, 20e-9, 50e-9, 100e-9, 200e-9, 50
     20e-6, 50e-6, 100e-6, 200e-6, 500e-6, 1e-3, 2e-3, 5e-3, 10e-3, 20e-3, 50e-3, 100e-3, 200e-3, 500e-3, 1]
 
 function get_config_page_template(state) {
+    // Grab the existing experiment configuration
     const experiment_config = state['experiment_config'];
+
+    // Create options for the SR830 sensitivity dropdown
     const sr830_sensitivity_options = sr830_sensitivities.map(sens => {
         let is_default = '';
         if (sens === experiment_config['sr830_sensitivity']) {
             is_default = 'selected="selected"'
         }
 
-        return `<option value="${sens}" ${is_default}>${sens}V</option>`
+        return `<option value="${sens}" ${is_default}>${sens}V</option>`;
+    });
+
+    // Create the options for the SR830 frequency options
+    const sr830_frequency_options = sr830_frequencies.map(freq => {
+        let is_default = '';
+        if (freq === experiment_config['sr830_frequency']) {
+            is_default = 'selected="selected"';
+        }
+
+        return `<option ${is_default} value="${freq}">${freq} Hz</option>`;
     });
 
     return `
@@ -112,14 +125,13 @@ function get_config_page_template(state) {
         <h1 class="h4">Lock-in amplifier (SR830) configuration</h1>
         <div class="instrument--config">
             <div class="config--parameter">
-                <label for="sr830_sensitivity">Select sensitivity [V]: </label>
+                <label for="sr830_sensitivity">Select sensitivity: </label>
                 <select name="sr830_sensitivity" id="sr830_sensitivity">${sr830_sensitivity_options}</select>
             </div>
             
             <div class="config--parameter">
-                <label for="sr830_freq">Frequency [Hz]: </label>
-                <input type="number" placeholder="Frequency" name="sr830_frequency" 
-                       id="sr830_freq" value="${experiment_config['sr830_frequency']}" />
+                <label for="sr830_freq">Frequency: </label>
+                <select name="sr830_frequency" id="sr830_freq">${sr830_frequency_options}</select>
             </div>
             
             <div class="config--parameter">
@@ -190,13 +202,6 @@ function get_config_page_template(state) {
     
     <div class="instrument--container">
         <h1 class="h4">Oscilloscope (Analog discovery 2) configuration</h1>
-        <div class="instrument--config">
-            <div class="config--parameter">
-                <label for="oscope_resistor">Select resistor value [Ω]: </label>
-                <input type="number" name="oscope_resistor" id="oscope_resistor" 
-                       placeholder="Resistor" value="${experiment_config['oscope_resistor']}" />
-            </div>
-        </div>
     </div>
     
     <div class="instrument--container">
