@@ -174,7 +174,10 @@ class CryoQueue(BaseQueueClass):
 
     # Queue task to send the frontpanel status and ack to the frontend
     async def get_fp_status(self, queue, name, task):
-        await self.socket_client.send_fp_status({'ack': self.ghs.latest_ack.get_latest(), 'status': self.ghs.status.get_latest()})
+        await self.socket_client.send_fp_status({
+            'ack': self.ghs.latest_ack.get_latest(),
+            'status': self.ghs.status.get_latest()
+        })
 
     # Process the next step of the current experiment
     async def process_next_step(self, queue, name, task):

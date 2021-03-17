@@ -543,6 +543,11 @@ class MagnetismClientNamespace(BaseClientNamespace):
     async def send_oscope_config(self, config):
         await self.emit('m_got_oscope_config', config)
 
+    async def emit(self, event, data=None, namespace=None, callback=None):
+        print('in overwritten emit')
+
+        await super(MagnetismClientNamespace, self).emit(event, data, namespace, callback)
+
 
 if __name__ == '__main__':
     asyncio.run(main(MagnetismClientNamespace, '/magnetism'))
