@@ -138,7 +138,21 @@ function ac_field_updated(fieldstrength) {
 }
 
 function n_connected_updated(connections_object) {
-    console.log(connections_object);
+    // console.log(connections_object);
+
+    if (connections_object['cryo'] > 0) {
+        $('#cryo_connection_status').html('<span color="green">Online</span>');
+    } else {
+        $('#cryo_connection_status').html('<span color="red">Offline</span>');
+    }
+
+    if (connections_object['magnetism'] > 0) {
+        $('#magnet_connection_status').html('<span color="green">Online</span>');
+    } else {
+        $('#magnet_connection_status').html('<span color="red">Offline</span>');
+    }
+
+    $('#connection_updated').html(connections_object['time']);
 }
 
 // Server sends number of datapoints collected in the current experiment
