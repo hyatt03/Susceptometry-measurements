@@ -42,13 +42,29 @@ class UniversalEvents(socketio.AsyncNamespace):
             try:
                 # Find the type and remove from the connected clients list
                 session = Session.get(Session.sid == sid)
-                connections_space = self.connected_clients[session.type]
-                connections_space.remove(sid)
+                self.remove_client_from_all_namespaces(sid, session.type)
 
                 # Alert the user to the disconnect
                 print(session.type, 'disconnected')
             except Session.DoesNotExist:
                 print('disconnect ', sid)
+
+    def add_client_to_connected(self, client, type):
+        # Add the connection to a category for easy lookup
+        self.connected_clients[type].append(client)
+
+    def remove_client_from_connected(self, client, type):
+        self.connected_clients[type].remove(client)
+
+    def add_client_to_all_namespaces(self, client, type):
+        self.cryo_namespace.add_client_to_connected(client, type)
+        self.magnetism_namespace.add_client_to_connected(client, type)
+        self.browser_namespace.add_client_to_connected(client, type)
+
+    def remove_client_from_all_namespaces(self, client, type):
+        self.cryo_namespace.remove_client_from_connected(client, type)
+        self.magnetism_namespace.remove_client_from_connected(client, type)
+        self.browser_namespace.remove_client_from_connected(client, type)
 
     # Allow clients to identify themselves
     async def on_idn(self, sid, data):
@@ -68,8 +84,7 @@ class UniversalEvents(socketio.AsyncNamespace):
                 is_old = 'New'
 
         # Add the connection to a category for easy lookup
-        connections_space = self.connected_clients[client_type]
-        connections_space.append(sid)
+        self.add_client_to_all_namespaces(sid, client_type)
 
         print(f'{is_old} client connected with idn: {data}, and sid: {sid}')
 
