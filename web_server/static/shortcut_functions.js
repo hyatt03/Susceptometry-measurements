@@ -6,6 +6,7 @@
 // We want to grab both the number of points collected
 // And the total number of points we're going for right now
 function update_data_status() {
+    update_n_connections();
     update_n_points_taken();
     update_n_points_total();
 }

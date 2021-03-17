@@ -29,6 +29,10 @@ function update_n_points_total() {
     window.my_socket.emit('b_get_n_points_total');
 }
 
+function update_n_connections() {
+    window.my_socket.emit('get_number_of_clients');
+}
+
 function update_rms() {
     // Request an update for the rms
     window.my_socket.emit('b_get_rms');

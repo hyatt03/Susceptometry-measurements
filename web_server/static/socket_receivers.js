@@ -137,6 +137,10 @@ function ac_field_updated(fieldstrength) {
     update_magnet_state();
 }
 
+function n_connected_updated(connections_object) {
+    console.log(connections_object);
+}
+
 // Server sends number of datapoints collected in the current experiment
 // We display it on screen
 function n_points_taken_updated(n_points_taken) {

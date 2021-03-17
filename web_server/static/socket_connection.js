@@ -76,6 +76,7 @@ function main_socket_connection() {
     // Setup events
     // Get events
     socket.on('connect', idn_requested);
+    socket.on('number_of_client', n_connected_updated);
     socket.on('b_temperatures', temperatures_updated);
     socket.on('b_pressures', pressures_updated);
     socket.on('b_dc_field', dc_field_updated);
@@ -87,8 +88,8 @@ function main_socket_connection() {
     socket.on('b_temperature_trace', temperature_trace_updated);
     socket.on('b_pressure_trace', pressure_trace_updated);
     socket.on('b_latest_experiment_config', experiment_config_updated);
-    socket.on('b_got_cryo_status', cryo_status_updated)
-    socket.on('b_got_experiment_list', got_experiment_list)
+    socket.on('b_got_cryo_status', cryo_status_updated);
+    socket.on('b_got_experiment_list', got_experiment_list);
 
     // Open status page by default
     open_status_page();

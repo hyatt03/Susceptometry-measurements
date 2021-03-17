@@ -4,6 +4,8 @@ from models import db, Session, ExperimentStep, DataPoint
 from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
+import datetime
+
 
 # Class containing events relevant for all different namespaces (used as a baseclass
 class UniversalEvents(socketio.AsyncNamespace):
@@ -118,6 +120,7 @@ class UniversalEvents(socketio.AsyncNamespace):
 
     async def on_get_number_of_clients(self, sid):
         await self.emit('number_of_client', {
+            'time': datetime.datetime.now().isoformat(),  # Timestamp of when this status was collected
             'webbrowser': len(self.connected_clients['webbrowser']),
             'magnetism': len(self.connected_clients['magnetism']),
             'cryo': len(self.connected_clients['cryo'])
