@@ -23,12 +23,13 @@ class UniversalEvents(socketio.AsyncNamespace):
 
     # Ask for idn on connect
     async def on_connect(self, sid, environ):
-        # await asyncio.sleep(0.5)
-        # await self.emit('idn', room=sid)
         print('Got a connection from ', sid)
 
     # Tell the user that a client disconnected
     def on_disconnect(self, sid):
+        with db.connection_context():
+            print('disconnected session', Session.get(Session.sid == sid))
+
         print('disconnect ', sid)
 
     # Allow clients to identify themselves
@@ -47,6 +48,8 @@ class UniversalEvents(socketio.AsyncNamespace):
                 # if it does not exist, we just create it
                 Session.create(idn=data, sid=sid, type=client_type).save()
                 is_old = 'New'
+
+        print(client_type)
 
         print(f'{is_old} client connected with idn: {data}, and sid: {sid}')
 
