@@ -10,10 +10,21 @@ class UniversalEvents(socketio.AsyncNamespace):
     # Init all the self variables needed
     def __init__(self, namespace=None):
         super().__init__(namespace)
+
+        # Keep track of the namespaces
         self.cryo_namespace = None
         self.magnetism_namespace = None
         self.browser_namespace = None
+
+        # Keep track of the steps done
         self.steps_done = []
+
+        # Keep track of the connected clients
+        self.connected_clients = {
+            'webbrowser': [],
+            'magnetism': [],
+            'cryo': []
+        }
 
     # Basically an init function to allow communication between the channels
     def set_namespaces(self, cryo, magnetism, browser):
@@ -29,7 +40,12 @@ class UniversalEvents(socketio.AsyncNamespace):
     def on_disconnect(self, sid):
         with db.connection_context():
             try:
+                # Find the type and remove from the connected clients list
                 session = Session.get(Session.sid == sid)
+                connections_space = self.connected_clients[session.type]
+                connections_space.remove(sid)
+
+                # Alert the user to the disconnect
                 print(session.type, 'disconnected')
             except Session.DoesNotExist:
                 print('disconnect ', sid)
@@ -51,7 +67,9 @@ class UniversalEvents(socketio.AsyncNamespace):
                 Session.create(idn=data, sid=sid, type=client_type).save()
                 is_old = 'New'
 
-        print(client_type)
+        # Add the connection to a category for easy lookup
+        connections_space = self.connected_clients[client_type]
+        connections_space.append(sid)
 
         print(f'{is_old} client connected with idn: {data}, and sid: {sid}')
 
@@ -82,6 +100,9 @@ class UniversalEvents(socketio.AsyncNamespace):
     # This method is implemented in the individual clients, where relevant
     async def push_next_step(self, step):
         pass
+
+    async def on_get_number_of_clients(self):
+        print(self.connected_clients)
 
     async def get_next_step(self):
         with db.connection_context():
