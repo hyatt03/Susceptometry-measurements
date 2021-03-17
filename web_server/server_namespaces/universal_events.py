@@ -116,7 +116,7 @@ class UniversalEvents(socketio.AsyncNamespace):
     async def push_next_step(self, step):
         pass
 
-    async def on_get_number_of_clients(self):
+    async def on_get_number_of_clients(self, sid):
         print(self.connected_clients)
 
     async def get_next_step(self):
