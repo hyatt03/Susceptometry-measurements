@@ -120,7 +120,7 @@ class UniversalEvents(socketio.AsyncNamespace):
 
     async def on_get_number_of_clients(self, sid):
         await self.emit('number_of_client', {
-            'time': datetime.datetime.now().isoformat(),  # Timestamp of when this status was collected
+            'time': str(datetime.datetime.now().isoformat()).split('.')[0].replace('T', ' '),
             'webbrowser': len(self.connected_clients['webbrowser']),
             'magnetism': len(self.connected_clients['magnetism']),
             'cryo': len(self.connected_clients['cryo'])
