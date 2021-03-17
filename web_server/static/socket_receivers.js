@@ -141,15 +141,15 @@ function n_connected_updated(connections_object) {
     // console.log(connections_object);
 
     if (connections_object['cryo'] > 0) {
-        $('#cryo_connection_status').html('<span color="green">Online</span>');
+        $('#cryo_connection_status').html('<span style="color: green">Online</span>');
     } else {
-        $('#cryo_connection_status').html('<span color="red">Offline</span>');
+        $('#cryo_connection_status').html('<span style="color: red">Offline</span>');
     }
 
     if (connections_object['magnetism'] > 0) {
-        $('#magnet_connection_status').html('<span color="green">Online</span>');
+        $('#magnet_connection_status').html('<span style="color: green">Online</span>');
     } else {
-        $('#magnet_connection_status').html('<span color="red">Offline</span>');
+        $('#magnet_connection_status').html('<span style="color: red">Offline</span>');
     }
 
     $('#connection_updated').html(connections_object['time']);
