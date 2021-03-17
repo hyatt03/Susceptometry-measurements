@@ -81,6 +81,7 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
         super().__init__(namespace)
         self.client_type = 'abstract'
         self.sid = 'no_address'
+        self.is_connected = False
 
         # Initialize the queue
         self.my_queue = QueueClass(self)
@@ -88,6 +89,15 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 
     def background_job(self):
         pass
+
+    async def emit(self, event, data=None, namespace=None, callback=None):
+        # If no connection, we just wait a bit
+        while not self.is_connected:
+            print('Tried to emit event, but client is not connected, so we wait a bit')
+            await asyncio.sleep(5.0)
+
+        # If we have a connection, we just send it
+        await super(BaseClientNamespace, self).emit(event, data, namespace, callback)
 
     # Helper function to append to the queue
     async def append_to_queue(self, data):
@@ -100,6 +110,10 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 
     # Event received when this client connects to the server
     async def on_connect(self):
+        # Set the connection flag
+        self.is_connected = True
+
+        # Alert the user
         print('connected to:', self.server_address)
 
         # Run the IDN
@@ -107,6 +121,10 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 
     # Event received when the connection to the server is lost
     def on_disconnect(self):
+        # Set the connection flag
+        self.is_connected = False
+
+        # Alert the user
         print('Lost connection, trying to reconnect')
 
     # Generate and send idn, uses the mac address of the client to generate unique static idn
