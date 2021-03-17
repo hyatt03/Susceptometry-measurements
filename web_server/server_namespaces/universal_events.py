@@ -28,9 +28,11 @@ class UniversalEvents(socketio.AsyncNamespace):
     # Tell the user that a client disconnected
     def on_disconnect(self, sid):
         with db.connection_context():
-            print('disconnected session', Session.get(Session.sid == sid))
-
-        print('disconnect ', sid)
+            try:
+                session = Session.get(Session.sid == sid)
+                print(session.type, 'disconnected')
+            except Session.DoesNotExist:
+                print('disconnect ', sid)
 
     # Allow clients to identify themselves
     async def on_idn(self, sid, data):
