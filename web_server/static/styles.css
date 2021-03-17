@@ -39,3 +39,7 @@
 .save_config_button {
     margin: 1em 0;
 }
+
+#connection_status > h5 {
+    margin-top: 20px;
+}
