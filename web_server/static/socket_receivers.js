@@ -138,20 +138,21 @@ function ac_field_updated(fieldstrength) {
 }
 
 function n_connected_updated(connections_object) {
-    // console.log(connections_object);
-
+    // Update the connection status of the cryogenics station
     if (connections_object['cryo'] > 0) {
         $('#cryo_connection_status').html('<span style="color: green">Online</span>');
     } else {
         $('#cryo_connection_status').html('<span style="color: red">Offline</span>');
     }
 
+    // Update the status of the magnetism station
     if (connections_object['magnetism'] > 0) {
         $('#magnet_connection_status').html('<span style="color: green">Online</span>');
     } else {
         $('#magnet_connection_status').html('<span style="color: red">Offline</span>');
     }
 
+    // Update the date and time, so we can see if the browser is connected.
     $('#connection_updated').html(connections_object['time']);
 }
 
