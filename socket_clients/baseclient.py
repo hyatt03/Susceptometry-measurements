@@ -7,6 +7,8 @@ import os
 # Import uuid to access a machine id
 import uuid
 
+from keep_python_alive_win import WindowsInhibitor
+
 
 class BaseQueueClass():
     n_workers = 2
@@ -119,6 +121,9 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
         # Run the IDN
         await self.on_idn()
 
+        # Prevent windows from sleeping
+        WindowsInhibitor().inhibit()
+
     # Event received when the connection to the server is lost
     def on_disconnect(self):
         # Set the connection flag
@@ -126,6 +131,9 @@ class BaseClientNamespace(socketio.AsyncClientNamespace):
 
         # Alert the user
         print('Lost connection, trying to reconnect')
+
+        # Allow windows to sleep again
+        WindowsInhibitor().uninhibit()
 
     # Generate and send idn, uses the mac address of the client to generate unique static idn
     async def on_idn(self):
