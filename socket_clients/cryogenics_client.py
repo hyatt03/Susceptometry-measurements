@@ -50,6 +50,7 @@ class CryoQueue(BaseQueueClass):
         self.ghs = self.station.components['ghs']
         self.tcs = self.station.components['tcs']
         self.resistance_bridge = self.station.components['resistance_bridge']
+        self.dmm = self.station.components['dmm']
 
         # Register queue processors
         self.register_queue_processor('configure_avs47b', self.configure_avs47b)
@@ -90,16 +91,32 @@ class CryoQueue(BaseQueueClass):
 
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
+        # temperatures = {
+        #     't_upper_hex': self.resistance_bridge.query_for_temperature(0)[1],
+        #     't_lower_hex': self.resistance_bridge.query_for_temperature(1)[1],
+        #     't_he_pot': self.resistance_bridge.query_for_temperature(2)[1],
+        #     't_1st_stage': self.resistance_bridge.query_for_temperature(3)[1],
+        #     't_2nd_stage': self.resistance_bridge.query_for_temperature(4)[1],
+        #     't_inner_coil': self.resistance_bridge.query_for_temperature(5)[1],
+        #     't_outer_coil': self.resistance_bridge.query_for_temperature(6)[1],
+        #     't_switch': self.resistance_bridge.query_for_temperature(7)[1],
+        #     't_he_pot_2': self.resistance_bridge.query_for_temperature(8)[1],
+        #     'timestamp': time.time() - experiment_state['startup_time'],
+        #     'started': experiment_state['startup_time']
+        # }
+
+        scan_data = self.dmm.scan_channels()
+
         temperatures = {
-            't_upper_hex': self.resistance_bridge.query_for_temperature(0)[1],
-            't_lower_hex': self.resistance_bridge.query_for_temperature(1)[1],
-            't_he_pot': self.resistance_bridge.query_for_temperature(2)[1],
-            't_1st_stage': self.resistance_bridge.query_for_temperature(3)[1],
-            't_2nd_stage': self.resistance_bridge.query_for_temperature(4)[1],
-            't_inner_coil': self.resistance_bridge.query_for_temperature(5)[1],
-            't_outer_coil': self.resistance_bridge.query_for_temperature(6)[1],
-            't_switch': self.resistance_bridge.query_for_temperature(7)[1],
-            't_he_pot_2': self.resistance_bridge.query_for_temperature(8)[1],
+            't_upper_hex': scan_data['Upper HEx'],
+            't_lower_hex': scan_data['Lower HEx'],
+            't_he_pot': scan_data['He Pot CCS'],
+            't_1st_stage': scan_data['1st stage'],
+            't_2nd_stage': scan_data['2nd stage'],
+            't_inner_coil': scan_data['Inner Coil'],
+            't_outer_coil': scan_data['Outer Coil'],
+            't_switch': scan_data['Switch'],
+            't_he_pot_2': scan_data['He Pot'],
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         }

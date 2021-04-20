@@ -6,21 +6,59 @@ Only implements scanning of resistances for now
 from qcodes import VisaInstrument, validators as vals
 import numpy as np
 
+from time import sleep
+
+import os
 
 class Keysight_2700_DMM(VisaInstrument):
-    def __init__(self, name, address, **kwargs):
-        super().__init__(name, address, terminator='\n', **kwargs)
+    # Paths of calibration files to convert between resistance [in ohms] and temperature [in kelvin]
+    calib_files = [
+        os.path.dirname(__file__) + '/avs_calibration_files/1)Upper HEx.txt',  # Sensor 101
+        os.path.dirname(__file__) + '/avs_calibration_files/2)Lower HEx.txt',  # Sensor 102
+        os.path.dirname(__file__) + '/avs_calibration_files/3)He Pot CCS.txt',  # Sensor 103
+        os.path.dirname(__file__) + '/avs_calibration_files/4)1st stage.txt',  # Sensor 104
+        os.path.dirname(__file__) + '/avs_calibration_files/5)2nd stage.txt',  # Sensor 105
+        os.path.dirname(__file__) + '/avs_calibration_files/6)Inner Coil.txt',  # Sensor 106
+        os.path.dirname(__file__) + '/avs_calibration_files/7)Outer Coil.txt',  # Sensor 107
+        os.path.dirname(__file__) + '/avs_calibration_files/8)Switch.txt',   # Sensor 108
+        os.path.dirname(__file__) + '/avs_calibration_files/9)He Pot.txt' # Sensor 109
+    ]
 
+    sensor_names = {
+        '101': 'Upper HEx',
+        '102': 'Lower HEx',
+        '103': 'He Pot CCS',
+        '104': '1st stage',
+        '105': '2nd stage',
+        '106': 'Inner Coil',
+        '107': 'Outer Coil',
+        '108': 'Switch',
+        '109': 'He Pot'
+    }
+
+    def __init__(self, name, address, **kwargs):
+        super().__init__(name, address, terminator='\r', **kwargs)
+
+        # Set a few parameters
         self.n_channels = 9
         self.line_cycles = 5
         self.buffer_size = 1000
         self.sample_count = 1
 
+        # Load up the calibration
+        self.calibrations = []
+        for fn in self.calib_files:
+            calib = np.loadtxt(fn, delimiter=',')
+            sort = np.argsort(calib[:, 1])
+            calib[:, 0] = (calib[:, 0])[sort]
+            calib[:, 1] = (calib[:, 1])[sort]
+            self.calibrations.append(calib)
+
         # Connect to the instrument and get an IDN
         self.connect_message()
 
         # Initialize the device
-        self.write('*RST')
+        self.write('*RST')        
         self.write('*CLS')
         self.write('TRAC:CLE')
 
@@ -57,7 +95,7 @@ class Keysight_2700_DMM(VisaInstrument):
         self.write('TRAC:TST:FORM ABS')
 
         # Set list of channels to scan
-        self.write('ROUT:SCAN (@101:10{self.n_channels})')
+        self.write(f'ROUT:SCAN (@101:10{self.n_channels})')
 
         # Enable scanner
         self.write('ROUT:SCAN:LSEL INT')
@@ -69,10 +107,30 @@ class Keysight_2700_DMM(VisaInstrument):
         self.write('INIT:CONT ON')
 
         # Set output format
-        self.write('FORM:ELEM READ,CHAN,TST')
+        self.write('FORM:ELEM READ,CHAN')
+
+    def convert_to_kelvin(self, channel_string, resistance):
+        channel = int(channel_string[-1]) - 1
+
+        # Now we grab the calibration
+        calib = self.calibrations[channel]
+
+        # And we interpolate the result
+        return np.interp(resistance, calib[:, 1], calib[:, 0])
 
     def scan_channels(self):
+        # Create dict to save resistances
+        results = {}
+
         # Get data from buffer
-        data = self.ask('TRAC:DATA?')
-        
-        print('got data', data)
+        for i in range(self.n_channels):
+            # Read the data from the device
+            data = self.ask('READ?')
+
+            # Split it into the channel and resistance
+            res, chan = data.split(',')
+
+            # And save the data
+            results[self.sensor_names[chan]] = self.convert_to_kelvin(chan, float(res))
+
+        return results

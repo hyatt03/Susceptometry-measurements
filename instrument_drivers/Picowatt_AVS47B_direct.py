@@ -66,7 +66,7 @@ class Avs_47b_direct(Instrument):
         # Get/Set multiplexer channel (7 channels available
         # Settling time is required before an accurate measurement can be conducted
         # Settling time is longer is the excitation is low
-        self.add_parameter('MultiplexerChannel', vals=vals.Ints(0, 7), get_cmd=None, set_cmd=None, initial_value=0)
+        self.add_parameter('MultiplexerChannel', vals=vals.Ints(0, 7), get_cmd=None, set_cmd=None, initial_value=1)
 
         # Get/set the range
         self.range_v_map = {
@@ -94,7 +94,7 @@ class Avs_47b_direct(Instrument):
             1e-3: '6',
             3e-3: '7'
         }
-        self.add_parameter('Excitation', unit='V', val_mapping=self.excitation_v_map, get_cmd=None, set_cmd=None, initial_value=0)
+        self.add_parameter('Excitation', unit='V', val_mapping=self.excitation_v_map, get_cmd=None, set_cmd=None, initial_value=1e-4)
 
         # Set reference for deviation (Delta R) measurements
         # 10000 sets the reference DAC to 1 volt
@@ -127,7 +127,8 @@ class Avs_47b_direct(Instrument):
         self.add_parameter('ADCValue', get_cmd=None, set_cmd=None, initial_value=0)
 
         # Query for the resistance
-        self.add_parameter('Resistance', unit='Ohm', get_cmd=self.get_resistance, set_cmd=None)
+        # self.add_parameter('Resistance', unit='Ohm', get_cmd=self.get_resistance, set_cmd=None, initial_value=0)
+        self.add_parameter('Resistance', unit='Ohm', get_cmd=None, set_cmd=None, initial_value=0)
 
         # Query overrange
         # 0 = no overrange
@@ -181,6 +182,7 @@ class Avs_47b_direct(Instrument):
         
         # Set the input
         input_int = f'{int(self.InputMode.get()):0=2b}'
+        input_int = f'{int(0):0=2b}'
         txstring[-21] = int(input_int[-1])
         txstring[-22] = int(input_int[-2])
         
@@ -319,27 +321,42 @@ class Avs_47b_direct(Instrument):
         """
         Queries the device for resistance, may take a while before a measurement is returned
         """
+        print('in query for resistance')
+
         # First we change to the channel we want to measure
         self.MultiplexerChannel.set(channel)
 
         # And we set the alarmline, so we get a signal when data is ready
         self.AlarmLine.set(0)
 
+        print('set alarmline')
+
         # Now we send the updated configuration
         # We set it to remote mode for it all to function
         # And we don't want to overwrite our users configuration
         self.send_config(True, False)
+
+        print('sent config')
 
         # Now we query the alarmline, waiting for it to turn true
         # We sleep meanwhile
         while not self.get_alarm_signal():
             time.sleep(0.005)
 
-        # Now we sleep 10 msecs waiting for the shift register to be populated with data
-        time.sleep(0.1)
+        print('done waiting for alarm line')
 
-        # Now we retreive the data, we save the results to the config
-        ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, True, True)
+        for i in range(20):
+            # Now we sleep 10 msecs waiting for the shift register to be populated with data
+            time.sleep(1)
+
+            # Now we retreive the data, we save the results to the config
+            ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, True, True)
+
+    	    # Keep repeating measurement until ovr reports false
+            if ovr == 0:
+                break
+            else:
+                print('got overrange, repeating')
 
         # Return wether we are overrange, the resistance, and the channel we actually measured.
         return ovr, resistance, ch_out

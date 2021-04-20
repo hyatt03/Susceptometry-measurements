@@ -9,13 +9,16 @@ from qcodes.instrument.group_parameter import GroupParameter, Group
 # Parser for group parameter containing status of the machine
 def status_parser(status_string):
     status_array = status_string[2:].split(',')
+    for i in range(len(status_array)):
+        status_array[i] = int(status_array[i])
+        
     return {
-        'range_1': status_array[0], 'current_1': status_array[1],  # Channel 1 status
-        'on_1': status_array[2], 'gated_1': status_array[3],
-        'range_2': status_array[4], 'current_2': status_array[5],  # Channel 2 status
-        'on_2': status_array[6], 'gated_2': status_array[7],
-        'range_3': status_array[8], 'current_3': status_array[9],  # Channel 3 status
-        'on_3': status_array[10], 'gated_3': status_array[11]
+        'range_1': status_array[1], 'current_1': status_array[2],  # Channel 1 status
+        'on_1': status_array[3], 'gated_1': status_array[4],
+        'range_2': status_array[5], 'current_2': status_array[6],  # Channel 2 status
+        'on_2': status_array[7], 'gated_2': status_array[8],
+        'range_3': status_array[9], 'current_3': status_array[10],  # Channel 3 status
+        'on_3': status_array[11], 'gated_3': status_array[12]
     }
 
 
