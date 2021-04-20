@@ -1,15 +1,19 @@
+function to_fixed(num, dec) {
+    return Math.round(num * (10^dec)) / (10^dec);
+}
+
 function get_temperature_list(state) {
     return `
         <div>Current temperatures: </div>
-        <div class="temperature--label">t_upper_hex = ${state['temperatures']['t_upper_hex']}K</div>
-        <div class="temperature--label">t_lower_hex = ${state['temperatures']['t_lower_hex']}K</div>
-        <div class="temperature--label">t_he_pot = ${state['temperatures']['t_he_pot']}K</div>
-        <div class="temperature--label">t_1st_stage = ${state['temperatures']['t_1st_stage']}K</div>
-        <div class="temperature--label">t_2nd_stage = ${state['temperatures']['t_2nd_stage']}K</div>
-        <div class="temperature--label">t_inner_coil = ${state['temperatures']['t_inner_coil']}K</div>
-        <div class="temperature--label">t_outer_coil = ${state['temperatures']['t_outer_coil']}K</div>
-        <div class="temperature--label">t_switch = ${state['temperatures']['t_switch']}K</div>
-        <div class="temperature--label">t_he_pot_2 = ${state['temperatures']['t_he_pot_2']}K</div>`;
+        <div class="temperature--label">t_upper_hex = ${to_fixed(state['temperatures']['t_upper_hex'], 2)}K</div>
+        <div class="temperature--label">t_lower_hex = ${to_fixed(state['temperatures']['t_lower_hex'], 2)}K</div>
+        <div class="temperature--label">t_he_pot = ${to_fixed(state['temperatures']['t_he_pot'], 2)}K</div>
+        <div class="temperature--label">t_1st_stage = ${to_fixed(state['temperatures']['t_1st_stage'], 2)}K</div>
+        <div class="temperature--label">t_2nd_stage = ${to_fixed(state['temperatures']['t_2nd_stage'], 2)}K</div>
+        <div class="temperature--label">t_inner_coil = ${to_fixed(state['temperatures']['t_inner_coil'], 2)}K</div>
+        <div class="temperature--label">t_outer_coil = ${to_fixed(state['temperatures']['t_outer_coil'], 2)}K</div>
+        <div class="temperature--label">t_switch = ${to_fixed(state['temperatures']['t_switch'], 2)}K</div>
+        <div class="temperature--label">t_he_pot_2 = ${to_fixed(state['temperatures']['t_he_pot_2'], 2)}K</div>`;
 }
 
 function get_magnet_field_list(state) {
@@ -22,14 +26,14 @@ function get_magnet_field_list(state) {
 function get_pressure_list(state) {
     return `
         <div>Current Pressures</div>
-        <div class="pressure--label">p_1 = ${state['pressures']['p_1']}</div>
-        <div class="pressure--label">p_2 = ${state['pressures']['p_2']}</div>
-        <div class="pressure--label">p_3 = ${state['pressures']['p_3']}</div>
-        <div class="pressure--label">p_4 = ${state['pressures']['p_4']}</div>
-        <div class="pressure--label">p_5 = ${state['pressures']['p_5']}</div>
-        <div class="pressure--label">p_6 = ${state['pressures']['p_6']}</div>
-        <div class="pressure--label">p_7 = ${state['pressures']['p_7']}</div>
-        <div class="pressure--label">p_8 = ${state['pressures']['p_8']}</div>`;
+        <div class="pressure--label">p_1 = ${to_fixed(state['pressures']['p_1'], 2)}</div>
+        <div class="pressure--label">p_2 = ${to_fixed(state['pressures']['p_2'], 2)}</div>
+        <div class="pressure--label">p_3 = ${to_fixed(state['pressures']['p_3'], 2)}</div>
+        <div class="pressure--label">p_4 = ${to_fixed(state['pressures']['p_4'], 2)}</div>
+        <div class="pressure--label">p_5 = ${to_fixed(state['pressures']['p_5'], 2)}</div>
+        <div class="pressure--label">p_6 = ${to_fixed(state['pressures']['p_6'], 2)}</div>
+        <div class="pressure--label">p_7 = ${to_fixed(state['pressures']['p_7'], 2)}</div>
+        <div class="pressure--label">p_8 = ${to_fixed(state['pressures']['p_8'], 2)}</div>`;
 }
 
 function get_temperature_plot(state) {
