@@ -1,6 +1,9 @@
 from peewee import *
 from playhouse.pool import PooledSqliteDatabase
 import numpy as np
+import json
+
+config_cache = {}
 
 # Connect to database using connection pool
 db = PooledSqliteDatabase('dashboard.db',
@@ -26,6 +29,68 @@ class Session(DBModel):
     idn = CharField(max_length=50)
     sid = CharField(max_length=50)
     type = CharField(max_length=10)
+
+
+class ConfigurationParameter(DBModel):
+    # Metadata about creation
+    created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+
+    # Just use a simple key/value store for configuration
+    key = CharField(max_length=50)
+    value = TextField()
+
+    def read_config_value(key, default_value=None):
+        if default_value is None:
+            return ConfigurationParameter.read_config_value_no_default(key)
+
+        # We query the database for the key we have stored
+        param_query = ConfigurationParameter.select().where(ConfigurationParameter.key == key)
+
+        # If we find it, we want to overwrite the value in
+        if param_query.count() > 0:
+            value = json.loads(param_query.get().value)
+
+        # Otherwise we want to create a new record with the value we have
+        else:
+            ConfigurationParameter(key=key, value=json.dumps(default_value)).save()
+            value = default_value
+
+        # Cache the value
+        config_cache[key] = value
+
+        # We return the value we found
+        return value
+
+    def overwrite_config_value(key, value):
+        # We query the database for the key we have stored
+        param_query = ConfigurationParameter.select().where(ConfigurationParameter.key == key)
+
+        # We first try to find the parameter
+        if param_query.count() > 0:
+            param = param_query.get()
+            param.value = value
+            param.save()
+
+        # If we can't find it, we create it
+        else:
+            ConfigurationParameter(key=key, value=json.dumps(default_value)).save()
+
+    def read_config_value_no_default(key):
+        # We check the cache first
+        if key in config_cache:
+            return config_cache[key]
+
+        # We query the database for the key we have stored
+        param_query = ConfigurationParameter.select().where(ConfigurationParameter.key == key)
+
+        # If we find it, we save it to the cache
+        if param_query.count() > 0:
+            value = json.loads(param_query.get().value)
+            config_cache[key] = value
+            return value
+
+        # Otherwise we return None
+        return None
 
 
 # Configure experiments

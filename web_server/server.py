@@ -5,7 +5,11 @@ import json
 
 # Import our own models (and a database connection
 from models import ExperimentStep, ExperimentConfiguration, Session, StationStatus, DataPoint, MagnetismDataPoint, \
-                   MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint, db
+                   MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint, \
+                   ConfigurationParameter, db
+
+# Import default configuration
+import default_config_parameters
 
 # Import namespaces for the socket connections
 from server_namespaces.browser_events import BrowserNamespace
@@ -145,8 +149,16 @@ app.router.add_get('/', index)
 if __name__ == '__main__':
     # Ensure the database tables are created
     with db.connection_context():
-        db.create_tables([Session, ExperimentConfiguration, ExperimentStep, StationStatus, DataPoint, MagnetismDataPoint, 
-                          MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint])
+        db.create_tables([Session, ExperimentConfiguration, ExperimentStep, StationStatus, DataPoint,
+                          MagnetismDataPoint, MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint,
+                          TemperatureDataPoint, ConfigurationParameter])
+
+    # Create a default configuration object
+    default_config = default_config_parameters.get_default_configuration_parameters()
+
+    # Now we load any missing keys into the database
+    for key in default_config.keys():
+        ConfigurationParameter.read_config_value(key, default_config[key])
 
     # Run the app
     web.run_app(app, port=3000, host='0.0.0.0')

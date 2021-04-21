@@ -33,6 +33,10 @@ function update_n_connections() {
     window.my_socket.emit('get_number_of_clients');
 }
 
+function update_is_saving_temperatures() {
+    window.my_socket.emit('b_get_is_saving_temperatures');
+}
+
 function update_rms() {
     // Request an update for the rms
     window.my_socket.emit('b_get_rms');
@@ -70,6 +74,10 @@ function save_experiment_configuration() {
 
 function begin_cooldown_procedure() {
     window.my_socket.emit('b_begin_cooldown');
+}
+
+function begin_save_temperatures() {
+    window.my_socket.emit('begin_save_temperatures');
 }
 
 function get_cryo_status() {

@@ -156,6 +156,10 @@ function n_connected_updated(connections_object) {
     $('#connection_updated').html(connections_object['time']);
 }
 
+function got_is_saving_temperatures(saving) {
+    console.log('is saving:', saving)
+}
+
 // Server sends number of datapoints collected in the current experiment
 // We display it on screen
 function n_points_taken_updated(n_points_taken) {

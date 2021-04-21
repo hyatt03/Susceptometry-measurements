@@ -241,9 +241,9 @@ function get_cryogenics_page_html() {
             <div class="instrument--config">
                 <div class="config--parameter">
                     <input type="button" value="Get status" 
-                           name="df_auto_cool" onclick="get_cryo_status()">
-                    <input type="button" value="Begin automatic cooldown" 
-                           name="df_auto_cool" onclick="begin_cooldown_procedure()">
+                           name="df_get_status" onclick="get_cryo_status()">
+                    <input type="button" value="Save temperatures continually" 
+                           name="df_save_temps" onclick="begin_save_temperatures()">
                 </div>
             </div>
         </div>
