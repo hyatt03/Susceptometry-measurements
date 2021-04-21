@@ -68,12 +68,15 @@ class ConfigurationParameter(DBModel):
         # We first try to find the parameter
         if param_query.count() > 0:
             param = param_query.get()
-            param.value = value
+            param.value = json.dumps(value)
             param.save()
 
         # If we can't find it, we create it
         else:
-            ConfigurationParameter(key=key, value=json.dumps(default_value)).save()
+            ConfigurationParameter(key=key, value=json.dumps(value)).save()
+
+        # And we save it to the cache
+        config_cache[key] = value
 
     def read_config_value_no_default(key):
         # We check the cache first

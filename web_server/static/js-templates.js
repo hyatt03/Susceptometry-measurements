@@ -224,6 +224,21 @@ function get_config_page_template(state) {
 </form>`;
 }
 
+function get_cryo_page_buttons() {
+    save_temperatures_button = `<input type="button" value="Save temperatures continually" 
+                                name="df_save_temps" onclick="begin_save_temperatures()">`;
+
+    if (state['is_saving_temperatures']) {
+        save_temperatures_button = `<input type="button" value="Stop saving temperatures" 
+                                    name="df_save_temps" onclick="end_save_temperatures()">`;
+    }
+
+    return `
+        <input type="button" value="Get status" name="df_get_status" onclick="get_cryo_status()">
+        ${save_temperatures_button}
+    `
+}
+
 function get_cryogenics_page_html() {
     return `
     <div class="cryogenics_status status_container">
@@ -239,11 +254,8 @@ function get_cryogenics_page_html() {
     <form id="cryo_config_form" class="cooldown_form">
         <div class="instrument--container">
             <div class="instrument--config">
-                <div class="config--parameter">
-                    <input type="button" value="Get status" 
-                           name="df_get_status" onclick="get_cryo_status()">
-                    <input type="button" value="Save temperatures continually" 
-                           name="df_save_temps" onclick="begin_save_temperatures()">
+                <div class="config--parameter" id="cryo_page_buttons_container">
+                    ${get_cryo_page_buttons()}
                 </div>
             </div>
         </div>

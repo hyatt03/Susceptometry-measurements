@@ -19,7 +19,17 @@ class BrowserNamespace(UniversalEvents):
     async def on_b_get_is_saving_temperatures(self, sid):
         with db.connection_context():
             saving = ConfigurationParameter.read_config_value('is_saving_cryo_temperatures')
-            self.emit('b_got_is_saving_temperatures', saving)
+            await self.emit('b_got_is_saving_temperatures', saving)
+
+    async def on_b_begin_save_temperatures(self, sid):
+        with db.connection_context():
+            ConfigurationParameter.overwrite_config_value('is_saving_cryo_temperatures', True)
+            await self.emit('b_got_is_saving_temperatures', True)
+
+    async def on_b_end_save_temperatures(self, sid):
+        with db.connection_context():
+            ConfigurationParameter.overwrite_config_value('is_saving_cryo_temperatures', False)
+            await self.emit('b_got_is_saving_temperatures', False)
 
     async def send_cryo_status(self, status):
         await self.emit('b_got_cryo_status', status)

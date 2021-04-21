@@ -77,7 +77,11 @@ function begin_cooldown_procedure() {
 }
 
 function begin_save_temperatures() {
-    window.my_socket.emit('begin_save_temperatures');
+    window.my_socket.emit('b_begin_save_temperatures');
+}
+
+function end_save_temperatures() {
+    window.my_socket.emit('b_end_save_temperatures');
 }
 
 function get_cryo_status() {
