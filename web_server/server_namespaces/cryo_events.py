@@ -80,6 +80,8 @@ class CryoNamespace(UniversalEvents):
             # Check if we want to save the temperatures
             if ConfigurationParameter.read_config_value('is_saving_cryo_temperatures'):
                 # Save the temperatures
+                print(temperatures)
+
                 TemperatureDataPoint(
                     t_upper_hex=temperatures['t_upper_hex'][i],
                     t_lower_hex=temperatures['t_lower_hex'][i],
