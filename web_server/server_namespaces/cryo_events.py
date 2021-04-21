@@ -1,5 +1,5 @@
 from server_namespaces.universal_events import UniversalEvents
-from models import db, DataPoint
+from models import db, DataPoint, TemperatureDataPoint
 from collections import deque
 
 
@@ -75,6 +75,24 @@ class CryoNamespace(UniversalEvents):
 
     # Event received when new temperatures are available
     async def on_c_got_temperatures(self, sid, temperatures):
+        # Ensure a connection to the database
+        with db.connection_context():
+            # Check if we want to save the temperatures
+            if ConfigurationParameter.read_config_value('is_saving_cryo_temperatures'):
+                # Save the temperatures
+                TemperatureDataPoint(
+                    t_upper_hex=temperatures['t_upper_hex'][i],
+                    t_lower_hex=temperatures['t_lower_hex'][i],
+                    t_he_pot=temperatures['t_he_pot'][i],
+                    t_1st_stage=temperatures['t_1st_stage'][i],
+                    t_2nd_stage=temperatures['t_2nd_stage'][i],
+                    t_inner_coil=temperatures['t_inner_coil'][i],
+                    t_outer_coil=temperatures['t_outer_coil'][i],
+                    t_switch=temperatures['t_switch'][i],
+                    t_he_pot_2=temperatures['t_he_pot_2'][i]
+                ).save()
+
+
         await self.browser_namespace.send_temperatures(temperatures)
 
     async def on_c_got_temperature_trace(self, sid, temperature_trace):
