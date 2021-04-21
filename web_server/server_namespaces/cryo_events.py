@@ -1,5 +1,5 @@
 from server_namespaces.universal_events import UniversalEvents
-from models import db, DataPoint, TemperatureDataPoint
+from models import db, DataPoint, TemperatureDataPoint, ConfigurationParameter
 from collections import deque
 
 
