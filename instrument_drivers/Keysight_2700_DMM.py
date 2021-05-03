@@ -37,12 +37,12 @@ class Keysight_2700_DMM(VisaInstrument):
     }
 
     def __init__(self, name, address, **kwargs):
-        super().__init__(name, address, terminator='\r', **kwargs)
+        super().__init__(name, address, terminator='\r', timeout=10, **kwargs)
 
         # Set a few parameters
         self.n_channels = 9
         self.line_cycles = 5
-        self.buffer_size = 1000
+        self.buffer_size = 9
         self.sample_count = 1
 
         # Load up the calibration
@@ -123,14 +123,18 @@ class Keysight_2700_DMM(VisaInstrument):
         results = {}
 
         # Get data from buffer
-        for i in range(self.n_channels):
-            # Read the data from the device
-            data = self.ask('READ?')
+        data = self.ask('TRAC:DATA?')
 
-            # Split it into the channel and resistance
-            res, chan = data.split(',')
+        # Split it into the channels and resistances
+        data_array = data.split(',')
+
+        # Iterate through the data (the resistance and channel alternate, so stepsize is 2)
+        for i in range(0, len(data_array), 2):
+            # Grab the current resistance and channel
+            res, chan = data_array[i], data_array[i+1]
 
             # And save the data
             results[self.sensor_names[chan]] = self.convert_to_kelvin(chan, float(res))
 
+        # Return the saved data
         return results
