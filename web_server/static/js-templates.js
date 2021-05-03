@@ -39,7 +39,7 @@ function get_pressure_list(state) {
 function get_temperature_plot(state) {
     return `
         <div class="cryogenics_status status_container">
-            <h1 class="h4">Cryogenics status</h1>
+            <h1 class="h4">Temperature status</h1>
             <div class="status_contents plot_container row">
                 <div class="temperature-plot--container col-9" id="temperature-plot"></div>
                 <div class="temperature--container col-3">
@@ -47,6 +47,17 @@ function get_temperature_plot(state) {
                 </div>
             </div>
         </div>`;
+}
+
+function get_long_temperature_plot() {
+    return `
+    <div class="cryogenics_status status_container">
+        <h1 class="h4">Temperature status (long timescale)</h1>
+        <div class="status_contents plot-2_container row">
+            <img class="temperature-plot-2--container col-9" id="temperature-plot-2" src="/get_plot" />
+        </div>
+    </div>
+    `
 }
 
 // Simple function to return status page html given the state
@@ -261,6 +272,7 @@ function get_cryogenics_page_html() {
         </div>
     </form>
     
+    ${get_long_temperature_plot()}
     ${get_temperature_plot(state)}
     
     <div class="cryogenics_status status_container">

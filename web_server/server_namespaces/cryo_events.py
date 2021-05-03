@@ -99,7 +99,7 @@ class CryoNamespace(UniversalEvents):
                 ).save()
 
                 # Reset the counter so we don't get very large numbers (there is no need)
-                self.received_temperatures = 0
+                self.received_temperatures = 1
 
         # Actually send the temperatures
         await self.browser_namespace.send_temperatures(temperatures)
