@@ -317,3 +317,6 @@ class TemperatureDataPoint(DBModel):
 
     # Backreference to the CryogenicsDataPoint model
     cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='temperatures')
+
+    # Datetime to query on temperature age
+    created = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])

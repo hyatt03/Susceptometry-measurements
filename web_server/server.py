@@ -8,6 +8,14 @@ from models import ExperimentStep, ExperimentConfiguration, Session, StationStat
                    MagnetismMeasurement, CryogenicsDataPoint, PressureDataPoint, TemperatureDataPoint, \
                    ConfigurationParameter, db
 
+# Import datetime so we can query on the date fields
+import datetime
+
+# Import packages for the plots
+import io
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Import default configuration
 import default_config_parameters
 
@@ -141,9 +149,70 @@ async def export_data(request):
                                 content_type='text/html')
 
 
+# Endpoint to plot the temperatures saved in the last n hours
+async def plot_saved_temperatures(request):
+    # Open connection to database
+    with db.connection_context():
+        # Create a timedelta for the query (based on the config)
+        period_delta = datetime.timedelta(hours=ConfigurationParameter.read_config_value('max_timeperiod'))
+        period = datetime.datetime.today() - period_delta
+
+        # Get the temperatures
+        temperatures = TemperatureDataPoint\
+            .select()\
+            .where(TemperatureDataPoint.created > period)\
+            .order_by(TemperatureDataPoint.created)\
+            .dicts()
+
+        # Create empty arrays to hold the data
+        temp_shape = (len(temperatures), 1)
+        times = np.zeros(shape=temp_shape)
+        t_upper_hex = np.zeros(shape=temp_shape)
+        t_lower_hex = np.zeros(shape=temp_shape)
+        t_he_pot = np.zeros(shape=temp_shape)
+        t_1st_stage = np.zeros(shape=temp_shape)
+        t_2nd_stage = np.zeros(shape=temp_shape)
+        t_inner_coil = np.zeros(shape=temp_shape)
+        t_outer_coil = np.zeros(shape=temp_shape)
+        t_switch = np.zeros(shape=temp_shape)
+        t_he_pot_2 = np.zeros(shape=temp_shape)
+
+        # Sort the data into the relevant arrays
+        for idx, t_obj in enumerate(temperatures):
+            times[idx] = t_obj['created'].timestamp() # Convert the datetime to seconds
+            t_upper_hex[idx] = t_obj['t_upper_hex']
+            t_lower_hex[idx] = t_obj['t_lower_hex']
+            t_he_pot[idx] = t_obj['t_he_pot']
+            t_1st_stage[idx] = t_obj['t_1st_stage']
+            t_2nd_stage[idx] = t_obj['t_2nd_stage']
+            t_inner_coil[idx] = t_obj['t_inner_coil']
+            t_outer_coil[idx] = t_obj['t_outer_coil']
+            t_switch[idx] = t_obj['t_switch']
+            t_he_pot_2[idx] = t_obj['t_he_pot_2']
+
+        # Plot the data
+        plt.subplots()
+
+        plt.plot(times, t_upper_hex, label='Upper HEx')
+        plt.plot(times, t_lower_hex, label='Lower HEx')
+
+        plt.xlabel('Time [seconds]')
+        plt.ylabel('Temperature [kelvin]')
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        plt.close()
+
+        response = web.StreamResponse()
+        await response.prepare(request)
+        await response.write(buffer)
+
+        return response
+
 # Setup the http routes
 app.router.add_static('/static', 'static')
 app.router.add_get('/export', export_data)
+app.router.add_get('/get_plot', plot_saved_temperatures)
 app.router.add_get('/', index)
 
 if __name__ == '__main__':

@@ -3,5 +3,7 @@
 # The parameters are loaded from the database if they already exist
 def get_default_configuration_parameters():
     return {
-        'is_saving_cryo_temperatures': False
+        'save_every_n_temperatures': 20,  # number of measurements
+        'max_timeperiod': 120,  # hours
+        'is_saving_cryo_temperatures': False  # Keep track of whether we are saving all temperatures
     }
