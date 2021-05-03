@@ -164,8 +164,13 @@ async def plot_saved_temperatures(request):
             .order_by(TemperatureDataPoint.created)\
             .dicts()
 
+        # Determine the shape of the arrays in our output
+        if len(temperatures) > 0:
+            temp_shape = (len(temperatures), 1)
+        else:
+            temp_shape = (1, 1)
+
         # Create empty arrays to hold the data
-        temp_shape = (len(temperatures), 1)
         times = np.zeros(shape=temp_shape)
         t_upper_hex = np.zeros(shape=temp_shape)
         t_lower_hex = np.zeros(shape=temp_shape)
@@ -191,7 +196,7 @@ async def plot_saved_temperatures(request):
             t_he_pot_2[idx] = t_obj['t_he_pot_2']
 
         # Create the plot
-        plt.subplots(figsize=(6, 2.5))
+        plt.subplots(figsize=(8, 3.5))
 
         # Plot the data
         plt.plot(times, t_upper_hex, label='Upper HEx')
@@ -208,11 +213,12 @@ async def plot_saved_temperatures(request):
         plt.xlabel('Time [seconds]')
         plt.ylabel('Temperature [kelvin]')
         plt.grid()
+        plt.legend(loc='lower left')
         plt.tight_layout()
 
         # Save the plot to a buffer
         buffer = io.BytesIO()
-        plt.savefig(buffer, format='png', dpi=200)
+        plt.savefig(buffer, format='png', dpi=100)
         plt.close()
 
         # Reset the buffer placement, and send the response
