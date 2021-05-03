@@ -1,5 +1,5 @@
 from server_namespaces.universal_events import UniversalEvents
-from models import db, DataPoint
+from models import db, DataPoint, TemperatureDataPoint, ConfigurationParameter
 from collections import deque
 
 
@@ -7,6 +7,7 @@ from collections import deque
 class CryoNamespace(UniversalEvents):
     # Keep at max 20 ids ready
     steps_ready = deque([], maxlen=20)
+    received_temperatures = 0
 
     """ #### EMITTING EVENTS #### """
     async def test_queue(self):
@@ -75,6 +76,32 @@ class CryoNamespace(UniversalEvents):
 
     # Event received when new temperatures are available
     async def on_c_got_temperatures(self, sid, temperatures):
+        # Keep track of how many temperatures we have received
+        self.received_temperatures += 1
+
+        # Ensure a connection to the database
+        with db.connection_context():
+            # Check if we want to save the temperatures
+            if ConfigurationParameter.read_config_value('is_saving_cryo_temperatures') and \
+                self.received_temperatures % ConfigurationParameter.read_config_value('save_every_n_temperatures') == 0:
+                # Save the temperatures
+                TemperatureDataPoint(
+                    cryo_data_point = 1,
+                    t_upper_hex=temperatures['t_upper_hex'],
+                    t_lower_hex=temperatures['t_lower_hex'],
+                    t_he_pot=temperatures['t_he_pot'],
+                    t_1st_stage=temperatures['t_1st_stage'],
+                    t_2nd_stage=temperatures['t_2nd_stage'],
+                    t_inner_coil=temperatures['t_inner_coil'],
+                    t_outer_coil=temperatures['t_outer_coil'],
+                    t_switch=temperatures['t_switch'],
+                    t_he_pot_2=temperatures['t_he_pot_2']
+                ).save()
+
+                # Reset the counter so we don't get very large numbers (there is no need)
+                self.received_temperatures = 1
+
+        # Actually send the temperatures
         await self.browser_namespace.send_temperatures(temperatures)
 
     async def on_c_got_temperature_trace(self, sid, temperature_trace):

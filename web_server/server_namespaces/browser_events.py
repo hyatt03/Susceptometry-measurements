@@ -1,4 +1,4 @@
-from models import db, ExperimentConfiguration, ExperimentStep, Session
+from models import db, ExperimentConfiguration, ExperimentStep, Session, ConfigurationParameter
 from server_namespaces.universal_events import UniversalEvents
 from default_experiment_config import get_default_experiment_configuration
 
@@ -15,6 +15,21 @@ class BrowserNamespace(UniversalEvents):
 
     async def on_b_get_cryo_status(self, sid):
         await self.cryo_namespace.get_fp_status()
+
+    async def on_b_get_is_saving_temperatures(self, sid):
+        with db.connection_context():
+            saving = ConfigurationParameter.read_config_value('is_saving_cryo_temperatures')
+            await self.emit('b_got_is_saving_temperatures', saving)
+
+    async def on_b_begin_save_temperatures(self, sid):
+        with db.connection_context():
+            ConfigurationParameter.overwrite_config_value('is_saving_cryo_temperatures', True)
+            await self.emit('b_got_is_saving_temperatures', True)
+
+    async def on_b_end_save_temperatures(self, sid):
+        with db.connection_context():
+            ConfigurationParameter.overwrite_config_value('is_saving_cryo_temperatures', False)
+            await self.emit('b_got_is_saving_temperatures', False)
 
     async def send_cryo_status(self, status):
         await self.emit('b_got_cryo_status', status)
@@ -40,7 +55,6 @@ class BrowserNamespace(UniversalEvents):
 
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
-
         dc_field_strength = round(float(np.abs(np.random.normal(8, 0.2))), 4)
         # await self.emit('b_dc_field', dc_field_strength, room=sid)
 

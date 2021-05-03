@@ -9,6 +9,7 @@ function update_data_status() {
     update_n_connections();
     update_n_points_taken();
     update_n_points_total();
+    update_is_saving_temperatures();
 }
 
 // Update the remaining data stuff

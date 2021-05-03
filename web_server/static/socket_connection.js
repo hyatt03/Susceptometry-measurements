@@ -47,7 +47,8 @@ const state = {
         'magnet_sweep_steps': 1,
         'data_wait_before_measuring': 1.0,
         'data_points_per_measurement': 10,
-    }
+    },
+    'is_saving_temperatures': false
 };
 
 // Have a list of the temperature labels
@@ -90,6 +91,7 @@ function main_socket_connection() {
     socket.on('b_latest_experiment_config', experiment_config_updated);
     socket.on('b_got_cryo_status', cryo_status_updated);
     socket.on('b_got_experiment_list', got_experiment_list);
+    socket.on('b_got_is_saving_temperatures', got_is_saving_temperatures);
 
     // Open status page by default
     open_status_page();

@@ -156,6 +156,23 @@ function n_connected_updated(connections_object) {
     $('#connection_updated').html(connections_object['time']);
 }
 
+function got_is_saving_temperatures(saving) {
+    // Save the new state
+    state['is_saving_temperatures'] = saving;
+
+    // Alert the user
+    if (saving) {
+        $('#cryo_saving_temperatures').html('<span style="color: green">Yes</span>');
+    } else {
+        $('#cryo_saving_temperatures').html('<span style="color: red">No</span>');
+    }
+
+    // Update the form on the cryo page
+    if ($('#cryo_page_buttons_container').length > 0) {
+        $('#cryo_page_buttons_container').html(get_cryo_page_buttons());
+    }
+}
+
 // Server sends number of datapoints collected in the current experiment
 // We display it on screen
 function n_points_taken_updated(n_points_taken) {
