@@ -217,7 +217,7 @@ async def plot_saved_temperatures(request):
 
         # Reset the buffer placement, and send the response
         buffer.seek(0)
-        return web.Response(body=buffer, headers={'Content-Type': 'image/png'})
+        return web.Response(body=buffer, headers={'Content-Type': 'image/png', 'Cache-Control': 'max-age=0,no-store'})
 
 
 # Setup the http routes

@@ -237,16 +237,17 @@ function get_config_page_template(state) {
 
 function get_cryo_page_buttons() {
     save_temperatures_button = `<input type="button" value="Save temperatures continually" 
-                                name="df_save_temps" onclick="begin_save_temperatures()">`;
+                                name="df_save_temps" onclick="begin_save_temperatures()" />`;
 
     if (state['is_saving_temperatures']) {
         save_temperatures_button = `<input type="button" value="Stop saving temperatures" 
-                                    name="df_save_temps" onclick="end_save_temperatures()">`;
+                                    name="df_save_temps" onclick="end_save_temperatures()" />`;
     }
 
     return `
-        <input type="button" value="Get status" name="df_get_status" onclick="get_cryo_status()">
+        <input type="button" value="Get status" name="df_get_status" onclick="get_cryo_status()" />
         ${save_temperatures_button}
+        <input type="button" value="Reload plot" name="df_reload_plot" onclick="pagehandlers['cryo_page']()" />
     `
 }
 
