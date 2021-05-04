@@ -164,8 +164,13 @@ async def plot_saved_temperatures(request):
             .order_by(TemperatureDataPoint.created)\
             .dicts()
 
+        # Determine the shape of the arrays in our output
+        if len(temperatures) > 0:
+            temp_shape = (len(temperatures), 1)
+        else:
+            temp_shape = (1, 1)
+
         # Create empty arrays to hold the data
-        temp_shape = (len(temperatures), 1)
         times = np.zeros(shape=temp_shape)
         t_upper_hex = np.zeros(shape=temp_shape)
         t_lower_hex = np.zeros(shape=temp_shape)
@@ -190,24 +195,36 @@ async def plot_saved_temperatures(request):
             t_switch[idx] = t_obj['t_switch']
             t_he_pot_2[idx] = t_obj['t_he_pot_2']
 
-        # Plot the data
-        plt.subplots()
+        # Create the plot
+        plt.subplots(figsize=(8, 3.5))
 
+        # Plot the data
         plt.plot(times, t_upper_hex, label='Upper HEx')
         plt.plot(times, t_lower_hex, label='Lower HEx')
+        plt.plot(times, t_he_pot, label='He Pot')
+        plt.plot(times, t_he_pot_2, label='He Pot CCS')
+        plt.plot(times, t_1st_stage, label='1st stage')
+        plt.plot(times, t_2nd_stage, label='2nd stage')
+        plt.plot(times, t_inner_coil, label='Inner coil')
+        plt.plot(times, t_outer_coil, label='Outer coil')
+        plt.plot(times, t_switch, label='Switch')
 
+        # Pretty up the plot
         plt.xlabel('Time [seconds]')
         plt.ylabel('Temperature [kelvin]')
+        plt.grid()
+        plt.legend(loc='lower left')
+        plt.tight_layout()
 
+        # Save the plot to a buffer
         buffer = io.BytesIO()
-        plt.savefig(buffer, format='png')
+        plt.savefig(buffer, format='png', dpi=100)
         plt.close()
 
-        response = web.StreamResponse()
-        await response.prepare(request)
-        await response.write(buffer)
+        # Reset the buffer placement, and send the response
+        buffer.seek(0)
+        return web.Response(body=buffer, headers={'Content-Type': 'image/png', 'Cache-Control': 'max-age=0,no-store'})
 
-        return response
 
 # Setup the http routes
 app.router.add_static('/static', 'static')

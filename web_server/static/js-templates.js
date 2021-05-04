@@ -39,7 +39,7 @@ function get_pressure_list(state) {
 function get_temperature_plot(state) {
     return `
         <div class="cryogenics_status status_container">
-            <h1 class="h4">Cryogenics status</h1>
+            <h1 class="h4">Temperature status</h1>
             <div class="status_contents plot_container row">
                 <div class="temperature-plot--container col-9" id="temperature-plot"></div>
                 <div class="temperature--container col-3">
@@ -47,6 +47,18 @@ function get_temperature_plot(state) {
                 </div>
             </div>
         </div>`;
+}
+
+function get_long_temperature_plot() {
+    return `
+    <div class="cryogenics_status status_container">
+        <h1 class="h4">Temperature status (long timescale)</h1>
+        ${get_long_temperature_buttons()}
+        <div class="status_contents plot-2_container row">
+            <img class="temperature-plot-2--container col-9" id="temperature-plot-2" src="/get_plot" />
+        </div>
+    </div>
+    `;
 }
 
 // Simple function to return status page html given the state
@@ -225,17 +237,23 @@ function get_config_page_template(state) {
 }
 
 function get_cryo_page_buttons() {
+    return `
+        <input type="button" value="Get status" name="df_get_status" onclick="get_cryo_status()" />
+    `
+}
+
+function get_long_temperature_buttons() {
     save_temperatures_button = `<input type="button" value="Save temperatures continually" 
-                                name="df_save_temps" onclick="begin_save_temperatures()">`;
+    name="df_save_temps" onclick="begin_save_temperatures()" />`;
 
     if (state['is_saving_temperatures']) {
-        save_temperatures_button = `<input type="button" value="Stop saving temperatures" 
-                                    name="df_save_temps" onclick="end_save_temperatures()">`;
+    save_temperatures_button = `<input type="button" value="Stop saving temperatures" 
+            name="df_save_temps" onclick="end_save_temperatures()" />`;
     }
 
     return `
-        <input type="button" value="Get status" name="df_get_status" onclick="get_cryo_status()">
-        ${save_temperatures_button}
+    ${save_temperatures_button}
+    <input type="button" value="Reload plot" name="df_reload_plot" onclick="pagehandlers['cryo_page']()" />
     `
 }
 
@@ -261,6 +279,7 @@ function get_cryogenics_page_html() {
         </div>
     </form>
     
+    ${get_long_temperature_plot()}
     ${get_temperature_plot(state)}
     
     <div class="cryogenics_status status_container">
