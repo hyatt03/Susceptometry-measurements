@@ -7,22 +7,20 @@ Only driver that requires pyserial
 from qcodes import Instrument, validators as vals
 import serial
 import numpy as np
+from scipy.interpolate import CubicSpline
 import time, os, sys
 
 
 class Avs_47b_direct(Instrument):
     # Paths of calibration files to convert between resistance [in ohms] and temperature [in kelvin]
-    calib_files = [
-        os.path.dirname(__file__) + '/avs_calibration_files/1)Upper HEx.txt',  # Sensor 0
-        os.path.dirname(__file__) + '/avs_calibration_files/2)Lower HEx.txt',  # Sensor 1
-        os.path.dirname(__file__) + '/avs_calibration_files/3)He Pot CCS.txt',  # Sensor 2
-        os.path.dirname(__file__) + '/avs_calibration_files/4)1st stage.txt',  # Sensor 3
-        os.path.dirname(__file__) + '/avs_calibration_files/5)2nd stage.txt',  # Sensor 4
-        os.path.dirname(__file__) + '/avs_calibration_files/6)Inner Coil.txt',  # Sensor 5
-        os.path.dirname(__file__) + '/avs_calibration_files/7)Outer Coil.txt',  # Sensor 6
-        os.path.dirname(__file__) + '/avs_calibration_files/8)Switch.txt',   # Sensor 7
-        os.path.dirname(__file__) + '/avs_calibration_files/9)He Pot.txt' # Duplicate of sensor 2
-    ]
+    calib_file = os.path.dirname(__file__) + '/avs_calibration_files/calib.txt'
+
+    # Map the channels to the type of sensor mounted
+    sensors = {
+        1: 'ruo2',
+        2: 'dale',
+        3: 'dale'
+    }
 
     def __init__(self, name, address, **kwargs):
         """
@@ -33,14 +31,10 @@ class Avs_47b_direct(Instrument):
         super().__init__(name, **kwargs)
 
         # Load up the calibration
-        self.calibrations = []
-        for fn in self.calib_files:
-            calib = np.loadtxt(fn, delimiter=',')
-            sort = np.argsort(calib[:, 1])
-            calib[:, 0] = (calib[:, 0])[sort]
-            calib[:, 1] = (calib[:, 1])[sort]
-            self.calibrations.append(calib)
-        
+        calib_data = np.loadtxt(self.calib_file)
+        self.dale_calib = CubicSpline(calib_data[:, 0], calib_data[:, 1])
+        self.ruo2_10k_calib = CubicSpline(calib_data[:, 2], calib_data[:, 3])
+
         # Initialize the serial connection (not open yet)
         self.ser = serial.Serial()
         self.ser.baudrate = 9600
@@ -377,10 +371,13 @@ class Avs_47b_direct(Instrument):
         ovr, resistance, ch_out = self.query_for_resistance(q_chan)
 
         # Now we grab the calibration
-        calib = self.calibrations[channel]
+        if channel not in self.sensors:
+            raise ValueError('This sensor is not calibrated')
 
-        # And we interpolate the result
-        temp = np.interp(resistance, calib[:, 1], calib[:, 0])
+        if self.sensors[channel] == 'dale':
+            temp = self.dale_calib(resistance)
+        else:
+            temp = self.ruo2_10k_calib(resistance)
 
         # return whether we are overranged, the temperature, and the channel measured
         return ovr, temp, ch_out
