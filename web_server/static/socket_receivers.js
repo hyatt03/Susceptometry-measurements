@@ -43,7 +43,7 @@ function temperatures_updated(temperatures) {
     if (state['temperature_trace_plot_data'].length > 0 && state['temperature_plot_layout'] !== 0) {
         if (typeof temperatures !== 'undefined') {
             // Add new data to the state
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < t_labels.length; i++) {
                 state['temperature_trace_plot_data'][i].x.push(temperatures['timestamp']);
                 state['temperature_trace_plot_data'][i].y.push(temperatures[t_labels[i]]);
             }
@@ -248,7 +248,7 @@ function magnet_trace_updated(magnet_trace) {
 function temperature_trace_updated(temperature_trace) {
     if (state['temperature_trace_plot_data'].length < 1) {
         // Initialize the data model
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < t_labels.length; i++) {
             state['temperature_trace_plot_data'].push({
                 x: [],
                 y: [],
@@ -259,7 +259,7 @@ function temperature_trace_updated(temperature_trace) {
 
         // Add the datapoints
         for (let i = 0; i < temperature_trace.length; i++) {
-            for (let j = 0; j < 9; j++) {
+            for (let j = 0; j < t_labels.length; j++) {
                 state['temperature_trace_plot_data'][j].x.push(temperature_trace[i]['timestamp']);
                 state['temperature_trace_plot_data'][j].y.push(temperature_trace[i][t_labels[j]]);
             }
