@@ -197,9 +197,9 @@ async def plot_saved_temperatures(request):
             t_outer_coil[idx] = t_obj['t_outer_coil']
             t_switch[idx] = t_obj['t_switch']
             t_he_pot_2[idx] = t_obj['t_he_pot_2']
-            t_still[idx] = t_obj['t_he_pot_2']
-            t_mixing_chamber_1[idx] = t_obj['t_he_pot_2']
-            t_mixing_chamber_2[idx] = t_obj['t_he_pot_2']
+            t_still[idx] = t_obj['t_still']
+            t_mixing_chamber_1[idx] = t_obj['t_mixing_chamber_1']
+            t_mixing_chamber_2[idx] = t_obj['t_mixing_chamber_2']
 
         # Create the plot
         plt.subplots(figsize=(8, 3.5))
