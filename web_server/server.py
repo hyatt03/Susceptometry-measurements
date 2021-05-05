@@ -181,6 +181,9 @@ async def plot_saved_temperatures(request):
         t_outer_coil = np.zeros(shape=temp_shape)
         t_switch = np.zeros(shape=temp_shape)
         t_he_pot_2 = np.zeros(shape=temp_shape)
+        t_still = np.zeros(shape=temp_shape)
+        t_mixing_chamber_1 = np.zeros(shape=temp_shape)
+        t_mixing_chamber_2 = np.zeros(shape=temp_shape)
 
         # Sort the data into the relevant arrays
         for idx, t_obj in enumerate(temperatures):
@@ -194,6 +197,9 @@ async def plot_saved_temperatures(request):
             t_outer_coil[idx] = t_obj['t_outer_coil']
             t_switch[idx] = t_obj['t_switch']
             t_he_pot_2[idx] = t_obj['t_he_pot_2']
+            t_still[idx] = t_obj['t_he_pot_2']
+            t_mixing_chamber_1[idx] = t_obj['t_he_pot_2']
+            t_mixing_chamber_2[idx] = t_obj['t_he_pot_2']
 
         # Create the plot
         plt.subplots(figsize=(8, 3.5))
@@ -208,6 +214,9 @@ async def plot_saved_temperatures(request):
         plt.plot(times, t_inner_coil, label='Inner coil')
         plt.plot(times, t_outer_coil, label='Outer coil')
         plt.plot(times, t_switch, label='Switch')
+        plt.plot(times, t_still, label='Still')
+        plt.plot(times, t_mixing_chamber_1, label='Mixing chamber 1')
+        plt.plot(times, t_mixing_chamber_2, label='Mixing chamber 2')
 
         # Pretty up the plot
         plt.xlabel('Time [seconds]')
