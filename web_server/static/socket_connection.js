@@ -17,6 +17,9 @@ const state = {
         't_outer_coil': 0.0,
         't_switch': 0.0,
         't_upper_hex': 0.0,
+        't_still': 0.0,
+        't_mixing_chamber_1': 0.0,
+        't_mixing_chamber_2': 0.0,
         'timestamp': 0
     },
     'pressures': {
@@ -53,8 +56,8 @@ const state = {
 
 // Have a list of the temperature labels
 // simplifies the functions that require this information
-const t_labels = ['t_upper_hex', 't_lower_hex', 't_he_pot', 't_1st_stage', 't_2nd_stage', 
-                            't_inner_coil', 't_outer_coil', 't_switch', 't_he_pot_2']
+const t_labels = ['t_upper_hex', 't_lower_hex', 't_he_pot', 't_1st_stage', 't_2nd_stage', 't_inner_coil',
+    't_outer_coil', 't_switch', 't_he_pot_2', 't_still', 't_mixing_chamber_1', 't_mixing_chamber_2']
 
 // Here is the main entrypoint to the web application
 // It is here we open a connection to the server and configure all the endpoints
