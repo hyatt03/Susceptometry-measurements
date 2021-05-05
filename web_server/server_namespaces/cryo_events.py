@@ -95,7 +95,10 @@ class CryoNamespace(UniversalEvents):
                     t_inner_coil=temperatures['t_inner_coil'],
                     t_outer_coil=temperatures['t_outer_coil'],
                     t_switch=temperatures['t_switch'],
-                    t_he_pot_2=temperatures['t_he_pot_2']
+                    t_he_pot_2=temperatures['t_he_pot_2'],
+                    t_still=temperatures['t_still'],
+                    t_mixing_chamber_1=temperatures['t_mixing_chamber_1'],
+                    t_mixing_chamber_2=temperatures['t_mixing_chamber_2']
                 ).save()
 
                 # Reset the counter so we don't get very large numbers (there is no need)

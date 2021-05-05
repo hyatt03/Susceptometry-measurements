@@ -262,7 +262,10 @@ class DataPoint(DBModel):
                     t_inner_coil=data['temperatures']['t_inner_coil'][i],
                     t_outer_coil=data['temperatures']['t_outer_coil'][i],
                     t_switch=data['temperatures']['t_switch'][i],
-                    t_he_pot_2=data['temperatures']['t_he_pot_2'][i]
+                    t_he_pot_2=data['temperatures']['t_he_pot_2'][i],
+                    t_still=data['temperatures']['t_still'][i],
+                    t_mixing_chamber_1=data['temperatures']['t_mixing_chamber_1'][i],
+                    t_mixing_chamber_2=data['temperatures']['t_mixing_chamber_2'][i]
                 ).save()
 
 
@@ -314,6 +317,9 @@ class TemperatureDataPoint(DBModel):
     t_outer_coil = FloatField()
     t_switch = FloatField()
     t_he_pot_2 = FloatField()
+    t_still = FloatField(default=0.0)
+    t_mixing_chamber_1 = FloatField(default=0.0)
+    t_mixing_chamber_2 = FloatField(default=0.0)
 
     # Backreference to the CryogenicsDataPoint model
     cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='temperatures')
