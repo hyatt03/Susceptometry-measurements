@@ -144,12 +144,13 @@ class ExperimentConfiguration(DBModel):
 
         # Generate the steps
         steps = []
-        # We sweep over frequency
-        for frequency in frequencies:
+
+        # We sweep over magnetic field
+        for magnetic_field in magnetic_fields:
             # Amplitude
             for amplitude in amplitudes:
-                # And magnetic field
-                for magnetic_field in magnetic_fields:
+                # And frequency
+                for frequency in frequencies:
                     steps.append({
                         'experiment_configuration': self.id,
                         'sr830_sensitivity': self.sr830_sensitivity,
