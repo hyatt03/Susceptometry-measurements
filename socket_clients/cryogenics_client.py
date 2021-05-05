@@ -105,10 +105,6 @@ class CryoQueue(BaseQueueClass):
         #     'started': experiment_state['startup_time']
         # }
 
-        print('Channel 1:', self.resistance_bridge.query_for_temperature(1)[1])
-        print('Channel 2:', self.resistance_bridge.query_for_temperature(2)[1])
-        print('Channel 3:', self.resistance_bridge.query_for_temperature(3)[1])
-
         scan_data = self.dmm.scan_channels()
 
         temperatures = {
@@ -121,6 +117,9 @@ class CryoQueue(BaseQueueClass):
             't_outer_coil': scan_data['Outer Coil'],
             't_switch': scan_data['Switch'],
             't_he_pot_2': scan_data['He Pot'],
+            't_still': self.resistance_bridge.query_for_temperature(1)[1],
+            't_mixing_chamber_1': self.resistance_bridge.query_for_temperature(2)[1],
+            't_mixing_chamber_2': self.resistance_bridge.query_for_temperature(3)[1],
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         }

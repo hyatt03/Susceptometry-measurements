@@ -354,22 +354,17 @@ class Avs_47b_direct(Instrument):
         """
         Queries the AVS-47B for the resistance on a single channel and converts it to a temperature
         """ 
-        # We have a two calibrations for one channel, take heigh for that
-        q_chan = channel
-        if channel == 8:
-            q_chan = 2
-
         # First we get the resistance
-        ovr, resistance, ch_out = self.query_for_resistance(q_chan)
+        ovr, resistance, ch_out = self.query_for_resistance(channel)
 
         # Now we grab the calibration
         if channel not in self.sensors:
             raise ValueError('This sensor is not calibrated')
 
         if self.sensors[channel] == 'dale':
-            temp = self.dale_calib(resistance) * 1e3  # We convert from mk to k
+            temp = self.dale_calib(resistance) * 1e-3  # We convert from mk to k
         else:
-            temp = self.ruo2_10k_calib(resistance) * 1e3
+            temp = self.ruo2_10k_calib(resistance) * 1e-3
 
         # return whether we are overranged, the temperature, and the channel measured
         return ovr, temp, ch_out
