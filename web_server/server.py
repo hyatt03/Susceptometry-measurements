@@ -131,6 +131,10 @@ async def export_data(request):
                             datapoint_dict['pressure_datapoints'].append(pressure_datapoint)
 
                         for temperature_datapoint in list(tdps.dicts()):
+                            # Convert date format
+                            temperature_datapoint['created'] = temperature_datapoint['created'].isoformat()
+
+                            # Append the temperature
                             datapoint_dict['temperature_datapoints'].append(temperature_datapoint)
 
                     # Save the datapoint to the step
