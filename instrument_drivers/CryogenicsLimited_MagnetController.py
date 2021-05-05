@@ -4,12 +4,12 @@ Sets the DC magnetic field inside the cryostat
 """
 
 from qcodes import VisaInstrument
-import time
+import time, math
 
 
 class MagnetController(VisaInstrument):
     def __init__(self, name, address, **kwargs):
-        super().__init__(name, address, terminator='\n', **kwargs)
+        super().__init__(name, address, terminator='\n', timeout=500, **kwargs)
 
         # Sets the low frequency output amplitude
         self.add_parameter('MagneticField',
@@ -58,12 +58,19 @@ class MagnetController(VisaInstrument):
         self.ask(f'SET MAX {round(float(field), 4)}')
         time.sleep(0.25)
 
-        # Tell the magnet to go to that field value
-        self.ask('RAMP MAX')
-        time.sleep(0.5)
-
         # Enable operation
         self.ask('PAUSE OFF')
         time.sleep(0.25)
 
+        # Tell the magnet to go to that field value
+        self.write('RAMP MAX')
+
+        # Wait for the field to get to the value
+        n_max = 100
+        n = 0
+        while n < n_max and not math.isclose(self.get_magnetic_field(), field, abs_tol=0.01, rel_tol=0.01):
+            n += 1
+            time.sleep(3)
+
+        # Return the new field
         return self.get_magnetic_field()
