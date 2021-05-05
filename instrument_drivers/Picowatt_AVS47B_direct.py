@@ -315,29 +315,21 @@ class Avs_47b_direct(Instrument):
         """
         Queries the device for resistance, may take a while before a measurement is returned
         """
-        print('in query for resistance')
-
         # First we change to the channel we want to measure
         self.MultiplexerChannel.set(channel)
 
         # And we set the alarmline, so we get a signal when data is ready
         self.AlarmLine.set(0)
 
-        print('set alarmline')
-
         # Now we send the updated configuration
         # We set it to remote mode for it all to function
         # And we don't want to overwrite our users configuration
         self.send_config(True, False)
 
-        print('sent config')
-
         # Now we query the alarmline, waiting for it to turn true
         # We sleep meanwhile
         while not self.get_alarm_signal():
             time.sleep(0.005)
-
-        print('done waiting for alarm line')
 
         for i in range(20):
             # Now we sleep 10 msecs waiting for the shift register to be populated with data
@@ -375,9 +367,9 @@ class Avs_47b_direct(Instrument):
             raise ValueError('This sensor is not calibrated')
 
         if self.sensors[channel] == 'dale':
-            temp = self.dale_calib(resistance)
+            temp = self.dale_calib(resistance) * 1e3  # We convert from mk to k
         else:
-            temp = self.ruo2_10k_calib(resistance)
+            temp = self.ruo2_10k_calib(resistance) * 1e3
 
         # return whether we are overranged, the temperature, and the channel measured
         return ovr, temp, ch_out

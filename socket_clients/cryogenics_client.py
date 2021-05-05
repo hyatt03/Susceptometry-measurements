@@ -105,6 +105,10 @@ class CryoQueue(BaseQueueClass):
         #     'started': experiment_state['startup_time']
         # }
 
+        print('Channel 1:', self.resistance_bridge.query_for_temperature(1)[1])
+        print('Channel 2:', self.resistance_bridge.query_for_temperature(2)[1])
+        print('Channel 3:', self.resistance_bridge.query_for_temperature(3)[1])
+
         scan_data = self.dmm.scan_channels()
 
         temperatures = {
