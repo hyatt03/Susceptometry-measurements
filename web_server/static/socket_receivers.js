@@ -43,14 +43,14 @@ function temperatures_updated(temperatures) {
     if (state['temperature_trace_plot_data'].length > 0 && state['temperature_plot_layout'] !== 0) {
         if (typeof temperatures !== 'undefined') {
             // Add new data to the state
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < 12; i++) {
                 state['temperature_trace_plot_data'][i].x.push(temperatures['timestamp']);
                 state['temperature_trace_plot_data'][i].y.push(temperatures[t_labels[i]]);
             }
 
             // Ensure length is at max 20 items
             if (state['temperature_trace_plot_data'][0].x.length > 20) {
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 12; i++) {
                     state['temperature_trace_plot_data'][i].x.shift();
                     state['temperature_trace_plot_data'][i].y.shift();
                 }
