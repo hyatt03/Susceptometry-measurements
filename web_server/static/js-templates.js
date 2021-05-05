@@ -13,9 +13,9 @@ function get_temperature_list(state) {
         <div class="temperature--label">t_inner_coil = ${to_fixed(state['temperatures']['t_inner_coil'], 2)}K</div>
         <div class="temperature--label">t_outer_coil = ${to_fixed(state['temperatures']['t_outer_coil'], 2)}K</div>
         <div class="temperature--label">t_switch = ${to_fixed(state['temperatures']['t_switch'], 2)}K</div>
-        <div class="temperature--label">t_he_pot_2 = ${to_fixed(state['temperatures']['t_he_pot_2'], 2)}K</div>;
-        <div class="temperature--label">t_still = ${to_fixed(state['temperatures']['t_still'], 2)}K</div>;
-        <div class="temperature--label">t_mixing_chamber_1 = ${to_fixed(state['temperatures']['t_mixing_chamber_1'], 2)}K</div>;
+        <div class="temperature--label">t_he_pot_2 = ${to_fixed(state['temperatures']['t_he_pot_2'], 2)}K</div>
+        <div class="temperature--label">t_still = ${to_fixed(state['temperatures']['t_still'], 2)}K</div>
+        <div class="temperature--label">t_mixing_chamber_1 = ${to_fixed(state['temperatures']['t_mixing_chamber_1'], 2)}K</div>
         <div class="temperature--label">t_mixing_chamber_2 = ${to_fixed(state['temperatures']['t_mixing_chamber_2'], 2)}K</div>`;
 }
 
