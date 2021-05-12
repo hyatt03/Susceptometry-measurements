@@ -115,7 +115,7 @@ class Avs_47b_direct(Instrument):
         # 4 = Excitation voltage, this displays the approximate excitation voltage across the sensor.
         #     Useful only on the lowest resistance ranges and high excitation.
         #     Can be used for estimating the current lead resistance
-        self.add_parameter('Display', vals=vals.Ints(0, 4), get_cmd=None, set_cmd=None, initial_value=0)
+        self.add_parameter('Display', vals=vals.Ints(0, 10), get_cmd=None, set_cmd=None, initial_value=0)
 
         # Parameter where we save the raw ADC value
         self.add_parameter('ADCValue', get_cmd=None, set_cmd=None, initial_value=0)
