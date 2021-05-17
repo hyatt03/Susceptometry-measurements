@@ -158,3 +158,6 @@ cryogenics_data_experiment_*
 
 # Node modules
 node_modules
+
+# Plots
+calibrations_plot.png
