@@ -297,6 +297,12 @@ class MagnetismQueue(BaseQueueClass):
         except:
             print('Could not configure lockin amplifier')
 
+        try:
+            # Autorange the scope
+            await self.dvm.ask('AUTOS EXEC')
+        except:
+            print('could not autorange the scope')
+
         # Mark this step as ready
         await self.socket_client.emit('m_set_step_ready', step['id'])
 
