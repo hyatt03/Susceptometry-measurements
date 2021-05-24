@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import optimize
+from scipy.interpolate import CubicSpline
 
 
 def main_run():
@@ -39,25 +39,37 @@ def main_run():
     # Save the data for the actual calibration
     np.savetxt('calib.txt', data)
 
+    # Setup cubic splines
+    dale_calib = CubicSpline(data[:, 0], data[:, 1])
+    ruo2_10k_calib = CubicSpline(data[:, 2], data[:, 3])
+
+    # Create plotting ranges
+    dale_range = np.array(range(2000, 20000))
+    ruo2_range = np.array(range(13000, 300000))
+
     # Plot the data
-    fig, axs = plt.subplots(ncols=2)
+    fig, axs = plt.subplots(ncols=2, figsize=(7, 3))
     plt.axes(axs[0])
-    plt.plot(data[:, 0], data[:, 1])
+    plt.plot(data[:, 0], data[:, 1], '.', label='Calibration Data')
+    plt.plot(dale_range, dale_calib(dale_range), label='Cubic spline fit')
     plt.ylabel('Temperature [milli-kelvin]')
     plt.xlabel('Resistance [ohm]')
     plt.title('Calibration data (DALE1500)')
     plt.grid()
+    plt.legend()
 
     plt.axes(axs[1])
 
-    plt.plot(data[:, 2], data[:, 3])
+    plt.plot(data[:, 2], data[:, 3], '.', label='Calibration Data')
+    plt.plot(ruo2_range, ruo2_10k_calib(ruo2_range), label='Cubic spline fit')
     plt.ylabel('Temperature [milli-kelvin]')
     plt.xlabel('Resistance [ohm]')
     plt.title('Calibration data (10k $RuO_2$)')
     plt.grid()
+    plt.legend()
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig('calibrations_plot.png', dpi=300)
     plt.close()
 
 
