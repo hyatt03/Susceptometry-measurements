@@ -227,9 +227,9 @@ class CryoQueue(BaseQueueClass):
         print('Requested is step ready, waiting for response')
 
         # Wait for the magnetism station to be ready for measurement
-        # Sleep 0.1 seconds at a time
+        # Sleep 0.5 seconds at a time
         while experiment_state['step_ready_for_measurement'] != step['id']:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.5)
 
         print('Got step is ready signal, doing measurement.')
 
@@ -247,6 +247,10 @@ class CryoQueue(BaseQueueClass):
             # Get the data concurrently
             raw_data = await asyncio.gather(self.get_updated_pressures(queue, name, task), 
                                             self.get_updated_temperatures(queue, name, task))
+
+            # Send it to the client, so the updates feel like they're incoming
+            await asyncio.gather(self.get_pressures(queue, name, task), 
+                                 self.get_temperatures(queue, name, task))
 
             # Sort the data into the lists
             # Append pressures to each list
@@ -303,11 +307,21 @@ class CryoClientNamespace(BaseClientNamespace):
         self.client_type = 'cryo'
 
     async def background_job(self):
-        while True:
-            await self.append_to_queue({'function_name': 'update_temperatures'})
-            await self.append_to_queue({'function_name': 'update_pressures'})
-            await self.append_to_queue({'function_name': 'get_mck_state'})
-            await asyncio.sleep(5)
+        # Initialize the resistance bridge
+        # await self.append_to_queue({'function_name': 'configure_avs47b', 'config': {
+        #     'InputMode': 1,
+        #     'MultiplexerChannel': 1,
+        #     'Range': 20000,
+        #     'Excitation': 1e-4,
+        #     'Display': 0
+        # }})
+
+        await self.append_to_queue({'function_name': 'update_temperatures'})
+        await self.append_to_queue({'function_name': 'update_pressures'})
+        await self.append_to_queue({'function_name': 'get_mck_state'})
+
+        await asyncio.sleep(5)
+        await self.append_to_queue({'function_name': 'rerun_background_job'})
 
     # Received when cooling should start
     async def on_c_config_start_cooling(self):

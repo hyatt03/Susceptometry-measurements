@@ -55,7 +55,7 @@ class Avs_47b_direct(Instrument):
         # 0 = grounded input (zero resistance)
         # 1 = Measure the selected sensor channel
         # 2 = Calibrate (bridge measures internal 100 ohm resistor)
-        self.add_parameter('InputMode', vals=vals.Ints(0, 2), get_cmd=None, set_cmd=None, initial_value=0)
+        self.add_parameter('InputMode', vals=vals.Ints(0, 8), get_cmd=None, set_cmd=None, initial_value=1)
 
         # Get/Set multiplexer channel (7 channels available
         # Settling time is required before an accurate measurement can be conducted
@@ -176,7 +176,7 @@ class Avs_47b_direct(Instrument):
         
         # Set the input
         input_int = f'{int(self.InputMode.get()):0=2b}'
-        input_int = f'{int(0):0=2b}'
+        # input_int = f'{int(0):0=2b}'
         txstring[-21] = int(input_int[-1])
         txstring[-22] = int(input_int[-2])
         
@@ -333,10 +333,10 @@ class Avs_47b_direct(Instrument):
 
         for i in range(20):
             # Now we sleep 10 msecs waiting for the shift register to be populated with data
-            time.sleep(1)
+            time.sleep(3)
 
             # Now we retreive the data, we save the results to the config
-            ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, True, True)
+            ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, False, True)
 
     	    # Keep repeating measurement until ovr reports false
             if ovr == 0:

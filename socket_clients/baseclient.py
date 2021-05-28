@@ -26,6 +26,10 @@ class BaseQueueClass():
         # Initialize queue processors
         self.queue_functions = {}
 
+        # Add rerun background job
+        self.register_queue_processor('rerun_background_job', self.rerun_background_job)
+
+
     @property
     def queue_name(self):
         return 'AbstractQueue'
@@ -71,6 +75,10 @@ class BaseQueueClass():
     async def destroy_queue(self):
         self.worker_instance.cancel()
         await asyncio.gather(self.worker_instance, return_exceptions=True)
+
+    # Runs the background job
+    async def rerun_background_job(self, queue, name, task):
+        await self.socket_client.background_job()
 
 
 # Create the base namespace we work with
