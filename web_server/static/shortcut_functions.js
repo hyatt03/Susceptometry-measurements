@@ -46,3 +46,7 @@ function update_data_status_values() {
         total_container.html(state['n_points_total']);
     }
 }
+
+function exponential_notation(x, f) {
+  return Number.parseFloat(x).toExponential(f);
+}

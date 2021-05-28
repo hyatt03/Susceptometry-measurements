@@ -194,8 +194,14 @@ function rms_updated(b_rms) {
 }
 
 function b_got_picowatt_config(config) {
-    console.log(config);
+    $('#picowatt_InputMode').val(config['InputMode']);
+    $('#picowatt_MultiplexerChannel').val(config['MultiplexerChannel']);
+    $('#picowatt_Range').val(config['Range']);
+    $('#picowatt_Excitation').val(exponential_notation(config['Excitation'], 0));
+    $('#picowatt_Display').val(config['Display']);
 }
+
+window.b_got_picowatt_config = b_got_picowatt_config;
 
 // Server sends a magnet trace, we plot the trace
 function magnet_trace_updated(magnet_trace) {

@@ -79,7 +79,7 @@ function update_picowatt_settings() {
 function save_picowatt_settings() {
     const picowatt_config = {};
     $('#cryo_picowatt_config_form').serializeArray().forEach(element => {
-        picowatt_config[element['name'].substring(9)] = parseInt(element['value']);
+        picowatt_config[element['name'].substring(9)] = parseFloat(element['value']);
     });
 
     window.my_socket.emit('b_set_picowatt_config', picowatt_config);
