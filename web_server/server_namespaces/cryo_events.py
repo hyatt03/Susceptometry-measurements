@@ -37,6 +37,9 @@ class CryoNamespace(UniversalEvents):
     async def get_fp_status(self):
         await self.emit('c_get_frontpanel_status')
 
+    async def get_avs47b_config(self):
+        await self.emit('c_get_config_avs47b')
+
     # if the clients reset, we want to be able to tell it the step is ready
     async def on_c_is_step_ready(self, sid, step_id):
         if step_id in self.steps_ready:
@@ -73,6 +76,9 @@ class CryoNamespace(UniversalEvents):
     # Event received when config has be successfully applied
     async def on_c_avs47b_has_been_configured(self):
         print('avs47b config successful')
+
+    async def on_c_avs47b_got_config(self, sid, config):
+        self.browser_namespace.got_picowatt_config(config)
 
     # Event received when new temperatures are available
     async def on_c_got_temperatures(self, sid, temperatures):

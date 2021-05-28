@@ -53,6 +53,9 @@ class BrowserNamespace(UniversalEvents):
     async def got_magnet_rms(self, rms):
         await self.emit('b_ac_field', round(rms, 4))
 
+    async def got_picowatt_config(self, config):
+        await self.emit('b_got_picowatt_config', config)
+
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
         dc_field_strength = round(float(np.abs(np.random.normal(8, 0.2))), 4)
@@ -186,6 +189,12 @@ class BrowserNamespace(UniversalEvents):
                 experiment_config['data_points_per_measurement'] = int(latest_config.data_points_per_measurement)
 
         await self.emit('b_latest_experiment_config', experiment_config, room=sid)
+
+    async def on_b_get_picowatt_config(self, sid):
+        await self.cryo_namespace.get_avs47b_config()
+
+    async def on_b_set_picowatt_config(self, sid, config):
+        await self.cryo_namespace.config_avs47b(config)
 
     # Takes a form sent by the client and creates a new experiment
     async def on_b_set_experiment_config(self, sid, data):

@@ -63,13 +63,26 @@ function update_experiment_config() {
 
 function save_experiment_configuration() {
     // Get the experiment config from the form
-    experiment_config = {};
+    const experiment_config = {};
     $('#experiment_config_form').serializeArray().forEach(element => {
         experiment_config[element['name']] = element['value'];
-    })
+    });
 
     // Send it to the server
     window.my_socket.emit('b_set_experiment_config', experiment_config);
+}
+
+function update_picowatt_settings() {
+    window.my_socket.emit('b_get_picowatt_config');
+}
+
+function save_picowatt_settings() {
+    const picowatt_config = {};
+    $('#cryo_picowatt_config_form').serializeArray().forEach(element => {
+        picowatt_config[element['name'].substring(9)] = parseInt(element['value']);
+    });
+
+    window.my_socket.emit('b_set_picowatt_config', picowatt_config);
 }
 
 function begin_cooldown_procedure() {

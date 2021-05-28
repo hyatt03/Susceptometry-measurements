@@ -89,6 +89,20 @@ class CryoQueue(BaseQueueClass):
         # Next we update our local config to reflect what the state of the device actually is
         self.resistance_bridge.send_config(True, True, False)
 
+    async def c_get_config_avs47b(self, queue, name, task):
+        self.resistance_bridge.send_config(True, True, False)
+
+        # Create a list of accepted parameters
+        params = ['InputMode', 'MultiplexerChannel', 'Range', 'Excitation', 'ReferenceVoltage', 'ReferenceSource',
+                  'Magnification', 'Display']
+
+        # Check if the parameters are in the config dict and change the ones that are
+        config = {}
+        for p in params:
+            config[p] = self.resistance_bridge[p].get_latest()
+
+        await self.socket_client.emit('c_avs47b_got_config', config)
+
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
         scan_data = self.dmm.scan_channels()

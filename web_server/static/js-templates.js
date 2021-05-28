@@ -282,6 +282,78 @@ function get_cryogenics_page_html() {
         </div>
     </form>
     
+    <form id="cryo_picowatt_config_form" class="picowatt_form">
+        <h1>Picowatt configuration</h1>
+        <div class="instrument--container">
+            <div class="instrument--config">
+                <div class="config--parameter" id="cryo_page_picowatt_inputmode_container">
+                    <label for="picowatt_InputMode">Input Mode</label>
+                    <select id="picowatt_InputMode" name="picowatt_InputMode">
+                        <option value="0">Grounded</option>
+                        <option value="1">Measure</option>
+                        <option value="2">Calibrate</option>
+                    </select>
+                </div>
+                
+                <div class="config--parameter" id="cryo_page_picowatt_inputmode_container">
+                    <label>Channel</label>
+                    <select id="picowatt_MultiplexerChannel" name="picowatt_MultiplexerChannel">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                    </select>
+                </div>
+                
+                <div class="config--parameter" id="cryo_page_picowatt_range_container">
+                    <label>Range</label>
+                    <select id="picowatt_Range" name="picowatt_Range">
+                        <option value="0">Open</option>
+                        <option value="2">2 Ohm</option>
+                        <option value="20">20 Ohm</option>
+                        <option value="200">200 Ohm</option>
+                        <option value="2000">2K Ohm</option>
+                        <option value="20000">20K Ohm</option>
+                        <option value="200000">200K Ohm</option>
+                        <option value="2000000">2M Ohm</option>
+                    </select>
+                </div>
+                
+                <div class="config--parameter" id="cryo_page_picowatt_excitation_container">
+                    <label>Excitation</label>
+                    <select id="picowatt_Excitation" name="picowatt_Excitation">
+                        <option value="0">No excitation</option>
+                        <option value="3e-6">3e-6V</option>
+                        <option value="1e-5">1e-5V</option>
+                        <option value="3e-5">3e-5V</option>
+                        <option value="1e-4">1e-4V</option>
+                        <option value="3e-4">3e-4V</option>
+                        <option value="1e-3">1e-3V</option>
+                        <option value="3e-3">3e-3V</option>
+                    </select>
+                </div>
+                
+                <div class="config--parameter" id="cryo_page_picowatt_display_container">
+                    <label>Display</label>
+                    <select id="picowatt_Display" name="picowatt_Display">
+                        <option value="0">R</option>
+                        <option value="1">Delta R</option>
+                        <option value="2">Adjust reference voltage</option>
+                        <option value="3">Reference voltage</option>
+                        <option value="4">Excitation voltage</option>
+                    </select>
+                </div>
+                
+                <input type="button" value="Refresh picowatt settings" onclick="update_picowatt_settings()" />
+                <input type="button" value="Save picowatt settings" onclick="save_picowatt_settings()" />
+            </div>
+        </div>
+    </form>
+    
     ${get_long_temperature_plot()}
     ${get_temperature_plot(state)}
     
