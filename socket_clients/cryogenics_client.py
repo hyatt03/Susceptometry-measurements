@@ -64,6 +64,7 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('start_cooling', self.start_cooling)
         self.register_queue_processor('get_mck_state', self.get_mck_state)
         self.register_queue_processor('process_next_step', self.process_next_step)
+        self.register_queue_processor('get_avs47b_config', self.get_avs47b_config)
 
     @property
     def queue_name(self):
@@ -89,7 +90,7 @@ class CryoQueue(BaseQueueClass):
         # Next we update our local config to reflect what the state of the device actually is
         self.resistance_bridge.send_config(True, True, False)
 
-    async def c_get_config_avs47b(self, queue, name, task):
+    async def get_avs47b_config(self, queue, name, task):
         self.resistance_bridge.send_config(True, True, False)
 
         # Create a list of accepted parameters
@@ -344,6 +345,9 @@ class CryoClientNamespace(BaseClientNamespace):
     # Received when front panel status is wanted
     async def on_c_get_frontpanel_status(self):
         await self.append_to_queue({'function_name': 'get_fp_status'})
+
+    async def on_c_get_config_avs47b(self):
+        await self.append_to_queue({'function_name': 'get_avs47b_config'})
 
     # Received when config for avs47b should be updated
     async def on_c_config_avs47b(self, config):
