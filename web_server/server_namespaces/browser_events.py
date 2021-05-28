@@ -163,7 +163,6 @@ class BrowserNamespace(UniversalEvents):
             await self.cryo_namespace.push_next_step(step)
             await self.magnetism_namespace.push_next_step(step)
 
-
     # Gets the latest experiment configuration
     # If no experiments exist, we fall back to a default configuration
     async def on_b_get_latest_experiment_config(self, sid):

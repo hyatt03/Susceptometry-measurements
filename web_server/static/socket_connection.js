@@ -95,6 +95,7 @@ function main_socket_connection() {
     socket.on('b_got_cryo_status', cryo_status_updated);
     socket.on('b_got_experiment_list', got_experiment_list);
     socket.on('b_got_is_saving_temperatures', got_is_saving_temperatures);
+    socket.on('b_got_picowatt_config', b_got_picowatt_config);
 
     // Open status page by default
     open_status_page();

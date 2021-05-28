@@ -193,6 +193,10 @@ function rms_updated(b_rms) {
     update_magnet_state();
 }
 
+function b_got_picowatt_config(config) {
+    console.log(config);
+}
+
 // Server sends a magnet trace, we plot the trace
 function magnet_trace_updated(magnet_trace) {
     const trace_node = $('#magnet-plot');
