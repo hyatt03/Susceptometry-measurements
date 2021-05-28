@@ -21,7 +21,7 @@ from instrument_drivers import Keysight_N9310A
 from instrument_drivers import CryogenicsLimited_MagnetController
 
 # VISA addresses for the instruments
-lock_in_amplifier_address = 'GPIB0::10::INSTR'
+lock_in_amplifier_address = 'GPIB0::8::INSTR'
 signal_generator_address = 'USB0::0x0957::0x2018::01151879::INSTR'
 scope_address = 'USB0::0x0699::0x0368::C035740::INSTR'
 magnet_ps_address = 'ASRL4::INSTR'

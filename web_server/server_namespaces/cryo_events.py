@@ -78,7 +78,7 @@ class CryoNamespace(UniversalEvents):
         print('avs47b config successful')
 
     async def on_c_avs47b_got_config(self, sid, config):
-        self.browser_namespace.got_picowatt_config(config)
+        await self.browser_namespace.got_picowatt_config(config)
 
     # Event received when new temperatures are available
     async def on_c_got_temperatures(self, sid, temperatures):
