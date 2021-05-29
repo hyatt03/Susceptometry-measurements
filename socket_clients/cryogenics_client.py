@@ -107,6 +107,11 @@ class CryoQueue(BaseQueueClass):
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
         scan_data = self.dmm.scan_channels()
+        t_still = await self.query_resistance_bridge_for_temperature(1)
+        t_mixing_chamber_1 = await self.query_resistance_bridge_for_temperature(2)
+        t_mixing_chamber_2 = await self.query_resistance_bridge_for_temperature(3)
+
+        # Setup the dict containing the temperatures
         temperatures = {
             't_upper_hex': scan_data['Upper HEx'],
             't_lower_hex': scan_data['Lower HEx'],
@@ -117,9 +122,9 @@ class CryoQueue(BaseQueueClass):
             't_outer_coil': scan_data['Outer Coil'],
             't_switch': scan_data['Switch'],
             't_he_pot_2': scan_data['He Pot'],
-            't_still': self.query_resistance_bridge_for_temperature(1),
-            't_mixing_chamber_1': self.query_resistance_bridge_for_temperature(2),
-            't_mixing_chamber_2': self.query_resistance_bridge_for_temperature(3),
+            't_still': t_still,
+            't_mixing_chamber_1': t_mixing_chamber_1,
+            't_mixing_chamber_2': t_mixing_chamber_2,
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         }
