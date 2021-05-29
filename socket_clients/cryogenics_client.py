@@ -164,8 +164,6 @@ class CryoQueue(BaseQueueClass):
             # Get the resistance
             m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
 
-            print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance)
-
             # Return the resistance when the measurement is complete
             if m_complete:
                 break
@@ -173,6 +171,8 @@ class CryoQueue(BaseQueueClass):
         # Wait and measure once more, to ensure the measurement is stable
         await asyncio.sleep(3)
         m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
+
+        print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance)
 
         # Unlock the bridge
         self.running_query_on_resistance = False
