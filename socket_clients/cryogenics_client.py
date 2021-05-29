@@ -65,6 +65,7 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('get_mck_state', self.get_mck_state)
         self.register_queue_processor('process_next_step', self.process_next_step)
         self.register_queue_processor('get_avs47b_config', self.get_avs47b_config)
+        self.register_queue_processor('run_background_jobs', self.run_background_jobs)
 
     @property
     def queue_name(self):
@@ -343,6 +344,16 @@ class CryoQueue(BaseQueueClass):
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
 
+    def run_background_jobs(self, queue, name, task):
+        await asyncio.gather(
+            self.update_pressures(queue, name, task),
+            self.update_temperatures(queue, name, task),
+            self.get_mck_state(queue, name, task)
+        )
+
+        await asyncio.sleep(5)
+        await self.queue.put({'function_name': 'run_background_jobs'})
+
 
 # Create the class containing the namespace for this client
 class CryoClientNamespace(BaseClientNamespace):
@@ -363,12 +374,12 @@ class CryoClientNamespace(BaseClientNamespace):
         #     'Display': 0
         # }})
 
-        await self.append_to_queue({'function_name': 'update_temperatures'})
-        await self.append_to_queue({'function_name': 'update_pressures'})
-        await self.append_to_queue({'function_name': 'get_mck_state'})
+        # await self.append_to_queue({'function_name': 'update_temperatures'})
+        # await self.append_to_queue({'function_name': 'update_pressures'})
+        # await self.append_to_queue({'function_name': 'get_mck_state'})
 
-        await asyncio.sleep(5)
-        await self.append_to_queue({'function_name': 'rerun_background_job'})
+        # await asyncio.sleep(5)
+        await self.append_to_queue({'function_name': 'run_background_jobs'})
 
     # Received when cooling should start
     async def on_c_config_start_cooling(self):
