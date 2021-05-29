@@ -70,17 +70,17 @@ class CryoNamespace(UniversalEvents):
 
     """ #### RECEIVED EVENTS #### """
     # Event received when cooling starts
-    async def on_c_started_cooling(self):
+    async def on_c_started_cooling(self, sid):
         print('cooling started')
 
-    async def on_c_get_picowatt_delay(self):
+    async def on_c_get_picowatt_delay(self, sid):
         # Grab the delay from the config database and send it to the client
         with db.connection_context():
             picowatt_delay = ConfigurationParameter.read_config_value('picowatt_delay')
             await self.emit('c_got_picowatt_delay', picowatt_delay)
 
     # Event received when config has be successfully applied
-    async def on_c_avs47b_has_been_configured(self):
+    async def on_c_avs47b_has_been_configured(self, sid):
         print('avs47b config successful')
 
     async def on_c_avs47b_got_config(self, sid, config):
@@ -132,10 +132,10 @@ class CryoNamespace(UniversalEvents):
         await self.browser_namespace.send_cryo_status(status)
 
     # Event received when mck state is updated
-    async def on_c_got_mck_state(self, mck_state):
+    async def on_c_got_mck_state(self, sid, mck_state):
         print('got mck state', mck_state)
 
-    async def on_current_queue_size(self, size):
+    async def on_current_queue_size(self, sid, size):
         print('got current queue size:', size)
 
     
