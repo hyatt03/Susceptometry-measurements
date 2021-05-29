@@ -45,6 +45,9 @@ class CryoQueue(BaseQueueClass):
     # Add a lock to wait for query on resistance to finish
     running_query_on_resistance = False
 
+    # Add adjustable delay parameter for the resistance bridge (seconds)
+    picowatt_delay = 3
+
     def __init__(self, socket_client):
         super().__init__(socket_client)
 
@@ -159,20 +162,16 @@ class CryoQueue(BaseQueueClass):
         resistance = 0
         for i in range(20):
             # Sleep while the measurement populates
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
 
             # Get the resistance
             m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
 
+            print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance, 'm', m_complete)
+
             # Return the resistance when the measurement is complete
             if m_complete:
                 break
-
-        # Wait and measure once more, to ensure the measurement is stable
-        await asyncio.sleep(3)
-        m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
-
-        print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance)
 
         # Unlock the bridge
         self.running_query_on_resistance = False
