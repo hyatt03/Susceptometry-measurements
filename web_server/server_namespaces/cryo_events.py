@@ -73,6 +73,12 @@ class CryoNamespace(UniversalEvents):
     async def on_c_started_cooling(self):
         print('cooling started')
 
+    async def on_c_get_picowatt_delay(self):
+        # Grab the delay from the config database and send it to the client
+        with db.connection_context():
+            picowatt_delay = ConfigurationParameter.read_config_value('picowatt_delay')
+            await self.emit('c_got_picowatt_delay', picowatt_delay)
+
     # Event received when config has be successfully applied
     async def on_c_avs47b_has_been_configured(self):
         print('avs47b config successful')

@@ -162,7 +162,7 @@ class CryoQueue(BaseQueueClass):
         resistance = 0
         for i in range(20):
             # Sleep while the measurement populates
-            await asyncio.sleep(3)
+            await asyncio.sleep(self.picowatt_delay)
 
             # Get the resistance
             m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
@@ -381,20 +381,10 @@ class CryoClientNamespace(BaseClientNamespace):
         self.client_type = 'cryo'
 
     async def background_job(self):
-        # Initialize the resistance bridge
-        # await self.append_to_queue({'function_name': 'configure_avs47b', 'config': {
-        #     'InputMode': 1,
-        #     'MultiplexerChannel': 1,
-        #     'Range': 20000,
-        #     'Excitation': 1e-4,
-        #     'Display': 0
-        # }})
+        # Get the picowatt delay from the server
+        await self.get_picowatt_delay()
 
-        # await self.append_to_queue({'function_name': 'update_temperatures'})
-        # await self.append_to_queue({'function_name': 'update_pressures'})
-        # await self.append_to_queue({'function_name': 'get_mck_state'})
-
-        # await asyncio.sleep(5)
+        # Start running the background jobs
         await self.append_to_queue({'function_name': 'run_background_jobs'})
 
     # Received when cooling should start
@@ -428,6 +418,13 @@ class CryoClientNamespace(BaseClientNamespace):
     # Received when the mck state is desired
     async def on_c_get_mck_state(self):
         await self.append_to_queue({'function_name': 'get_mck_state'})
+
+    async def on_c_got_picowatt_delay(self, delay):
+        print('got update delay from server', delay)
+        self.my_queue.picowatt_delay = delay
+
+    async def get_picowatt_delay(self):
+        await self.emit('c_get_picowatt_delay')
 
     # Event sent when temperatures should be updated
     async def send_temperatures(self, temperatures):
