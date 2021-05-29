@@ -106,10 +106,15 @@ class CryoQueue(BaseQueueClass):
 
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
+        print('scanning DMM')
         scan_data = self.dmm.scan_channels()
+
+        print('Scanning bridge')
         t_still = await self.query_resistance_bridge_for_temperature(1)
         t_mixing_chamber_1 = await self.query_resistance_bridge_for_temperature(2)
         t_mixing_chamber_2 = await self.query_resistance_bridge_for_temperature(3)
+
+        print('done scanning bridge')
 
         # Setup the dict containing the temperatures
         temperatures = {
@@ -143,10 +148,12 @@ class CryoQueue(BaseQueueClass):
         resistance = 0
         for i in range(20):
             # Sleep while the measurement populates
-            await asyncio.sleep(3)
+            await asyncio.sleep(1)
 
             # Get the resistance
-            m_complete, resistance = self.resistance_bridge.query_for_resistance(channel)
+            m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance(channel)
+
+            print('got results from ch', ch_out, 'when querying ch', channel)
 
             # Return the resistance when the measurement is complete
             if m_complete:

@@ -331,7 +331,7 @@ class Avs_47b_direct(Instrument):
     def query_for_resistance(self):
         # Now we query the alarmline, waiting for it to turn true
         if not self.get_alarm_signal():
-            return False, 0
+            return False, 0, self.MultiplexerChannel.get()
 
         # Now we retreive the data, we save the results to the config
         ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, False, True)
@@ -339,9 +339,9 @@ class Avs_47b_direct(Instrument):
         # Check if we're overranged
         if ovr == 0:
             # Return the resistance along with a signal that the measurement is complete
-            return True, resistance
+            return True, resistance, self.MultiplexerChannel.get()
 
-        return False, 0
+        return False, 0, self.MultiplexerChannel.get()
 
     def get_resistance(self):
         # Setup the query
@@ -353,7 +353,7 @@ class Avs_47b_direct(Instrument):
             time.sleep(3)
 
             # Do the measurement
-            done, resistance = self.query_for_resistance()
+            done, resistance, ch_out = self.query_for_resistance()
 
             # Check if it is successful
             if done:
