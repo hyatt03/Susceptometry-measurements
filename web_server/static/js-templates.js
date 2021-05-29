@@ -294,9 +294,9 @@ function get_cryogenics_page_html() {
                         <option value="2">Calibrate</option>
                     </select>
                 </div>
-                
+
                 <div class="config--parameter" id="cryo_page_picowatt_inputmode_container">
-                    <label>Channel</label>
+                    <label for="picowatt_MultiplexerChannel">Channel</label>
                     <select id="picowatt_MultiplexerChannel" name="picowatt_MultiplexerChannel">
                         <option value="0">0</option>
                         <option value="1">1</option>
@@ -308,9 +308,9 @@ function get_cryogenics_page_html() {
                         <option value="7">7</option>
                     </select>
                 </div>
-                
+
                 <div class="config--parameter" id="cryo_page_picowatt_range_container">
-                    <label>Range</label>
+                    <label for="picowatt_Range">Range</label>
                     <select id="picowatt_Range" name="picowatt_Range">
                         <option value="0">Open</option>
                         <option value="2">2 Ohm</option>
@@ -322,9 +322,9 @@ function get_cryogenics_page_html() {
                         <option value="2000000">2M Ohm</option>
                     </select>
                 </div>
-                
+
                 <div class="config--parameter" id="cryo_page_picowatt_excitation_container">
-                    <label>Excitation</label>
+                    <label for="picowatt_Excitation">Excitation</label>
                     <select id="picowatt_Excitation" name="picowatt_Excitation">
                         <option value="0">No excitation</option>
                         <option value="3e-6">3e-6V</option>
@@ -336,9 +336,9 @@ function get_cryogenics_page_html() {
                         <option value="3e-3">3e-3V</option>
                     </select>
                 </div>
-                
+
                 <div class="config--parameter" id="cryo_page_picowatt_display_container">
-                    <label>Display</label>
+                    <label for="picowatt_Display">Display</label>
                     <select id="picowatt_Display" name="picowatt_Display">
                         <option value="0">R</option>
                         <option value="1">Delta R</option>
@@ -347,7 +347,16 @@ function get_cryogenics_page_html() {
                         <option value="4">Excitation voltage</option>
                     </select>
                 </div>
-                
+
+                <div class="config--parameter" id="cryo_page_picowatt_display_container">
+                    <label for="picowatt_Delay">Stabilization delay</label>
+                    <input type="number" 
+                           placeholder="Delay (Seconds)" 
+                           name="picowatt_Delay" 
+                           id="picowatt_Delay" 
+                           value="5" />
+                </div>
+
                 <input type="button" value="Refresh picowatt settings" onclick="update_picowatt_settings()" />
                 <input type="button" value="Save picowatt settings" onclick="save_picowatt_settings()" />
             </div>

@@ -54,7 +54,12 @@ class BrowserNamespace(UniversalEvents):
         await self.emit('b_ac_field', round(rms, 4))
 
     async def got_picowatt_config(self, config):
-        await self.emit('b_got_picowatt_config', config)
+        with db.connection_context():
+            config['picowatt_Delay'] = ConfigurationParameter.read_config_value('picowatt_delay')
+
+            print('config:', config)
+
+            await self.emit('b_got_picowatt_config', config)
 
     # Get the field strength of the large magnet
     async def on_b_get_dc_field(self, sid):
@@ -193,6 +198,10 @@ class BrowserNamespace(UniversalEvents):
         await self.cryo_namespace.get_avs47b_config()
 
     async def on_b_set_picowatt_config(self, sid, config):
+        with db.connection_context():
+            ConfigurationParameter.overwrite_config_value('picowatt_delay', config['Delay'])
+
+        await self.cryo_namespace.on_c_get_picowatt_delay(1)
         await self.cryo_namespace.config_avs47b(config)
 
     # Takes a form sent by the client and creates a new experiment
