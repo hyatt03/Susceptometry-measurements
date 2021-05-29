@@ -164,7 +164,7 @@ class CryoQueue(BaseQueueClass):
             # Get the resistance
             m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
 
-            print('got results from ch', ch_out, 'when querying ch', channel)
+            print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance)
 
             # Return the resistance when the measurement is complete
             if m_complete:
