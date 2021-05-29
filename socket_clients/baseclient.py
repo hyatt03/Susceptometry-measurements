@@ -11,7 +11,7 @@ from keep_python_alive_win import WindowsInhibitor
 
 
 class BaseQueueClass():
-    n_workers = 2
+    n_workers = 4
 
     def __init__(self, socket_client):
         super().__init__()
