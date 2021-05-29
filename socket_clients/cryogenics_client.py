@@ -113,15 +113,10 @@ class CryoQueue(BaseQueueClass):
 
     async def get_updated_temperatures(self, queue, name, task):
         # Get temperatures
-        print('scanning DMM')
         scan_data = self.dmm.scan_channels()
-
-        print('Scanning bridge')
         t_still = await self.query_resistance_bridge_for_temperature(1)
         t_mixing_chamber_1 = await self.query_resistance_bridge_for_temperature(2)
         t_mixing_chamber_2 = await self.query_resistance_bridge_for_temperature(3)
-
-        print('done scanning bridge')
 
         # Setup the dict containing the temperatures
         temperatures = {
@@ -167,7 +162,8 @@ class CryoQueue(BaseQueueClass):
             # Get the resistance
             m_complete, resistance, ch_out = self.resistance_bridge.query_for_resistance()
 
-            print('got results from ch', ch_out, 'when querying ch', channel, 'the resistance is', resistance, 'm', m_complete)
+            print('got results from ch', ch_out, 'when querying ch',
+                  channel, 'the resistance is', resistance, 'm', m_complete)
 
             # Return the resistance when the measurement is complete
             if m_complete:
@@ -420,7 +416,6 @@ class CryoClientNamespace(BaseClientNamespace):
         await self.append_to_queue({'function_name': 'get_mck_state'})
 
     async def on_c_got_picowatt_delay(self, delay):
-        print('got update delay from server', delay)
         self.my_queue.picowatt_delay = delay
 
     async def get_picowatt_delay(self):
