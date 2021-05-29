@@ -55,7 +55,7 @@ class BrowserNamespace(UniversalEvents):
 
     async def got_picowatt_config(self, config):
         with db.connection_context():
-            config['picowatt_Delay'] = ConfigurationParameter.read_config_value('picowatt_delay')
+            config['Delay'] = ConfigurationParameter.read_config_value('picowatt_delay')
 
             print('config:', config)
 
