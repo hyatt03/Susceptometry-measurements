@@ -344,7 +344,7 @@ class CryoQueue(BaseQueueClass):
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
 
-    def run_background_jobs(self, queue, name, task):
+    async def run_background_jobs(self, queue, name, task):
         await asyncio.gather(
             self.update_pressures(queue, name, task),
             self.update_temperatures(queue, name, task),
