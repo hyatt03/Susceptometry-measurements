@@ -42,6 +42,9 @@ experiment_state = {
 
 # We have a class that creates a queue so we can expect things to happen in a specific order
 class CryoQueue(BaseQueueClass):
+    # Add a lock to wait for query on resistance to finish
+    running_query_on_resistance = False
+
     def __init__(self, socket_client):
         super().__init__(socket_client)
 
@@ -142,6 +145,13 @@ class CryoQueue(BaseQueueClass):
         return temperatures
 
     async def query_resistance_bridge_for_temperature(self, channel):
+        # Wait until lock is released
+        while self.running_query_on_resistance:
+            await asyncio.sleep(0.2)
+
+        # Lock the bridge to this query
+        self.running_query_on_resistance = True
+
         # First we setup the query
         self.resistance_bridge.setup_query_for_resistance(channel)
 
@@ -159,6 +169,9 @@ class CryoQueue(BaseQueueClass):
             # Return the resistance when the measurement is complete
             if m_complete:
                 break
+
+        # Unlock the bridge
+        self.running_query_on_resistance = False
 
         # Convert the resistance to temperature
         return self.resistance_bridge.convert_to_temperature(channel, resistance)
