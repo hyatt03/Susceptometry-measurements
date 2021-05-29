@@ -117,9 +117,9 @@ class CryoQueue(BaseQueueClass):
             't_outer_coil': scan_data['Outer Coil'],
             't_switch': scan_data['Switch'],
             't_he_pot_2': scan_data['He Pot'],
-            't_still': self.resistance_bridge.query_for_temperature(1)[1],
-            't_mixing_chamber_1': self.resistance_bridge.query_for_temperature(2)[1],
-            't_mixing_chamber_2': self.resistance_bridge.query_for_temperature(3)[1],
+            't_still': self.query_resistance_bridge_for_temperature(1),
+            't_mixing_chamber_1': self.query_resistance_bridge_for_temperature(2),
+            't_mixing_chamber_2': self.query_resistance_bridge_for_temperature(3),
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         }
@@ -129,6 +129,26 @@ class CryoQueue(BaseQueueClass):
 
         # And return them
         return temperatures
+
+    async def query_resistance_bridge_for_temperature(self, channel):
+        # First we setup the query
+        self.resistance_bridge.setup_query_for_resistance(channel)
+
+        # Next we wait for the signal to become available
+        resistance = 0
+        for i in range(20):
+            # Sleep while the measurement populates
+            await asyncio.sleep(3)
+
+            # Get the resistance
+            m_complete, resistance = self.resistance_bridge.query_for_resistance(channel)
+
+            # Return the resistance when the measurement is complete
+            if m_complete:
+                break
+
+        # Convert the resistance to temperature
+        return self.resistance_bridge.convert_to_temperature(channel, resistance)
 
     # Queue task to retrieve temperatures
     async def update_temperatures(self, queue, name, task):

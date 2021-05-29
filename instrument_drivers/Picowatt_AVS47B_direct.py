@@ -26,7 +26,7 @@ class Avs_47b_direct(Instrument):
         """
         Class to keep track of parameters associated with direct connection to AVS-47B.
         """
-        
+
         # Config the superclass
         super().__init__(name, **kwargs)
 
@@ -73,7 +73,8 @@ class Avs_47b_direct(Instrument):
             200000: '6',
             2000000: '7'
         }
-        self.add_parameter('Range', unit='Ohm', val_mapping=self.range_v_map, get_cmd=None, set_cmd=None, initial_value=2000000)
+        self.add_parameter('Range', unit='Ohm', val_mapping=self.range_v_map, get_cmd=None, set_cmd=None,
+                           initial_value=2000000)
 
         # Get/set the excitation voltage
         # (RMS voltage across a sensor whose value is half of the selected range)
@@ -88,7 +89,8 @@ class Avs_47b_direct(Instrument):
             1e-3: '6',
             3e-3: '7'
         }
-        self.add_parameter('Excitation', unit='V', val_mapping=self.excitation_v_map, get_cmd=None, set_cmd=None, initial_value=1e-4)
+        self.add_parameter('Excitation', unit='V', val_mapping=self.excitation_v_map, get_cmd=None, set_cmd=None,
+                           initial_value=1e-4)
 
         # Set reference for deviation (Delta R) measurements
         # 10000 sets the reference DAC to 1 volt
@@ -142,7 +144,7 @@ class Avs_47b_direct(Instrument):
         Settings are only written if remote is enabled
         """
         # Allocate 48 bits
-        txstring = [0]*48
+        txstring = [0] * 48
 
         # Set disable AL
         txstring[-5] = self.AlarmLine.get()
@@ -151,7 +153,7 @@ class Avs_47b_direct(Instrument):
         txstring[-7] = int(remote)
 
         # Set range
-        range_int =  f'{int(self.range_v_map[self.Range.get()]):0=3b}'
+        range_int = f'{int(self.range_v_map[self.Range.get()]):0=3b}'
         txstring[-9] = int(range_int[-1])
         txstring[-10] = int(range_int[-2])
         txstring[-11] = int(range_int[-3])
@@ -173,13 +175,13 @@ class Avs_47b_direct(Instrument):
         txstring[-18] = int(channel_int[-1])
         txstring[-19] = int(channel_int[-2])
         txstring[-20] = int(channel_int[-3])
-        
+
         # Set the input
         input_int = f'{int(self.InputMode.get()):0=2b}'
         # input_int = f'{int(0):0=2b}'
         txstring[-21] = int(input_int[-1])
         txstring[-22] = int(input_int[-2])
-        
+
         # Set the ref voltage address to 3
         txstring[-25] = 1
         txstring[-26] = 1
@@ -216,17 +218,17 @@ class Avs_47b_direct(Instrument):
         disp_out = int(a[31:34], base=2)
         excitation = int(a[34:37], base=2)
         range_out = int(a[37:40], base=2)
-        
+
         # Compute the 4.5 digit number
-        adc = 10000*msd + 1000*d3 + 100*d2 + 10*d1 + lsd
+        adc = 10000 * msd + 1000 * d3 + 100 * d2 + 10 * d1 + lsd
 
         # Set the sign and convert to float
         if pol == 0:
             adc *= -1.
 
         # Convert the ADC value to a resistance
-        resistance = adc * 10**(range_out - 5)
-        
+        resistance = adc * 10 ** (range_out - 5)
+
         return ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out
 
     def send_config(self, remote=False, save_device_config=False, return_decoded=False):
@@ -243,7 +245,7 @@ class Avs_47b_direct(Instrument):
 
         # Construct the TXString and allocate the rxstring
         txstring = self.construct_txstring(remote)
-        rxstring = [0]*48
+        rxstring = [0] * 48
 
         # Read the old address and write the new address
         self.read_write_data(hw_address_old, hw_address)
@@ -260,7 +262,7 @@ class Avs_47b_direct(Instrument):
         # Check if we should save the devices config to the configuration of the module
         if save_device_config:
             ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out = self.decode_rxstring(rxstring)
-            
+
             # Save the overrange
             self.Overrange.set(ovr)
 
@@ -290,7 +292,7 @@ class Avs_47b_direct(Instrument):
                 if int(val) == range_out:
                     self.Range.set(key)
                     break
-            
+
             # Check if we want to return the decoded content (applies both if we save or if we don't)
             if return_decoded:
                 return ovr, resistance, adc, input_out, ch_out, disp_out, excitation, range_out
@@ -311,7 +313,7 @@ class Avs_47b_direct(Instrument):
         # We also return it so we can use it immediately
         return al
 
-    def query_for_resistance(self, channel):
+    def setup_query_for_resistance(self, channel):
         """
         Queries the device for resistance, may take a while before a measurement is returned
         """
@@ -326,37 +328,41 @@ class Avs_47b_direct(Instrument):
         # And we don't want to overwrite our users configuration
         self.send_config(True, False)
 
+    def query_for_resistance(self):
         # Now we query the alarmline, waiting for it to turn true
-        # We sleep meanwhile
-        while not self.get_alarm_signal():
-            time.sleep(0.005)
+        if not self.get_alarm_signal():
+            return False, 0
 
-        for i in range(20):
-            # Now we sleep 10 msecs waiting for the shift register to be populated with data
-            time.sleep(3)
+        # Now we retreive the data, we save the results to the config
+        ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, False, True)
 
-            # Now we retreive the data, we save the results to the config
-            ovr, resistance, _, _, ch_out, _, _, _ = self.send_config(True, False, True)
+        # Check if we're overranged
+        if ovr == 0:
+            # Return the resistance along with a signal that the measurement is complete
+            return True, resistance
 
-    	    # Keep repeating measurement until ovr reports false
-            if ovr == 0:
-                break
-            else:
-                print('got overrange, repeating')
-
-        # Return wether we are overrange, the resistance, and the channel we actually measured.
-        return ovr, resistance, ch_out
+        return False, 0
 
     def get_resistance(self):
-        return self.query_for_resistance(self.MultiplexerChannel.get())[1]
+        # Setup the query
+        self.setup_query_for_resistance(self.MultiplexerChannel.get())
 
-    def query_for_temperature(self, channel):
+        resistance = 0
+        for i in range(20):
+            # Sleep 3 seconds waiting for the measurement to populate
+            time.sleep(3)
+
+            # Do the measurement
+            done, resistance = self.query_for_resistance()
+
+            # Check if it is successful
+            if done:
+                return resistance
+
+    def convert_to_temperature(self, channel, resistance):
         """
         Queries the AVS-47B for the resistance on a single channel and converts it to a temperature
-        """ 
-        # First we get the resistance
-        ovr, resistance, ch_out = self.query_for_resistance(channel)
-
+        """
         # Now we grab the calibration
         if channel not in self.sensors:
             raise ValueError('This sensor is not calibrated')
@@ -367,7 +373,7 @@ class Avs_47b_direct(Instrument):
             temp = self.ruo2_10k_calib(resistance) * 1e-3
 
         # return whether we are overranged, the temperature, and the channel measured
-        return ovr, temp, ch_out
+        return temp
 
     def read_write_data(self, rx, tx):
         """
@@ -407,7 +413,7 @@ class Avs_47b_direct(Instrument):
         for _ in range(3):
             # Set the clock pulse to 0
             self.ser.rts = False
-            
+
             # Set the dataline to 0
             self.ser.dtr = False
 
