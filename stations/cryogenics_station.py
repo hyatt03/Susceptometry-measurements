@@ -16,13 +16,14 @@ from qcodes import Station
 
 # Import all the custom drivers
 from instrument_drivers import LeidenCryogenics_TripleCurrentSource, \
-    LeidenCryogenics_GHS_2T_1T_700_CF, Picowatt_AVS47B_direct, Keysight_2700_DMM
+    LeidenCryogenics_GHS_2T_1T_700_CF, Picowatt_AVS47B_direct, Keysight_2700_DMM, PfeifferVacuum_MaxiGauge
 
 # Set the addresses for the instruments
 dmm_address = 'ASRL6::INSTR'
 ghs_address = 'ASRL7::INSTR'
 tcs_address = 'ASRL8::INSTR'
 resistance_bridge_address = 'COM9'
+maxigauge_address = 'COM10'
 
 
 def setup_instruments():
@@ -38,8 +39,11 @@ def setup_instruments():
     # Setup the Leiden Cryogenics GHS-2T-1T-700-CF
     ghs = LeidenCryogenics_GHS_2T_1T_700_CF.LC_GHS('ghs', ghs_address)
 
+    # Setup the Pfeiffer Vacuum MaxiGauge TPG256A
+    maxigauge = PfeifferVacuum_MaxiGauge.MaxiGauge('maxigauge', maxigauge_address)
+
     # Return the instruments as a list
-    return [resistance_bridge, tcs, ghs, dmm]
+    return [resistance_bridge, tcs, ghs, dmm, maxigauge]
 
 
 def get_station():

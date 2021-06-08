@@ -249,7 +249,9 @@ class DataPoint(DBModel):
                     p_5=data['pressures']['p_5'][i],
                     p_6=data['pressures']['p_6'][i],
                     p_7=data['pressures']['p_7'][i],
-                    p_8=data['pressures']['p_8'][i]
+                    p_8=data['pressures']['p_8'][i],
+                    p_9=data['pressures']['p_9'][i],
+                    p_10=data['pressures']['p_10'][i]
                 ).save()
 
                 # Save temperatures
@@ -303,6 +305,8 @@ class PressureDataPoint(DBModel):
     p_6 = FloatField()
     p_7 = FloatField()
     p_8 = FloatField()  # Flow sensor
+    p_9 = FloatField(default=0.0)
+    p_10 = FloatField(default=0.0)
 
     # Backreference to the CryogenicsDataPoint model (this way we can have many datapoints to one step)
     cryo_data_point = ForeignKeyField(CryogenicsDataPoint, backref='pressures')

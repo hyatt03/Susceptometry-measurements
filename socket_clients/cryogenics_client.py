@@ -57,6 +57,7 @@ class CryoQueue(BaseQueueClass):
         self.tcs = self.station.components['tcs']
         self.resistance_bridge = self.station.components['resistance_bridge']
         self.dmm = self.station.components['dmm']
+        self.maxigauge = self.station.components['maxigauge']
 
         # Register queue processors
         self.register_queue_processor('configure_avs47b', self.configure_avs47b)
@@ -197,6 +198,8 @@ class CryoQueue(BaseQueueClass):
             'p_6': self.ghs.pressure_p6.get_latest(),
             'p_7': self.ghs.pressure_p7.get_latest(),
             'p_8': self.ghs.pressure_p8.get_latest(),
+            'p_9': self.maxigauge.Pressure5.get(),
+            'p_10': self.maxigauge.Pressure6.get(),
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         })
