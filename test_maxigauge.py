@@ -38,6 +38,7 @@ def main_run():
         plt.legend()
         plt.xlabel('time [~s]')
         plt.ylabel('pressure [mbar]')
+        plt.title(f'p5={p5:.3e}, p6={p6:.3e}')
         plt.grid()
 
         # Draw the image

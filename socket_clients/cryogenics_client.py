@@ -198,8 +198,8 @@ class CryoQueue(BaseQueueClass):
             'p_6': self.ghs.pressure_p6.get_latest(),
             'p_7': self.ghs.pressure_p7.get_latest(),
             'p_8': self.ghs.pressure_p8.get_latest(),
-            'p_9': self.maxigauge.Pressure5.get(),
-            'p_10': self.maxigauge.Pressure6.get(),
+            'p_9': self.maxigauge.get_pressure(5)[1],
+            'p_10': self.maxigauge.get_pressure(6)[1],
             'timestamp': time.time() - experiment_state['startup_time'],
             'started': experiment_state['startup_time']
         })
