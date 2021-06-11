@@ -79,7 +79,7 @@ function temperatures_updated(temperatures) {
 // The pressure data comes from the GHS
 function pressures_updated(pressures) {
     if (typeof pressures !== 'undefined') {
-        for (var i=0; i<9; i++) {
+        for (var i=0; i<11; i++) {
             state['pressures']['p_' + i] = pressures['p_' + i];
         }
 
@@ -93,14 +93,14 @@ function pressures_updated(pressures) {
     if (state['pressure_trace_plot_data'].length > 0 && state['pressure_plot_layout'] !== 0) {
         if (typeof pressures !== 'undefined') {
             // Add new data
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 10; i++) {
                 state['pressure_trace_plot_data'][i].x.push(pressures['timestamp']);
                 state['pressure_trace_plot_data'][i].y.push(pressures['p_' + (i + 1)]);
             }
 
             // Ensure length is at max 20 items
             if (state['pressure_trace_plot_data'][0].x.length > 20) {
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < 10; i++) {
                     state['pressure_trace_plot_data'][i].x.shift();
                     state['pressure_trace_plot_data'][i].y.shift();
                 }
@@ -304,7 +304,7 @@ function temperature_trace_updated(temperature_trace) {
 function pressure_trace_updated(pressure_trace) {
     if (state['pressure_trace_plot_data'].length < 1) {
         // Initialize the data model
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 10; i++) {
             state['pressure_trace_plot_data'].push({
                 x: [],
                 y: [],
@@ -315,7 +315,7 @@ function pressure_trace_updated(pressure_trace) {
 
         // Add the datapoints
         for (let i = 0; i < pressure_trace.length; i++) {
-            for (let j = 0; j < 8; j++) {
+            for (let j = 0; j < 10; j++) {
                 state['pressure_trace_plot_data'][j].x.push(pressure_trace[i]['timestamp'])
                 state['pressure_trace_plot_data'][j].y.push(pressure_trace[i]['p_' + (j+1)])
             }

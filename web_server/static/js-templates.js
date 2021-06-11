@@ -29,14 +29,16 @@ function get_magnet_field_list(state) {
 function get_pressure_list(state) {
     return `
         <div>Current Pressures</div>
-        <div class="pressure--label">p_1 = ${to_fixed(state['pressures']['p_1'], 2)}</div>
-        <div class="pressure--label">p_2 = ${to_fixed(state['pressures']['p_2'], 2)}</div>
-        <div class="pressure--label">p_3 = ${to_fixed(state['pressures']['p_3'], 2)}</div>
-        <div class="pressure--label">p_4 = ${to_fixed(state['pressures']['p_4'], 2)}</div>
-        <div class="pressure--label">p_5 = ${to_fixed(state['pressures']['p_5'], 2)}</div>
-        <div class="pressure--label">p_6 = ${to_fixed(state['pressures']['p_6'], 2)}</div>
-        <div class="pressure--label">p_7 = ${to_fixed(state['pressures']['p_7'], 2)}</div>
-        <div class="pressure--label">p_8 = ${to_fixed(state['pressures']['p_8'], 2)}</div>`;
+        <div class="pressure--label">p_1 = ${state['pressures']['p_1']}</div>
+        <div class="pressure--label">p_2 = ${state['pressures']['p_2']}</div>
+        <div class="pressure--label">p_3 = ${state['pressures']['p_3']}</div>
+        <div class="pressure--label">p_4 = ${state['pressures']['p_4']}</div>
+        <div class="pressure--label">p_5 = ${state['pressures']['p_5']}</div>
+        <div class="pressure--label">p_6 = ${state['pressures']['p_6']}</div>
+        <div class="pressure--label">p_7 = ${state['pressures']['p_7']}</div>
+        <div class="pressure--label">p_8 = ${state['pressures']['p_8']}</div>
+        <div class="pressure--label">p_9 = ${state['pressures']['p_9']}</div>
+        <div class="pressure--label">p_10 = ${state['pressures']['p_10']}</div>`;
 }
 
 function get_temperature_plot(state) {
