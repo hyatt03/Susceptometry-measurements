@@ -360,12 +360,10 @@ class CryoQueue(BaseQueueClass):
         experiment_state['current_step']['step_done'] = True
 
     async def run_background_jobs(self, queue, name, task):
-        await asyncio.gather(
-            self.update_pressures(queue, name, task),
-            self.update_temperatures(queue, name, task),
-            self.get_mck_state(queue, name, task)
-        )
+        # Get the temperatures
+        await self.update_temperatures(queue, name, task)
 
+        # Wait and rerun the job
         await asyncio.sleep(5)
         await self.queue.put({'function_name': 'run_background_jobs'})
 
@@ -385,6 +383,14 @@ class CryoClientNamespace(BaseClientNamespace):
 
         # Start running the background jobs
         await self.append_to_queue({'function_name': 'run_background_jobs'})
+
+        while True:
+            # Get the pressures
+            await self.append_to_queue({'function_name': 'update_pressures'})
+            await self.append_to_queue({'function_name': 'get_mck_state'})
+            
+            # Wait
+            await asyncio.sleep(5)
 
     # Received when cooling should start
     async def on_c_config_start_cooling(self):
