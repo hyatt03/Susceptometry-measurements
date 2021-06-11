@@ -49,7 +49,7 @@ function temperatures_updated(temperatures) {
             }
 
             // Ensure length is at max 20 items
-            if (state['temperature_trace_plot_data'][0].x.length > 20) {
+            if (state['temperature_trace_plot_data'][0].x.length > 50) {
                 for (let i = 0; i < 12; i++) {
                     state['temperature_trace_plot_data'][i].x.shift();
                     state['temperature_trace_plot_data'][i].y.shift();
@@ -99,7 +99,7 @@ function pressures_updated(pressures) {
             }
 
             // Ensure length is at max 20 items
-            if (state['pressure_trace_plot_data'][0].x.length > 20) {
+            if (state['pressure_trace_plot_data'][0].x.length > 50) {
                 for (let i = 0; i < 10; i++) {
                     state['pressure_trace_plot_data'][i].x.shift();
                     state['pressure_trace_plot_data'][i].y.shift();

@@ -29,8 +29,8 @@ else:
 
 # Experiments are naturally stateful, and we must remember some things
 experiment_state = {
-    'temperatures': deque(maxlen=20),  # initialize a double ended queues
-    'pressures': deque(maxlen=20),
+    'temperatures': deque(maxlen=50),  # initialize a double ended queues
+    'pressures': deque(maxlen=50),
     'startup_time': time.time(),
     'current_step': {'step_done': True},
     'next_step': {},
