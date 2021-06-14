@@ -458,6 +458,7 @@ class CryoClientNamespace(BaseClientNamespace):
         self.my_queue.picowatt_delay = delay
 
     async def on_c_start_circulation(self):
+        print('got start circulation')
         await self.append_to_queue({'function_name': 'start_circulation'})
 
     async def get_picowatt_delay(self):

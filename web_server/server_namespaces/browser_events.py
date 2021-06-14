@@ -242,3 +242,7 @@ class BrowserNamespace(UniversalEvents):
 
             # Push next step to client
             await self.push_next_step_to_clients()
+
+    async def on_b_start_circulation(self, sid):
+        print('got start circulation from browser')
+        await self.cryo_namespace.start_circulation()

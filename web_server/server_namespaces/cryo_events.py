@@ -70,6 +70,7 @@ class CryoNamespace(UniversalEvents):
 
     # Event emitted to start circulation
     async def start_circulation(self):
+        print('sending start circulation to client')
         await self.emit('c_start_circulation')
 
     
