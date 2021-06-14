@@ -366,13 +366,13 @@ class CryoQueue(BaseQueueClass):
         self.ghs.press_button('reset')
 
         # Wait between
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
         # Next we start s3 as the backing pump for s1
         self.ghs.press_button('s3')
 
         # And we let it spin up
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
         # Next we open all the way to the still
         self.ghs.press_button('3')
@@ -383,11 +383,72 @@ class CryoQueue(BaseQueueClass):
         self.ghs.press_button('gate-valve-18')
 
         # Now we wait until the pressure is low on P4
-        while self.pressure_p4.get() > 3:
+        while self.ghs.pressure_p4.get() > 3:
             await asyncio.sleep(0.1)
 
         # And we turn on the turbopump
         self.ghs.press_button('s1')
+
+        # We now open the first dump
+        self.ghs.press_button('10')
+        self.ghs.press_button('9')
+
+        # And we wait a little for the pressure to stabalize
+        await asyncio.sleep(1)
+
+        # Next we open the trap
+        self.ghs.press_button('4')
+        self.ghs.press_button('5')
+
+        # And we bypass the compressor and open the final valve
+        self.ghs.press_button('bypass')
+        self.ghs.press_button('6')
+
+    async def pump_still(self):
+        # We start by resetting so we know the state of the system
+        # This closes all valves and turns off all pumps
+        self.ghs.press_button('reset')
+
+        # Wait for everything to shut down
+        await asyncio.sleep(1)
+
+        # We now open the first dump so the pressure has somewhere to go
+        self.ghs.press_button('10')
+        self.ghs.press_button('9')
+
+        # Next we start s3 as the backing pump for s1
+        self.ghs.press_button('s3')
+
+        # And we let it spin up
+        await asyncio.sleep(1)
+
+        # Next we open all the way to the still
+        self.ghs.press_button('3')
+        self.ghs.press_button('2')
+        self.ghs.press_button('0')
+
+        # Now we wait until the pressure is low on P4
+        while self.ghs.pressure_p4.get() > 3:
+            await asyncio.sleep(1)
+
+        # And we turn on the turbopump
+        self.ghs.press_button('s1')
+
+        # We wait for the turbopump to spin up
+        await asyncio.sleep(10)
+
+        # And we open the gate valve
+        self.ghs.press_button('gate-valve-18')
+
+    async def pump_ivc_and_still(self):
+        # We start by pumping the still
+        await self.pump_still()
+
+        # We wait for that a bit
+        await asyncio.sleep(5)
+
+        # Then we open to the IVC
+        self.ghs.press_button('a10')
 
     async def run_background_jobs(self, queue, name, task):
         # Get the temperatures
