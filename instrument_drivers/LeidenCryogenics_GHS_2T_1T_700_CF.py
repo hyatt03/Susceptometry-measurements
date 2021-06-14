@@ -3,6 +3,7 @@ QCodes driver for Leiden Cryogenics (MicroTask) GHS-2T-1T-700-CF,
 which is the gas handling system for the MCK50-100 dilution fridge.
 """
 
+from time import sleep
 from qcodes import VisaInstrument, validators as vals
 from qcodes.instrument.group_parameter import GroupParameter, Group
 
@@ -233,7 +234,5 @@ class LC_GHS(VisaInstrument):
         if button not in self.button_dict:
             raise ValueError('Invalid button!')
 
-        print('not enabled right now')
-
-        # ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
-        # return self.acks[int(ack)]
+        ack = self.ask(f'DEVMAN {self.button_dict[button][0]}')
+        return self.acks[int(ack)]

@@ -68,6 +68,12 @@ class CryoNamespace(UniversalEvents):
     async def get_mck_state(self):
         await self.emit('c_get_mck_state')
 
+    # Event emitted to start circulation
+    async def start_circulation(self):
+        await self.emit('c_start_circulation')
+
+    
+
     """ #### RECEIVED EVENTS #### """
     # Event received when cooling starts
     async def on_c_started_cooling(self, sid):

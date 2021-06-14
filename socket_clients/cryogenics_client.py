@@ -73,6 +73,7 @@ class CryoQueue(BaseQueueClass):
         self.register_queue_processor('process_next_step', self.process_next_step)
         self.register_queue_processor('get_avs47b_config', self.get_avs47b_config)
         self.register_queue_processor('run_background_jobs', self.run_background_jobs)
+        self.register_queue_processor('start_circulation', self.start_circulation)
 
     @property
     def queue_name(self):
@@ -359,6 +360,35 @@ class CryoQueue(BaseQueueClass):
         await self.socket_client.emit('mark_step_as_done', step)
         experiment_state['current_step']['step_done'] = True
 
+    async def start_circulation(self, queue, name, task):
+        # We start by resetting so we know the state of the system
+        # This closes all valves and turns off all pumps
+        self.ghs.press_button('reset')
+
+        # Wait between
+        await asyncio.sleep(0.5)
+
+        # Next we start s3 as the backing pump for s1
+        self.ghs.press_button('s3')
+
+        # And we let it spin up
+        await asyncio.sleep(0.5)
+
+        # Next we open all the way to the still
+        self.ghs.press_button('3')
+        self.ghs.press_button('2')
+        self.ghs.press_button('0')
+
+        # And we open the gate valve
+        self.ghs.press_button('gate-valve-18')
+
+        # Now we wait until the pressure is low on P4
+        while self.pressure_p4.get() > 3:
+            await asyncio.sleep(0.1)
+
+        # And we turn on the turbopump
+        self.ghs.press_button('s1')
+
     async def run_background_jobs(self, queue, name, task):
         # Get the temperatures
         await self.update_temperatures(queue, name, task)
@@ -426,6 +456,9 @@ class CryoClientNamespace(BaseClientNamespace):
 
     async def on_c_got_picowatt_delay(self, delay):
         self.my_queue.picowatt_delay = delay
+
+    async def on_c_start_circulation(self):
+        await self.append_to_queue({'function_name': 'start_circulation'})
 
     async def get_picowatt_delay(self):
         await self.emit('c_get_picowatt_delay')
