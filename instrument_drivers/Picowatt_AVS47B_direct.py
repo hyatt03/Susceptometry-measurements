@@ -349,8 +349,8 @@ class Avs_47b_direct(Instrument):
 
         resistance = 0
         for i in range(20):
-            # Sleep 3 seconds waiting for the measurement to populate
-            time.sleep(3)
+            # Sleep 5 seconds waiting for the measurement to populate
+            time.sleep(5)
 
             # Do the measurement
             done, resistance, ch_out = self.query_for_resistance()
